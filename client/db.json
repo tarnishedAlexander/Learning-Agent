@@ -1,0 +1,1098 @@
+{
+  "clases": [
+    {
+      "id": "2bbb19d7-6e1c-4bbb-9c34-c6bccfc66977",
+      "Name": "Algorítmica I 2024",
+      "start_date": "2024-02-26",
+      "end_date": "2024-03-30"
+    },
+    {
+      "id": "010fc7d6-a320-4efa-adf6-2278b8e2aece",
+      "Name": "Base de Datos Avanzadas 2024",
+      "start_date": "2024-03-26",
+      "end_date": "2024-04-30"
+    },
+    {
+      "id": "76429e52-84c9-44fd-b89e-d7bf903bbc8b",
+      "Name": "Base de Datos Relacionales 2024",
+      "start_date": "2024-04-26",
+      "end_date": "2024-05-30"
+    },
+    {
+      "id": "9c2d699f-50a8-4713-965a-b2cf34fa9e06",
+      "Name": "Algorítmica II 2024",
+      "start_date": "2024-05-26",
+      "end_date": "2024-06-30"
+    },
+    {
+      "id": "ec09ef13-8202-41bd-9b54-2f2182a64aac",
+      "Name": "Algorítmica I 2025",
+      "start_date": "2025-03-26",
+      "end_date": "2025-04-30"
+    },
+    {
+      "id": "a29b6067-cfc5-4a47-8865-cf2a62668b9b",
+      "Name": "Base de Datos Relacionales 2025",
+      "start_date": "2025-05-26",
+      "end_date": "2025-06-30"
+    },
+    {
+      "id": "6c685f60-4ed4-42ba-b1ed-c3dc84b43452",
+      "Name": "Algorítmica II 2025",
+      "start_date": "2025-07-07",
+      "end_date": "2025-07-30"
+    },
+    {
+      "id": "35eb919b-b1e6-4445-b362-e4ba5185f1c9",
+      "Name": "Base de Datos Avanzadas 2025",
+      "start_date": "2025-07-07",
+      "end_date": "2025-07-30"
+    },
+    {
+      "id": "06e2e0e4-ac29-4a46-a34f-963586ddb6f3",
+      "Name": "Certi React 2025",
+      "start_date": "2025-07-08",
+      "end_date": "2025-08-08"
+    },
+    {
+      "id": "d6ad2240-48fc-49e2-b39c-e9a11ca8b4cb",
+      "Name": "Certi Angular 2025",
+      "start_date": "2025-07-31",
+      "end_date": "2025-08-31"
+    },
+    {
+      "id": "915179c1-5c0c-4d40-8218-68a27c001021",
+      "Name": "Base de Datos Relacionales 2026",
+      "start_date": "2026-02-01",
+      "end_date": "2026-03-01"
+    },
+    {
+      "id": "8d559e93-9c88-4f90-9f74-fb6ca48bd529",
+      "Name": "Algoritmica III 2025",
+      "start_date": "2025-07-09",
+      "end_date": "2025-08-12"
+    }
+  ],
+  "students": [
+    {
+      "id": "38eb4277-4368-4191-adc4-9a427a6ea1fa",
+      "claseId": "ec09ef13-8202-41bd-9b54-2f2182a64aac",
+      "students": [
+        {
+          "nombres": "Mateo",
+          "apellidos": "Paredes",
+          "codigo": 73104,
+          "asistencia": 1,
+          "1er_parcial": 83,
+          "2do_parcial": 39,
+          "final": 60
+        },
+        {
+          "nombres": "Luis",
+          "apellidos": "Cruz",
+          "codigo": 82832,
+          "asistencia": 0,
+          "1er_parcial": 36,
+          "2do_parcial": 8,
+          "final": 83
+        },
+        {
+          "nombres": "Valeria",
+          "apellidos": "Mendoza",
+          "codigo": 86416,
+          "asistencia": 4,
+          "1er_parcial": 8,
+          "2do_parcial": 41,
+          "final": 67
+        }
+      ]
+    },
+    {
+      "id": "7020a07d-2ec3-4f80-8fe1-12c162b834a6",
+      "claseId": "35eb919b-b1e6-4445-b362-e4ba5185f1c9",
+      "students": [
+        {
+          "nombres": "Luis",
+          "apellidos": "Ramírez",
+          "codigo": 94186,
+          "asistencia": 3,
+          "1er_parcial": 81,
+          "2do_parcial": 98,
+          "final": 19
+        },
+        {
+          "nombres": "Camila",
+          "apellidos": "López",
+          "codigo": 91633,
+          "asistencia": 3,
+          "1er_parcial": 99,
+          "2do_parcial": 20,
+          "final": 8
+        },
+        {
+          "nombres": "Carlos",
+          "apellidos": "Mendoza",
+          "codigo": 82414,
+          "asistencia": 2,
+          "1er_parcial": 95,
+          "2do_parcial": 100,
+          "final": 15
+        },
+        {
+          "nombres": "Ana",
+          "apellidos": "Cruz",
+          "codigo": 12687,
+          "asistencia": 0,
+          "1er_parcial": 77,
+          "2do_parcial": 15,
+          "final": 11
+        }
+      ]
+    },
+    {
+      "id": "8bfcbf13-254f-4baa-bf0e-a16b7d296371",
+      "claseId": "2bbb19d7-6e1c-4bbb-9c34-c6bccfc66977",
+      "students": [
+        {
+          "nombres": "José",
+          "apellidos": "Mendoza",
+          "codigo": 80020,
+          "asistencia": 0,
+          "1er_parcial": 75,
+          "2do_parcial": 85,
+          "final": 35
+        },
+        {
+          "nombres": "Ana",
+          "apellidos": "Vargas",
+          "codigo": 59394,
+          "asistencia": 2,
+          "1er_parcial": 41,
+          "2do_parcial": 19,
+          "final": 78
+        },
+        {
+          "nombres": "Ana",
+          "apellidos": "Quispe",
+          "codigo": 32164,
+          "asistencia": 0,
+          "1er_parcial": 26,
+          "2do_parcial": 11,
+          "final": 31
+        },
+        {
+          "nombres": "Sofía",
+          "apellidos": "Vargas",
+          "codigo": 15976,
+          "asistencia": 2,
+          "1er_parcial": 98,
+          "2do_parcial": 62,
+          "final": 36
+        }
+      ]
+    },
+    {
+      "id": "ede5cbee-64da-4b16-bed5-8accd3e402a6",
+      "claseId": "35eb919b-b1e6-4445-b362-e4ba5185f1c9",
+      "students": [
+        {
+          "nombres": "José",
+          "apellidos": "Gutiérrez",
+          "codigo": 50365,
+          "asistencia": 4,
+          "1er_parcial": 74,
+          "2do_parcial": 12,
+          "final": 47
+        },
+        {
+          "nombres": "Mateo",
+          "apellidos": "Cruz",
+          "codigo": 14854,
+          "asistencia": 2,
+          "1er_parcial": 19,
+          "2do_parcial": 14,
+          "final": 91
+        },
+        {
+          "nombres": "Carlos",
+          "apellidos": "Vargas",
+          "codigo": 62692,
+          "asistencia": 0,
+          "1er_parcial": 5,
+          "2do_parcial": 61,
+          "final": 82
+        },
+        {
+          "nombres": "Luis",
+          "apellidos": "Ramírez",
+          "codigo": 43148,
+          "asistencia": 1,
+          "1er_parcial": 19,
+          "2do_parcial": 31,
+          "final": 40
+        },
+        {
+          "nombres": "Lucía",
+          "apellidos": "Quispe",
+          "codigo": 42880,
+          "asistencia": 2,
+          "1er_parcial": 84,
+          "2do_parcial": 36,
+          "final": 59
+        }
+      ]
+    },
+    {
+      "id": "eb28314d-2fa2-4b50-b236-da50eecd41e9",
+      "claseId": "a29b6067-cfc5-4a47-8865-cf2a62668b9b",
+      "students": [
+        {
+          "nombres": "Ana",
+          "apellidos": "Quispe",
+          "codigo": 58906,
+          "asistencia": 0,
+          "1er_parcial": 75,
+          "2do_parcial": 9,
+          "final": 91
+        },
+        {
+          "nombres": "Luis",
+          "apellidos": "Mendoza",
+          "codigo": 38949,
+          "asistencia": 1,
+          "1er_parcial": 6,
+          "2do_parcial": 25,
+          "final": 90
+        },
+        {
+          "nombres": "Lucía",
+          "apellidos": "Mendoza",
+          "codigo": 23963,
+          "asistencia": 1,
+          "1er_parcial": 33,
+          "2do_parcial": 75,
+          "final": 36
+        },
+        {
+          "nombres": "Lucía",
+          "apellidos": "Quispe",
+          "codigo": 32065,
+          "asistencia": 2,
+          "1er_parcial": 51,
+          "2do_parcial": 12,
+          "final": 66
+        },
+        {
+          "nombres": "Sofía",
+          "apellidos": "Salazar",
+          "codigo": 12446,
+          "asistencia": 3,
+          "1er_parcial": 76,
+          "2do_parcial": 61,
+          "final": 53
+        }
+      ]
+    },
+    {
+      "id": "b83b4967-b8aa-489e-818f-c3cdf07c3f73",
+      "claseId": "ec09ef13-8202-41bd-9b54-2f2182a64aac",
+      "students": [
+        {
+          "nombres": "Valeria",
+          "apellidos": "Gutiérrez",
+          "codigo": 95789,
+          "asistencia": 3,
+          "1er_parcial": 99,
+          "2do_parcial": 44,
+          "final": 15
+        },
+        {
+          "nombres": "Ana",
+          "apellidos": "Mendoza",
+          "codigo": 36028,
+          "asistencia": 3,
+          "1er_parcial": 17,
+          "2do_parcial": 53,
+          "final": 56
+        },
+        {
+          "nombres": "Ana",
+          "apellidos": "Ramírez",
+          "codigo": 12130,
+          "asistencia": 2,
+          "1er_parcial": 5,
+          "2do_parcial": 53,
+          "final": 76
+        },
+        {
+          "nombres": "Sofía",
+          "apellidos": "Vargas",
+          "codigo": 20961,
+          "asistencia": 4,
+          "1er_parcial": 78,
+          "2do_parcial": 81,
+          "final": 12
+        },
+        {
+          "nombres": "Andrés",
+          "apellidos": "Torrez",
+          "codigo": 69703,
+          "asistencia": 3,
+          "1er_parcial": 51,
+          "2do_parcial": 42,
+          "final": 74
+        }
+      ]
+    },
+    {
+      "id": "75fce1cf-566d-4365-9b3b-5d376a766486",
+      "claseId": "06e2e0e4-ac29-4a46-a34f-963586ddb6f3",
+      "students": [
+        {
+          "nombres": "JHONATAN YAMIL",
+          "apellidos": "CABEZAS GOMEZ",
+          "codigo": 70416,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "WENDY EVELYN",
+          "apellidos": "CACERES VASQUEZ",
+          "codigo": 68874,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "LUIS ALEJANDRO",
+          "apellidos": "CALLAPA QUILLA",
+          "codigo": 68881,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ERNESTO",
+          "apellidos": "JUAREZ GUTIERREZ",
+          "codigo": 68763,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DIEGO MARCELO",
+          "apellidos": "LEDEZMA PERALES",
+          "codigo": 68779,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ALEXIA DIANA",
+          "apellidos": "MARIN MAMANI",
+          "codigo": 60855,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "PAOLA REBECA",
+          "apellidos": "NAVARRO SARAVIA",
+          "codigo": 68919,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IVAN IVER",
+          "apellidos": "POMA MAIDANA",
+          "codigo": 70419,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MIGUEL ANGEL",
+          "apellidos": "QUENTA PARDO",
+          "codigo": 68945,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ANDRES RAUL",
+          "apellidos": "SANCHEZ ANDRADE",
+          "codigo": 69017,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN ANDRES",
+          "apellidos": "SANCHEZ NINA",
+          "codigo": 69546,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IAN MARCUS",
+          "apellidos": "TERCEROS VILLEGAS",
+          "codigo": 52277,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN THOMAS",
+          "apellidos": "THOMPSON MACHACA",
+          "codigo": 70835,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DANER ZEIN",
+          "apellidos": "TONCONI MENDOZA",
+          "codigo": 68391,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MARIAN ISABEL",
+          "apellidos": "ZAMORANO ALCAZAR",
+          "codigo": 69283,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "VALERIA",
+          "apellidos": "ZERAIN RIVERA",
+          "codigo": 68019,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        }
+      ]
+    },
+    {
+      "id": "1106565d-3087-4ad3-8f0e-7c035211d09c",
+      "claseId": "d6ad2240-48fc-49e2-b39c-e9a11ca8b4cb",
+      "students": [
+        {
+          "nombres": "JHONATAN YAMIL",
+          "apellidos": "CABEZAS GOMEZ",
+          "codigo": 70416,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "WENDY EVELYN",
+          "apellidos": "CACERES VASQUEZ",
+          "codigo": 68874,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "LUIS ALEJANDRO",
+          "apellidos": "CALLAPA QUILLA",
+          "codigo": 68881,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ERNESTO",
+          "apellidos": "JUAREZ GUTIERREZ",
+          "codigo": 68763,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DIEGO MARCELO",
+          "apellidos": "LEDEZMA PERALES",
+          "codigo": 68779,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ALEXIA DIANA",
+          "apellidos": "MARIN MAMANI",
+          "codigo": 60855,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "PAOLA REBECA",
+          "apellidos": "NAVARRO SARAVIA",
+          "codigo": 68919,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IVAN IVER",
+          "apellidos": "POMA MAIDANA",
+          "codigo": 70419,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MIGUEL ANGEL",
+          "apellidos": "QUENTA PARDO",
+          "codigo": 68945,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ANDRES RAUL",
+          "apellidos": "SANCHEZ ANDRADE",
+          "codigo": 69017,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN ANDRES",
+          "apellidos": "SANCHEZ NINA",
+          "codigo": 69546,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IAN MARCUS",
+          "apellidos": "TERCEROS VILLEGAS",
+          "codigo": 52277,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN THOMAS",
+          "apellidos": "THOMPSON MACHACA",
+          "codigo": 70835,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DANER ZEIN",
+          "apellidos": "TONCONI MENDOZA",
+          "codigo": 68391,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MARIAN ISABEL",
+          "apellidos": "ZAMORANO ALCAZAR",
+          "codigo": 69283,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "VALERIA",
+          "apellidos": "ZERAIN RIVERA",
+          "codigo": 68019,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        }
+      ]
+    },
+    {
+      "id": "adc93006-0db1-42f5-b5de-aec71d0ee0b7",
+      "claseId": "010fc7d6-a320-4efa-adf6-2278b8e2aece",
+      "students": [
+        {
+          "nombres": "JHONATAN YAMIL",
+          "apellidos": "CABEZAS GOMEZ",
+          "codigo": 70416,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "WENDY EVELYN",
+          "apellidos": "CACERES VASQUEZ",
+          "codigo": 68874,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "LUIS ALEJANDRO",
+          "apellidos": "CALLAPA QUILLA",
+          "codigo": 68881,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ERNESTO",
+          "apellidos": "JUAREZ GUTIERREZ",
+          "codigo": 68763,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DIEGO MARCELO",
+          "apellidos": "LEDEZMA PERALES",
+          "codigo": 68779,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ALEXIA DIANA",
+          "apellidos": "MARIN MAMANI",
+          "codigo": 60855,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "PAOLA REBECA",
+          "apellidos": "NAVARRO SARAVIA",
+          "codigo": 68919,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IVAN IVER",
+          "apellidos": "POMA MAIDANA",
+          "codigo": 70419,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MIGUEL ANGEL",
+          "apellidos": "QUENTA PARDO",
+          "codigo": 68945,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ANDRES RAUL",
+          "apellidos": "SANCHEZ ANDRADE",
+          "codigo": 69017,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN ANDRES",
+          "apellidos": "SANCHEZ NINA",
+          "codigo": 69546,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IAN MARCUS",
+          "apellidos": "TERCEROS VILLEGAS",
+          "codigo": 52277,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN THOMAS",
+          "apellidos": "THOMPSON MACHACA",
+          "codigo": 70835,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DANER ZEIN",
+          "apellidos": "TONCONI MENDOZA",
+          "codigo": 68391,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MARIAN ISABEL",
+          "apellidos": "ZAMORANO ALCAZAR",
+          "codigo": 69283,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "VALERIA",
+          "apellidos": "ZERAIN RIVERA",
+          "codigo": 68019,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        }
+      ]
+    },
+    {
+      "id": "b5bceabb-8dc0-4b69-a446-dcadf3dfa5e9",
+      "claseId": "915179c1-5c0c-4d40-8218-68a27c001021",
+      "students": [
+        {
+          "nombres": "JHONATAN YAMIL",
+          "apellidos": "CABEZAS GOMEZ",
+          "codigo": 70416,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "WENDY EVELYN",
+          "apellidos": "CACERES VASQUEZ",
+          "codigo": 68874,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "LUIS ALEJANDRO",
+          "apellidos": "CALLAPA QUILLA",
+          "codigo": 68881,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ERNESTO",
+          "apellidos": "JUAREZ GUTIERREZ",
+          "codigo": 68763,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DIEGO MARCELO",
+          "apellidos": "LEDEZMA PERALES",
+          "codigo": 68779,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ALEXIA DIANA",
+          "apellidos": "MARIN MAMANI",
+          "codigo": 60855,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "PAOLA REBECA",
+          "apellidos": "NAVARRO SARAVIA",
+          "codigo": 68919,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IVAN IVER",
+          "apellidos": "POMA MAIDANA",
+          "codigo": 70419,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MIGUEL ANGEL",
+          "apellidos": "QUENTA PARDO",
+          "codigo": 68945,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ANDRES RAUL",
+          "apellidos": "SANCHEZ ANDRADE",
+          "codigo": 69017,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN ANDRES",
+          "apellidos": "SANCHEZ NINA",
+          "codigo": 69546,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IAN MARCUS",
+          "apellidos": "TERCEROS VILLEGAS",
+          "codigo": 52277,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN THOMAS",
+          "apellidos": "THOMPSON MACHACA",
+          "codigo": 70835,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DANER ZEIN",
+          "apellidos": "TONCONI MENDOZA",
+          "codigo": 68391,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MARIAN ISABEL",
+          "apellidos": "ZAMORANO ALCAZAR",
+          "codigo": 69283,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "VALERIA",
+          "apellidos": "ZERAIN RIVERA",
+          "codigo": 68019,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        }
+      ]
+    },
+    {
+      "id": "f9a6efcc-dd78-4e25-9eb6-3fb6a48d4c54",
+      "claseId": "8d559e93-9c88-4f90-9f74-fb6ca48bd529",
+      "students": [
+        {
+          "nombres": "JHONATAN YAMIL",
+          "apellidos": "CABEZAS GOMEZ",
+          "codigo": 70416,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "WENDY EVELYN",
+          "apellidos": "CACERES VASQUEZ",
+          "codigo": 68874,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "LUIS ALEJANDRO",
+          "apellidos": "CALLAPA QUILLA",
+          "codigo": 68881,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ERNESTO",
+          "apellidos": "JUAREZ GUTIERREZ",
+          "codigo": 68763,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DIEGO MARCELO",
+          "apellidos": "LEDEZMA PERALES",
+          "codigo": 68779,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ALEXIA DIANA",
+          "apellidos": "MARIN MAMANI",
+          "codigo": 60855,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "PAOLA REBECA",
+          "apellidos": "NAVARRO SARAVIA",
+          "codigo": 68919,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IVAN IVER",
+          "apellidos": "POMA MAIDANA",
+          "codigo": 70419,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MIGUEL ANGEL",
+          "apellidos": "QUENTA PARDO",
+          "codigo": 68945,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ANDRES RAUL",
+          "apellidos": "SANCHEZ ANDRADE",
+          "codigo": 69017,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN ANDRES",
+          "apellidos": "SANCHEZ NINA",
+          "codigo": 69546,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "IAN MARCUS",
+          "apellidos": "TERCEROS VILLEGAS",
+          "codigo": 52277,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "ADRIAN THOMAS",
+          "apellidos": "THOMPSON MACHACA",
+          "codigo": 70835,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "DANER ZEIN",
+          "apellidos": "TONCONI MENDOZA",
+          "codigo": 68391,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "MARIAN ISABEL",
+          "apellidos": "ZAMORANO ALCAZAR",
+          "codigo": 69283,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        },
+        {
+          "nombres": "VALERIA",
+          "apellidos": "ZERAIN RIVERA",
+          "codigo": 68019,
+          "asistencia": 0,
+          "1er_parcial": 0,
+          "2do_parcial": 0,
+          "final": 0
+        }
+      ]
+    }
+  ]
+}
