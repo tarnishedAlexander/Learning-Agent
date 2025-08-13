@@ -4,7 +4,7 @@ export interface ProfessorRepositoryPort {
     findByUserId(userId: number): Promise<Professor | null>;
     create(
         code: number,
-        userId: number,
+        userId: string,
         name: string
     ): Promise<Professor>;
     list(): Promise<Professor[]>;
