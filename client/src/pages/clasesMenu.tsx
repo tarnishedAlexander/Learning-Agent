@@ -14,6 +14,9 @@ export function ClassMenu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
+  const goToReforzamiento = () => {
+    navigate('/reforzamiento');
+  };
 
   // 1) Lista base segura
   const clasesSafe = useMemo<Clase[]>(
@@ -91,6 +94,7 @@ export function ClassMenu() {
           />
         </Space>
         <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
+        <Button type="primary" onClick={goToReforzamiento}>page4</Button>
       </div>
 
       <h1>Cursos Actuales</h1>
