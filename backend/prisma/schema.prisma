@@ -7,43 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/* ===========================
-   Auth and User
-   =========================== */
+/**
+ * ===========================
+ * Auth and User
+ * ===========================
+ */
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  isActive  Boolean  @default(true)
+  id       String        @id @default(uuid())
+  email    String        @unique
+  password String
+  isActive Boolean       @default(true)
   // relation 1:N
-  roles     UserRole[]
-  sessions  UserSession[]
+  roles    UserRole[]
+  sessions UserSession[]
 
   //Profiles 1:1
-  teacherProfile TeacherProfile?   @relation("UserTeacherProfile")
-  studentProfile  StudentProfile?  @relation("UserStudentProfile")
+  teacherProfile TeacherProfile? @relation("UserTeacherProfile")
+  studentProfile StudentProfile? @relation("UserStudentProfile")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-/* ===========================
-   Role and permission (RBAC)
-   =========================== */
+/**
+ * ===========================
+ * Role and permission (RBAC)
+ * ===========================
+ */
 
 model Role {
-  id          String          @id @default(uuid())
-  name        String          @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   description String?
   users       UserRole[]
   permissions RolePermission[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model Permission {
-  id          String          @id @default(uuid())
+  id          String           @id @default(uuid())
   action      String
   resource    String
   description String?
@@ -56,8 +60,8 @@ model Permission {
 model UserRole {
   userId String
   roleId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@index([roleId])
@@ -73,35 +77,39 @@ model RolePermission {
   @@index([permissionId])
 }
 
-/* ===========================
-   Profile 1:1
-   =========================== */
+/**
+ * ===========================
+ * Profile 1:1
+ * ===========================
+ */
 
 model TeacherProfile {
-  userId       String   @id
-  user         User     @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
-  title        String?  // Ing., Mgr., PhD, etc.
+  userId       String  @id
+  user         User    @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
+  title        String? // Ing., Mgr., PhD, etc.
   bio          String?
-  academicUnit String?  // departamento/escuela
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  academicUnit String? // departamento/escuela
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model StudentProfile {
-  userId        String   @id
-  user          User     @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
-  code          String   @unique
-  career        String?  // Sistemas, Arquitectura....
+  userId        String  @id
+  user          User    @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
+  code          String  @unique
+  career        String? // Sistemas, Arquitectura....
   admissionYear Int?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-/* ===========================
-   Sessions (login)
-   =========================== */
+/**
+ * ===========================
+ * Sessions (login)
+ * ===========================
+ */
 
 model UserSession {
   id            String   @id @default(uuid())
@@ -115,4 +123,23 @@ model UserSession {
   userAgent     String?
 
   @@index([userId, expiresAt])
+}
+
+/**
+ * ===========================
+ * Exams generation
+ * ===========================
+ */
+
+model Exam {
+  id             String   @id @default(uuid())
+  subject        String
+  difficulty     String // validar en dominio: "fácil" | "medio" | "difícil"
+  attempts       Int
+  totalQuestions Int
+  timeMinutes    Int
+  reference      String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([subject])
 }
