@@ -7,15 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/* ===========================
+   Auth and User
+   =========================== */
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
   isActive  Boolean  @default(true)
+  // relation 1:N
   roles     UserRole[]
+  sessions  UserSession[]
+
+  //Profiles 1:1
+  teacherProfile TeacherProfile?   @relation("UserTeacherProfile")
+  studentProfile  StudentProfile?  @relation("UserStudentProfile")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/* ===========================
+   Role and permission (RBAC)
+   =========================== */
 
 model Role {
   id          String          @id @default(uuid())
@@ -34,7 +49,7 @@ model Permission {
   description String?
   roles       RolePermission[]
 
-  // Nombra la restricción en la BD correctamente con "map"
+  // Key unique
   @@unique([action, resource], map: "action_resource")
 }
 
@@ -45,6 +60,7 @@ model UserRole {
   role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+  @@index([roleId])
 }
 
 model RolePermission {
@@ -54,4 +70,49 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+/* ===========================
+   Profile 1:1
+   =========================== */
+
+model TeacherProfile {
+  userId       String   @id
+  user         User     @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
+  title        String?  // Ing., Mgr., PhD, etc.
+  bio          String?
+  academicUnit String?  // departamento/escuela
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model StudentProfile {
+  userId        String   @id
+  user          User     @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
+  code          String   @unique
+  career        String?  // Sistemas, Arquitectura....
+  admissionYear Int?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/* ===========================
+   Sessions (login)
+   =========================== */
+
+model UserSession {
+  id            String   @id @default(uuid())
+  userId        String
+  token         String
+  refresh_token String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+  ipAddress     String?
+  userAgent     String?
+
+  @@index([userId, expiresAt])
 }
