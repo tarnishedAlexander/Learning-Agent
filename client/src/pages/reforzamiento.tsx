@@ -1,6 +1,8 @@
+// client/src/pages/reforzamiento.tsx
 import { useState } from "react";
-import { Card, Divider, Typography, Avatar, Layout } from "antd";
+import { Card, Divider, Typography, Avatar, Layout, Button } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Title, Text } = Typography;
 const { Content, Sider } = Layout;
@@ -70,31 +72,110 @@ export function StudentProfile() {
       {/* Contenido principal */}
       <Layout style={{ padding: "24px" }}>
         <Content>
-          {/* Sección AWS pegada al panel */}
-          <div style={{ marginLeft: 24 }}>
-            <Title level={2}>AWS</Title>
-            
-            <div style={{ marginTop: 24 }}>
-              <Card style={{ borderRadius: 10, marginBottom: 16 }}>
-                <Title level={5}>Exámenes</Title>
-                <Text>{studentData.aws.exam}</Text>
-              </Card>
-              <Card style={{ borderRadius: 10 }}>
-                <Title level={5}>Entrevistas</Title>
-                <Text>{studentData.aws.interview}</Text>
-              </Card>
-            </div>
-          </div>
+          {/* Contenedor principal dividido en 2 columnas:
+              - left: contenido principal (flex-1)
+              - right: panel con los dos cuadros (fixed width) */}
+          <div
+            style={{
+              display: "flex",
+              gap: 24,
+              alignItems: "flex-start",
+            }}
+          >
+            {/* Columna izquierda: contenido principal */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Title level={2}>AWS</Title>
 
-          {/* Sección de compartir pantalla */}
-          <Divider style={{ marginTop: 48 }} />
-          <div style={{ 
-            background: "#f0f2f5", 
-            padding: 16, 
-            borderRadius: 8,
-            marginTop: 24
-          }}>
-            
+              <div style={{ marginTop: 24 }}>
+                <Card style={{ borderRadius: 10, marginBottom: 16 }}>
+                  <Title level={5}>Exámenes</Title>
+                  <Text>{studentData.aws.exam}</Text>
+                </Card>
+                <Card style={{ borderRadius: 10 }}>
+                  <Title level={5}>Entrevistas</Title>
+                  <Text>{studentData.aws.interview}</Text>
+                </Card>
+              </div>
+
+              {/* Sección de compartir pantalla */}
+              <Divider style={{ marginTop: 48 }} />
+              <div style={{ 
+                background: "#f0f2f5", 
+                padding: 16, 
+                borderRadius: 8,
+                marginTop: 24
+              }}>
+                {/* Contenido adicional (vacío por ahora) */}
+              </div>
+            </div>
+
+            {/* Columna derecha: dos cuadros presionables */}
+            <aside
+              style={{
+                width: 320,
+                minWidth: 220,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {/* Card clickable: Exámenes */}
+              <Link to="/examenes" style={{ textDecoration: "none" }}>
+                <Card
+                  hoverable
+                  role="button"
+                  aria-label="Ir a Exámenes"
+                  style={{
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                  }}
+                  bodyStyle={{ padding: 16 }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <Title level={5} style={{ margin: 0 }}>Exámenes</Title>
+                      <Text type="secondary">Repasa cuestionarios y pruebas</Text>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <Button type="primary">Ir</Button>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+
+              {/* Card clickable: Entrevistas */}
+              <Link to="/entrevistas" style={{ textDecoration: "none" }}>
+                <Card
+                  hoverable
+                  role="button"
+                  aria-label="Ir a Entrevistas"
+                  style={{
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                  }}
+                  bodyStyle={{ padding: 16 }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <Title level={5} style={{ margin: 0 }}>Entrevistas</Title>
+                      <Text type="secondary">Simulaciones y consejos</Text>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <Button type="primary">Ir</Button>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+
+              {/* Texto de ayuda */}
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Haz clic en cualquiera de los cuadros para abrir la página correspondiente.
+                </Text>
+              </div>
+            </aside>
           </div>
         </Content>
       </Layout>
