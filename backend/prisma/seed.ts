@@ -69,6 +69,15 @@ async function main() {
       },
     },
   });
+
+  // crear user
+  const email = 'admin@example.com';
+  const pass = await bcrypt.hash('admin123', 10);
+  await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: { email, password: pass, isActive: true },
+  });
 }
 
 main()
