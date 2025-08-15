@@ -1,4 +1,4 @@
-import { Modal, Form, Input, DatePicker, Button } from 'antd';
+import { Modal, Form, Input, DatePicker, Button, Select } from 'antd';
 import { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 interface CreateClaseModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { Name: string; start_date: string; end_date: string }) => void;
+  onSubmit: (values: { Name: string; start_date: string; end_date: string; semester: string}) => void;
 }
 
 export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) => {
@@ -16,6 +16,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
 
   const validationSchema = Yup.object().shape({
     Name: Yup.string().required('Nombre requerido'),
+    semester: Yup.string().required('Campo requerido'),
     start_date: Yup.date()
       .min(
         new Date(new Date().setDate(new Date().getDate() - 21)),
@@ -35,6 +36,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
     initialValues: {
       id: '',
       Name: '',
+      semester: '',
       start_date: '',
       end_date: ''
     },
@@ -45,6 +47,17 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
       onClose();
     }
   });
+
+  const SEMESTER_TERMS = ['PRIMERO', 'SEGUNDO', 'VERANO', 'INVIERNO'] as const;
+
+  const yearForSemester = formik.values.start_date
+    ? new Date(formik.values.start_date).getFullYear()
+    : new Date().getFullYear();
+
+  const semesterOptions = SEMESTER_TERMS.map((t) => ({
+    label: `${t}${yearForSemester}`,
+    value: `${t}${yearForSemester}`,
+  }));
 
   return (
     <Modal open={open} onCancel={onClose} onOk={() => {}} footer={null} centered title="Añadir Curso">
@@ -57,6 +70,21 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         >
           <Input name="Name" value={formik.values.Name} onChange={formik.handleChange} onBlur={formik.handleBlur} />
         </Form.Item>
+
+        <Form.Item
+        style={{width:'100%'}}
+        label="Semestre"
+        validateStatus={formik.errors.semester && formik.touched.semester ? 'error' : ''}
+        help={formik.touched.semester && formik.errors.semester}
+      >
+        <Select
+          placeholder="Selecciona semestre"
+          options={semesterOptions}
+          value={formik.values.semester || undefined}
+          onChange={(val) => formik.setFieldValue('semester', val)}
+          onBlur={() => formik.setFieldTouched('semester', true)}
+        />
+      </Form.Item>
 
         <Form.Item
         style={{width:'100%'}}
@@ -83,6 +111,10 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
                 autoEnd.setDate(autoEnd.getDate() + 34);
                 const autoEndISO = autoEnd.toISOString().split('T')[0];
                 formik.setFieldValue('end_date', autoEndISO);
+
+                const year = date.getFullYear();
+                const match = formik.values.semester?.match(/^(PRIMERO|SEGUNDO|VERANO|INVIERNO)\d{4}$/);
+                if (match) formik.setFieldValue('semester', `${match[1]}${year}`);
               }
             }}
           />
