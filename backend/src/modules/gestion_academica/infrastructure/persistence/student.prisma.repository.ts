@@ -18,7 +18,7 @@ export class StudentPrismaRepository implements StudentRepositoryPort {
         );
     };
 
-    async create(userId: string, code: number, career?: string, admissionYear?: number): Promise<Student> {
+    async create(userId: string, code: string, career?: string, admissionYear?: number): Promise<Student> {
         const newStudent = await this.prisma.studentProfile.create({
             data: {
                 userId,

@@ -3,7 +3,7 @@ export interface StudentRepositoryPort {
     findByUserId(userId: string): Promise<Student | null>;
     create(
         userId: string,
-        code: number,
+        code: string,
         career?: string,
         admissionYear?: number,
     ): Promise<Student>;
