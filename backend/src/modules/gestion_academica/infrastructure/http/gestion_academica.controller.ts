@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
-import { CreateStudentDto } from './dtos/create-student.dto';
+import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
 import { ListClassesUseCase } from '../../application/queries/list-classes.usecase';
-import { CreateStudentUseCase } from '../../application/commands/create-student.usecase';
+import { CreateStudentProfileUseCase } from '../../application/commands/create-student-profile.usecase';
 
-@Controller('gestiona_academica')
+@Controller('gestion_academica')
 export class Gestion_academicaController{
     constructor(
         private readonly createClasses: CreateClassUseCase,
-        private readonly createStudent: CreateStudentUseCase,
+        private readonly createProfileStudent: CreateStudentProfileUseCase,
         private readonly listClasses: ListClassesUseCase,
     ) {}
     @Post('classes')
@@ -21,8 +21,8 @@ export class Gestion_academicaController{
         return this.listClasses.execute();
     }
     @Post('students')
-    createStudentEndpoint(@Body() dto: CreateStudentDto) {
-      return this.createStudent.execute(dto);
+    createStudentEndpoint(@Body() dto: CreateStudentProfileDto) {
+      return this.createProfileStudent.execute(dto);
     }
     @Get('students')
     listStudentEndPoint(){
