@@ -10,7 +10,7 @@ function parseISO(d: string | Date): Date {
 }
 
 export function ClassMenu() {
-  const { clases, addClases } = useClasses(); // ideal: que devuelva [] por defecto
+  const { clases, addClases } = useClasses(); 
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
