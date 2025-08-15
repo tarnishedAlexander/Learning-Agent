@@ -6,6 +6,16 @@ import { Student } from '../../domain/entities/student.entity';
 @Injectable()
 export class StudentPrismaRepository implements StudentRepositoryPort {
     constructor(private readonly prisma: PrismaService) { }
+    async findByCode(code: string): Promise<Student | null> {
+        const student = await this.prisma.studentProfile.findUnique({ where: { code } });
+        if (!student) return null;
+        return new Student(
+            student.userId,
+            student.code,
+            student.career || undefined,
+            student.admissionYear || undefined
+        );
+    }
 
     async findByUserId(userId: string): Promise<Student | null> {
         const student = await this.prisma.studentProfile.findUnique({ where: { userId } });
