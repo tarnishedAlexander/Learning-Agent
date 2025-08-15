@@ -1,13 +1,18 @@
-import './App.css'
-import { AppRoutes } from './routes/routes'
+
+import { ConfigProvider, App as AntApp } from "antd";
+
+import { lightTheme } from "./theme";
+import { AppRoutes } from "./routes/routes";
+import "./App.css";
 
 function App() {
-
   return (
-    <>
-      <AppRoutes/>
-    </>
-  )
+    <ConfigProvider theme={lightTheme}>
+      <AntApp>
+        <AppRoutes />
+      </AntApp>
+    </ConfigProvider>
+  );
 }
 
-export default App
+export default App;
