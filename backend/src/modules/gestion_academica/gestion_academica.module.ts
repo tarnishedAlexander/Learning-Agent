@@ -12,6 +12,7 @@ import { StudentPrismaRepository } from './infrastructure/persistence/student.pr
 import { UserPrismaRepository } from './infrastructure/persistence/user.prisma.repository';
 import { Gestion_academicaController } from './infrastructure/http/gestion_academica.controller';
 import { ListClassesUseCase } from './application/queries/list-classes.usecase';
+import { ListStudentsUseCase } from './application/queries/list-student.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -20,9 +21,9 @@ import { ListClassesUseCase } from './application/queries/list-classes.usecase';
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
     {provide: STUDENT_REPO,  useClass: StudentPrismaRepository}  ,
     {provide: USER_REPO,  useClass: UserPrismaRepository}  ,
-    // { provide: PERM_REPO, useClass: PermissionPrismaRepository },
     CreateClassUseCase,
     ListClassesUseCase,
+    ListStudentsUseCase,
     CreateStudentUseCase,
     CreateUserUseCase,
     CreateStudentProfileUseCase,

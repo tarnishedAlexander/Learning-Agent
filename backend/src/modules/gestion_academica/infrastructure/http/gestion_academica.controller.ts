@@ -3,6 +3,7 @@ import { CreateClassUseCase } from '../../application/commands/create-clase.usec
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
 import { ListClassesUseCase } from '../../application/queries/list-classes.usecase';
+import { ListStudentsUseCase } from '../../application/queries/list-student.usecase';
 import { CreateStudentProfileUseCase } from '../../application/commands/create-student-profile.usecase';
 
 @Controller('gestion_academica')
@@ -11,6 +12,7 @@ export class Gestion_academicaController{
         private readonly createClasses: CreateClassUseCase,
         private readonly createProfileStudent: CreateStudentProfileUseCase,
         private readonly listClasses: ListClassesUseCase,
+        private readonly listStudents: ListStudentsUseCase,
     ) {}
     @Post('classes')
     createClassEndpoint(@Body() dto: CreateClassDto) {
@@ -26,7 +28,7 @@ export class Gestion_academicaController{
     }
     @Get('students')
     listStudentEndPoint(){
-        return this.listClasses.execute();
+        return this.listStudents.execute();
     }
 
 }

@@ -4,7 +4,7 @@ import type {StudentRepositoryPort } from '../../domain/ports/student.repository
 import {Student} from '../../domain/entities/student.entity'
 
 @Injectable()
-export class ListClassesUseCase {
+export class ListStudentsUseCase {
   constructor(
     @Inject(STUDENT_REPO) private readonly classRepo: StudentRepositoryPort,
   ) {}
