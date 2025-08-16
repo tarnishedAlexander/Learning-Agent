@@ -10,7 +10,6 @@ export class ListExamsQueryHandler {
   ) {}
 
   async execute() {
-    // En el futuro implementas list() en el repositorio
     return [];
   }
 }

@@ -20,7 +20,6 @@ export class ExamFactory {
       throw new DomainError('Materia (subject) es obligatoria y no puede estar vacía.');
     }
 
-    // Si quieres limitar caracteres “prohibidos” en referencia:
     const reference = props.reference?.trim();
     if (reference && /[<>]/.test(reference)) {
       throw new DomainError('Referencia contiene caracteres no permitidos.');
