@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, Divider, Typography, Avatar, Layout, FloatButton, Modal, Input, Button } from "antd";
 import { UserOutlined, MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
@@ -37,6 +37,7 @@ export function StudentProfile() {
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const chatBodyRef = useRef<HTMLDivElement>(null);
 
   // Datos del estudiante
   const studentData = {
@@ -57,9 +58,10 @@ export function StudentProfile() {
     ]
   };
 
-  // Función para abrir el chat con animación de "escribiendo"
+  // Función para abrir el chat con animación de "escribiendo" antes del mensaje
   const handleChatClick = () => {
     setIsChatOpen(true);
+    setMessages([]); // Limpiar mensajes para asegurar que la animación ocurra primero
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -90,6 +92,13 @@ export function StudentProfile() {
       }, 2000);
     }
   };
+
+  // Desplazar automáticamente al mensaje más reciente
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
 
   return (
     <Layout style={layoutStyle}>
@@ -183,7 +192,7 @@ export function StudentProfile() {
         overflowY: "auto"
       }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-          {/* Título principal cambiado a AWS */}
+          {/* Título principal cambiado a la materia activa */}
           <Typography.Title
             level={1}
             style={{
@@ -193,7 +202,7 @@ export function StudentProfile() {
               fontSize: "30px"
             }}
           >
-            AWS Academy
+            {activeSubject}
           </Typography.Title>
 
           {/* Tarjetas de cursos */}
@@ -296,16 +305,16 @@ export function StudentProfile() {
         </div>
       </Layout.Content>
 
-      {/* --- MODAL DE CHAT (MÁS ANCHO) --- */}
+      {/* --- MODAL DE CHAT (MÁS ANCHO Y RESPONSIVO) --- */}
       <Modal
         title={null}
         open={isChatOpen}
         onCancel={() => setIsChatOpen(false)}
         footer={null}
-        width={500} // Modal más ancho como solicitado
+        width="90vw" // Modal responsivo con ancho relativo
+        style={{ top: "40px", maxWidth: "500px" }} // Limite máximo y centrado
         closable={false}
         bodyStyle={{ padding: 0, borderRadius: "20px" }}
-        style={{ top: "40px" }}
       >
         <div style={{
           height: '520px',
@@ -347,14 +356,18 @@ export function StudentProfile() {
           </div>
 
           {/* Cuerpo del chat */}
-          <div style={{ 
-            flex: 1, 
-            overflowY: 'auto', 
-            padding: '24px',
-            background: "#F9FAFF",
-            display: "flex",
-            flexDirection: "column"
-          }}>
+          <div 
+            ref={chatBodyRef}
+            style={{ 
+              flex: 1, 
+              overflowY: 'auto', 
+              padding: '24px',
+              background: "#F9FAFF",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px"
+            }}
+          >
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -365,15 +378,15 @@ export function StudentProfile() {
                   borderRadius: message.sender === 'user' ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
                   marginLeft: message.sender === 'user' ? "auto" : "0",
                   marginRight: message.sender === 'user' ? "0" : "auto",
-                  marginBottom: "16px",
-                  maxWidth: "80%",
+                  maxWidth: "80%", // Asegura que las burbujas sean responsivas
                   boxShadow: message.sender === 'user' 
                     ? "0 4px 12px rgba(58, 56, 160, 0.15)" 
                     : "0 4px 12px rgba(0, 0, 0, 0.05)",
                   animation: "fadeInUp 0.3s ease-out",
                   animationDelay: `${index * 0.05}s`,
                   opacity: 0,
-                  animationFillMode: "forwards"
+                  animationFillMode: "forwards",
+                  wordBreak: "break-word" // Evita desbordamiento de texto largo
                 }}
               >
                 {message.text}
@@ -552,6 +565,17 @@ export function StudentProfile() {
             to { 
               opacity: 1;
               transform: scale(1);
+            }
+          }
+
+          /* Media queries para responsividad */
+          @media (max-width: 768px) {
+            .ant-modal {
+              max-width: 90vw !important;
+              margin: 0 auto;
+            }
+            .ant-modal-content {
+              padding: 0 !important;
             }
           }
         `}
