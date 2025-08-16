@@ -8,27 +8,27 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   password  String
-  isActive  Boolean  @default(true)
+  isActive  Boolean    @default(true)
   roles     UserRole[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model Role {
-  id          String          @id @default(uuid())
-  name        String          @unique
+  id          String           @id @default(uuid())
+  name        String           @unique
   description String?
   users       UserRole[]
   permissions RolePermission[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model Permission {
-  id          String          @id @default(uuid())
+  id          String           @id @default(uuid())
   action      String
   resource    String
   description String?
@@ -41,8 +41,8 @@ model Permission {
 model UserRole {
   userId String
   roleId String
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
 }
@@ -54,4 +54,17 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+}
+
+model Exam {
+  id             String   @id @default(uuid())
+  subject        String
+  difficulty     String // validar en dominio: "fácil" | "medio" | "difícil"
+  attempts       Int
+  totalQuestions Int
+  timeMinutes    Int
+  reference      String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([subject])
 }
