@@ -4,6 +4,7 @@ import { Card, Row, Col, Input, Button, Space, Empty } from "antd";
 import { CursosForm } from "../components/cursosForm";
 import type { Clase } from "../interfaces/claseInterface";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 function parseISO(d: string | Date): Date {
   return d instanceof Date ? d : new Date(d);
@@ -25,21 +26,21 @@ export function ClassMenu() {
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
-    return clasesSafe.filter((cl) => (cl.Name ?? "").toLowerCase().includes(term));
+    return clasesSafe.filter((cl) => (cl.name ?? "").toLowerCase().includes(term));
   }, [clasesSafe, searchTerm]);
 
   // 3) Actuales / Pasados derivados
   const { cursosActuales, cursosPasados } = useMemo(() => {
     const now = new Date();
     const byEndDesc = (a: Clase, b: Clase) =>
-      parseISO(b.end_date).getTime() - parseISO(a.end_date).getTime();
+      parseISO(b.dateEnd).getTime() - parseISO(a.dateEnd).getTime();
 
     const actuales = filteredClases
-      .filter((cl) => parseISO(cl.end_date) >= now)
+      .filter((cl) => parseISO(cl.dateEnd) >= now)
       .sort(byEndDesc);
 
     const pasados = filteredClases
-      .filter((cl) => parseISO(cl.end_date) < now)
+      .filter((cl) => parseISO(cl.dateEnd) < now)
       .sort(byEndDesc);
 
     return { cursosActuales: actuales, cursosPasados: pasados };
@@ -61,9 +62,9 @@ export function ClassMenu() {
               onClick={() => goToStudents(clase.id)}
               style={{ width: "100%", height: 200, textAlign: "center", borderRadius: 20 }}
             >
-              <h2>{clase.Name}</h2>
-              <p>Inicio: {String(clase.start_date)}</p>
-              <p>Fin: {String(clase.end_date)}</p>
+              <h2>{clase.name}</h2>
+              <p>Inicio: {dayjs(clase.dateBegin).format('DD/MM/YYYY')}</p>
+              <p>Fin: {dayjs(clase.dateEnd).format('DD/MM/YYYY')}</p>
             </Card>
           </Col>
         ))}

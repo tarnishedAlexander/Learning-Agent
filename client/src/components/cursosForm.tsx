@@ -8,37 +8,37 @@ import dayjs from 'dayjs';
 interface CreateClaseModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { Name: string; start_date: string; end_date: string; semester: string}) => void;
+  onSubmit: (values: { name: string; dateBegin: string; dateEnd: string; semester: string; teacherId: string}) => void;
 }
 
 export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
 
   const validationSchema = Yup.object().shape({
-    Name: Yup.string().required('Nombre requerido'),
+    name: Yup.string().required('Nombre requerido'),
     semester: Yup.string().required('Campo requerido'),
-    start_date: Yup.date()
+    dateBegin: Yup.date()
       .min(
         new Date(new Date().setDate(new Date().getDate() - 21)),
         'La fecha debe ser como máximo 3 semanas antes de hoy'
       )
       .required('Inicio requerido'),
-    end_date: Yup.date()
+    dateEnd: Yup.date()
       .test('is-after-start', 'El fin debe ser después del inicio', function (value) {
-        const { start_date } = this.parent;
-        if (!start_date || !value) return false;
-        return new Date(value) > new Date(start_date);
+        const { dateBegin } = this.parent;
+        if (!dateBegin || !value) return false;
+        return new Date(value) > new Date(dateBegin);
       })
       .required('Fin requerido'),
   });
 
   const formik = useFormik({
     initialValues: {
-      id: '',
-      Name: '',
+      name: '',
       semester: '',
-      start_date: '',
-      end_date: ''
+      dateBegin: '',
+      dateEnd: '',
+      teacherId: 'test6', //TODO - Aun no contamos con login, valor por defecto
     },
     validationSchema,
     onSubmit: (values, { resetForm }) => {
@@ -50,8 +50,8 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
 
   const SEMESTER_TERMS = ['PRIMERO', 'SEGUNDO', 'VERANO', 'INVIERNO'] as const;
 
-  const yearForSemester = formik.values.start_date
-    ? new Date(formik.values.start_date).getFullYear()
+  const yearForSemester = formik.values.dateBegin
+    ? new Date(formik.values.dateBegin).getFullYear()
     : new Date().getFullYear();
 
   const semesterOptions = SEMESTER_TERMS.map((t) => ({
@@ -65,10 +65,10 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         <Form.Item
           style={{width:'100%'}}
           label="Nombre"
-          validateStatus={formik.errors.Name && formik.touched.Name ? 'error' : ''}
-          help={formik.touched.Name && formik.errors.Name}
+          validateStatus={formik.errors.name && formik.touched.name ? 'error' : ''}
+          help={formik.touched.name && formik.errors.name}
         >
-          <Input name="Name" value={formik.values.Name} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+          <Input name="name" value={formik.values.name} onChange={formik.handleChange} onBlur={formik.handleBlur} />
         </Form.Item>
 
         <Form.Item
@@ -89,8 +89,8 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         <Form.Item
         style={{width:'100%'}}
           label="Inicio de Módulo"
-          validateStatus={formik.errors.start_date && formik.touched.start_date ? 'error' : ''}
-          help={formik.touched.start_date && formik.errors.start_date}
+          validateStatus={formik.errors.dateBegin && formik.touched.dateBegin ? 'error' : ''}
+          help={formik.touched.dateBegin && formik.errors.dateBegin}
         >
           <DatePicker
             style={{ width: '100%' }}
@@ -104,13 +104,13 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
               setStartDate(date || null);
               if (date) {
                 const isoDate = date.toISOString().split('T')[0];
-                formik.setFieldValue('start_date', isoDate);
+                formik.setFieldValue('dateBegin', isoDate);
 
                 // Autocalcular end_date 34 días después
                 const autoEnd = new Date(date);
                 autoEnd.setDate(autoEnd.getDate() + 34);
                 const autoEndISO = autoEnd.toISOString().split('T')[0];
-                formik.setFieldValue('end_date', autoEndISO);
+                formik.setFieldValue('dateEnd', autoEndISO);
 
                 const year = date.getFullYear();
                 const match = formik.values.semester?.match(/^(PRIMERO|SEGUNDO|VERANO|INVIERNO)\d{4}$/);
@@ -123,8 +123,8 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         <Form.Item
         style={{width:'100%'}}
           label="Fin de Módulo"
-          validateStatus={formik.errors.end_date && formik.touched.end_date ? 'error' : ''}
-          help={formik.touched.end_date && formik.errors.end_date}
+          validateStatus={formik.errors.dateEnd && formik.touched.dateEnd ? 'error' : ''}
+          help={formik.touched.dateEnd && formik.errors.dateEnd}
         >
           <DatePicker
             style={{ width: '100%' }}
@@ -132,11 +132,11 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
               if (!startDate) return false;
               return current && current.toDate() <= startDate;
             }}
-            value={formik.values.end_date ? dayjs(formik.values.end_date) : undefined}
+            value={formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined}
 
             onChange={(value) => {
               const date = value?.toDate();
-              formik.setFieldValue('end_date', date?.toISOString().split('T')[0]);
+              formik.setFieldValue('dateEnd', date?.toISOString().split('T')[0]);
             }}
           />
         </Form.Item>

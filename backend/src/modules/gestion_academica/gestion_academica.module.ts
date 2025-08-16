@@ -17,6 +17,7 @@ import { EnrollmentPrismaRepository } from './infrastructure/persistence/enrollm
 import { GetClassesByStudentUseCase } from './application/queries/get-classes-by-student.usecase';
 import { GetStudentsByClassUseCase } from './application/queries/get-students-by-class.usecase';
 import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
+import { GetClassByIdUseCase } from './application/queries/get-class-by-id.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -28,6 +29,7 @@ import { CreateEnrollmentUseCase } from './application/commands/create-enrollmen
     {provide: ENROLLMENT_REPO, useClass: EnrollmentPrismaRepository},
     ListClassesUseCase,
     ListStudentsUseCase,
+    GetClassByIdUseCase,
     GetClassesByStudentUseCase,
     GetStudentsByClassUseCase,
     CreateClassUseCase,
