@@ -25,16 +25,20 @@ export class AIQuestionGenerator implements AIQuestionGeneratorPort {
   }): Promise<Question[]> {
     const prompt = PromptBuilder.build(params);
 
-    // Llamada a Gemini
-    const resp = await this.model.generateContent(prompt);
+    // ✅ Llamada a Gemini con configuración de generación
+    const resp = await this.model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: this.cfg.maxOutputTokens ?? 512,
+        temperature: this.cfg.temperature ?? 0.2,
+      },
+    });
 
-    // SDK de Gemini: texto en `resp.response.text()`
     const contentText = resp?.response?.text?.() ?? '';
     if (!contentText) {
       throw new Error('AI response vacío.');
     }
 
-    // La respuesta DEBE ser JSON (según el prompt builder)
     let rawList: any[];
     try {
       rawList = JSON.parse(contentText);
@@ -42,14 +46,11 @@ export class AIQuestionGenerator implements AIQuestionGeneratorPort {
       throw new Error('AI response no es JSON válido.');
     }
 
-    // Mapear a entidad de dominio
-    const questions = rawList.map((q) => {
+    return rawList.map((q) => {
       const type = q?.type === 'multiple_choice' ? 'multiple_choice' : 'open';
       const text = String(q?.text ?? '').trim();
       const options = type === 'multiple_choice' ? q?.options ?? [] : null;
       return new Question(type, text, options);
     });
-
-    return questions;
   }
 }

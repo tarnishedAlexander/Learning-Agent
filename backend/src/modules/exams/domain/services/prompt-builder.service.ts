@@ -1,26 +1,20 @@
+// src/modules/exams/domain/services/prompt-builder.service.ts
 export class PromptBuilder {
-  static build(params: {
+  static build(p: {
     subject: string;
-    difficulty: 'fácil' | 'medio' | 'difícil';
+    difficulty: 'fácil'|'medio'|'difícil';
     totalQuestions: number;
-    reference?: string | null;
-    preferredType?: 'open' | 'multiple_choice' | 'mixed';
+    reference?: string|null;
+    preferredType?: 'open'|'multiple_choice'|'mixed';
   }) {
-    const { subject, difficulty, totalQuestions, reference, preferredType } = params;
-
-    const base = [
-      `Genera ${totalQuestions} preguntas para un examen.`,
-      `Materia: ${subject}`,
-      `Dificultad: ${difficulty}`,
-      reference ? `Material de referencia: ${reference}` : null,
-      preferredType ? `Formato preferido: ${preferredType}` : `Formato: mixed`,
-      `Responde estrictamente en JSON con este esquema:`,
-      `[{ "type": "open" | "multiple_choice", "text": "string", "options": ["A", "B", "C", "D"]? }]`,
-      `Si "type" es "open", omite "options".`,
-      `Si "type" es "multiple_choice", incluye 3-5 opciones.`,
-      `No incluyas comentarios ni texto fuera del JSON.`,
-    ].filter(Boolean).join('\n');
-
-    return base;
+    // Menos palabras = menos tokens
+    return [
+      `Genera ${p.totalQuestions} preguntas JSON puro (sin texto extra).`,
+      `Materia: ${p.subject}. Dificultad: ${p.difficulty}.`,
+      p.reference ? `Referencia: ${p.reference}.` : null,
+      `Formato: ${p.preferredType ?? 'mixed'}. Esquema:`,
+      `[{"type":"open"|"multiple_choice","text":"string","options":["A","B","C","D"]?}]`,
+      `Si "open": sin "options". Si "multiple_choice": 3-5 opciones.`,
+    ].filter(Boolean).join(' ');
   }
 }
