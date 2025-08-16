@@ -17,17 +17,17 @@ export function StudentsCurso() {
   const columns = [
     {
       title: "Nombres",
-      dataIndex: "nombres",
+      dataIndex: "name",
       key: "nombres",
     },
     {
       title: "Apellidos",
-      dataIndex: "apellidos",
+      dataIndex: "lastname",
       key: "apellidos",
     },
     {
       title: "Código",
-      dataIndex: "codigo",
+      dataIndex: "code",
       key: "codigo",
     },
     {
@@ -66,8 +66,8 @@ export function StudentsCurso() {
       </div>
         <Table
           columns={columns}
-          dataSource={students?.students || []}
-          rowKey={(record) => record.codigo}
+          dataSource={students || []}
+          rowKey={(record) => record.code}
           pagination={{ pageSize: 20 }}
           bordered
         />
@@ -82,12 +82,7 @@ export function StudentsCurso() {
               disabled={!!students}
               onStudentsParsed={(parsedStudents) => {
                 console.log("Estudiantes leídos:", parsedStudents);
-                if (id) {
-                  createStudents({
-                    claseId: id,
-                    students: parsedStudents,
-                  })
-                }
+                //TODO manejar la subida de estudiantes
               }}
             />
           </Card>

@@ -1,7 +1,18 @@
 import { apiClient } from "../api/apiClient";
-import type { StudentGroup } from "../interfaces/studentInterface";
+import type { StudentInfo, StudentGroup } from "../interfaces/studentInterface";
 
 export const studentService = {
+
+  async getStudentsByClassId(classId: string): Promise<StudentInfo[]> {
+    try {
+      const response = await apiClient.get(`/gestion_academica/students/by-class/${classId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch students by classId", error);
+      throw error;
+    }
+  },
+
   async getStudentGroups(): Promise<StudentGroup[]> {
     try {
       const response = await apiClient.get("/students");
