@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
-import { CLASSES_REPO } from './tokens';
+import { CLASSES_REPO, ENROLLMENT_REPO } from './tokens';
 import { STUDENT_REPO } from './tokens';
 import { USER_REPO } from './tokens';
 import { CreateClassUseCase } from './application/commands/create-clase.usecase';
@@ -13,6 +13,10 @@ import { UserPrismaRepository } from './infrastructure/persistence/user.prisma.r
 import { Gestion_academicaController } from './infrastructure/http/gestion_academica.controller';
 import { ListClassesUseCase } from './application/queries/list-classes.usecase';
 import { ListStudentsUseCase } from './application/queries/list-student.usecase';
+import { EnrollmentPrismaRepository } from './infrastructure/persistence/enrollment.prisma.repository';
+import { GetClassesByStudentUseCase } from './application/queries/get-classes-by-student.usecase';
+import { GetStudentsByClassUseCase } from './application/queries/get-students-by-class.usecase';
+import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -21,10 +25,14 @@ import { ListStudentsUseCase } from './application/queries/list-student.usecase'
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
     {provide: STUDENT_REPO,  useClass: StudentPrismaRepository}  ,
     {provide: USER_REPO,  useClass: UserPrismaRepository}  ,
-    CreateClassUseCase,
+    {provide: ENROLLMENT_REPO, useClass: EnrollmentPrismaRepository},
     ListClassesUseCase,
     ListStudentsUseCase,
+    GetClassesByStudentUseCase,
+    GetStudentsByClassUseCase,
+    CreateClassUseCase,
     CreateStudentUseCase,
+    CreateEnrollmentUseCase,
     CreateUserUseCase,
     CreateStudentProfileUseCase,
   ],
