@@ -1,10 +1,10 @@
-import jsonInstance from "../api/jsonIntance";
+import { apiClient } from "../api/apiClient";
 import type { Clase } from "../interfaces/claseInterface";
 
 export const claseService = {
   async getClases(): Promise<Clase[]> {
     try {
-      const response = await jsonInstance.get("/clases");
+      const response = await apiClient.get("/clases");
       return response.data;
     } catch (error) {
       console.error("Failed to fetch clases", error);
@@ -14,7 +14,7 @@ export const claseService = {
 
   async getClaseById(id: string): Promise<Clase> {
     try {
-      const response = await jsonInstance.get(`/clases/${id}`);
+      const response = await apiClient.get(`/clases/${id}`);
       return response.data;
     } catch (error) {
       console.error("Failed to fetch clase", error);
@@ -24,7 +24,7 @@ export const claseService = {
 
   async createClase(clase: Omit<Clase, "id">): Promise<Clase> {
     try {
-      const response = await jsonInstance.post("/clases", clase);
+      const response = await apiClient.post("/clases", clase);
       return response.data;
     } catch (error) {
       console.error("Failed to create clase", error);
@@ -34,7 +34,7 @@ export const claseService = {
 
   async updateClase(id: string, claseData: Partial<Clase>): Promise<Clase> {
     try {
-      const response = await jsonInstance.patch(`/clases/${id}`, claseData);
+      const response = await apiClient.patch(`/clases/${id}`, claseData);
       return response.data;
     } catch (error) {
       console.error("Failed to update clase", error);
@@ -44,7 +44,7 @@ export const claseService = {
 
   async deleteClase(id: string): Promise<void> {
     try {
-      await jsonInstance.delete(`/clases/${id}`);
+      await apiClient.delete(`/clases/${id}`);
     } catch (error) {
       console.error("Failed to delete clase", error);
       throw error;
