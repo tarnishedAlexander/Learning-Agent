@@ -3,7 +3,6 @@ import { EXAM_REPO } from '../../tokens';
 import type { ExamRepositoryPort } from '../../domain/ports/exam.repository.port';
 import { ExamFactory } from '../../domain/entities/exam.factory';
 
-// 📌 DTO de aplicación: los datos que se reciben para crear un examen
 export class CreateExamCommand {
   constructor(
     public readonly subject: string,
@@ -15,7 +14,6 @@ export class CreateExamCommand {
   ) {}
 }
 
-// 📌 Handler: ejecuta el caso de uso asociado al comando
 export class CreateExamCommandHandler {
   constructor(
     @Inject(EXAM_REPO) private readonly repo: ExamRepositoryPort,

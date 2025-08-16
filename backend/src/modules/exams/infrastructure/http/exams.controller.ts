@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, UsePipes, ValidationPipe, HttpCode } from '@nestjs/common';
 import { CreateExamDto } from './dtos/create-exam.dto';
 import { CreateExamCommand, CreateExamCommandHandler } from '../../application/commands/create-exam.command';
 
@@ -7,6 +7,7 @@ export class ExamsController {
   constructor(private readonly createExamHandler: CreateExamCommandHandler) {}
 
   @Post()
+  @HttpCode(200) //fuerza codigo 200 de confirmacion
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async create(@Body() dto: CreateExamDto) {
     const command = new CreateExamCommand(

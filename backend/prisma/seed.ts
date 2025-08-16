@@ -1,30 +1,86 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const permManageUsers = await prisma.permission.upsert({
-    where: { action_resource: { action: 'manage', resource: 'users' } },
+  // --- Crear Roles ---
+  const docenteRole = await prisma.role.upsert({
+    where: { name: 'docente' },
     update: {},
-    create: { action: 'manage', resource: 'users', description: 'CRUD users' },
+    create: {
+      name: 'docente',
+      description: 'Docente que dicta materias',
+    },
   });
 
-  const roleAdmin = await prisma.role.upsert({
-    where: { name: 'admin' },
+  const estudianteRole = await prisma.role.upsert({
+    where: { name: 'estudiante' },
     update: {},
-    create: { name: 'admin', description: 'Administrator' },
+    create: {
+      name: 'estudiante',
+      description: 'Estudiante inscrito en materias',
+    },
   });
 
-  await prisma.rolePermission.upsert({
-    where: {
-      roleId_permissionId: {
-        roleId: roleAdmin.id,
-        permissionId: permManageUsers.id,
+  // --- Hash de contraseñas ---
+  const docentePassword = await bcrypt.hash('Docente123!', 10);
+  const estudiantePassword = await bcrypt.hash('Estudiante123!', 10);
+
+  // --- Crear usuario docente ---
+  const docente = await prisma.user.create({
+    data: {
+      email: 'docente@example.com',
+      password: docentePassword,
+      isActive: true,
+      roles: {
+        create: [{ roleId: docenteRole.id }],
+      },
+      teacherProfile: {
+        create: {
+          academicUnit: 'Ingeniería de Sistemas',
+          title: 'Ing.',
+          bio: 'Docente de bases de datos avanzadas',
+        },
       },
     },
+  });
+
+  // --- Crear usuario estudiante ---
+  const estudiante = await prisma.user.create({
+    data: {
+      email: 'estudiante@example.com',
+      password: estudiantePassword,
+      isActive: true,
+      roles: {
+        create: [{ roleId: estudianteRole.id }],
+      },
+      studentProfile: {
+        create: {
+          code: '2025001',
+          career: 'Ingeniería de Sistemas',
+          admissionYear: 2025,
+        },
+      },
+    },
+  });
+
+  // crear user
+  const email = 'admin@example.com';
+  const pass = await bcrypt.hash('admin123', 10);
+  await prisma.user.upsert({
+    where: { email },
     update: {},
-    create: { roleId: roleAdmin.id, permissionId: permManageUsers.id },
+    create: { email, password: pass, isActive: true },
   });
 }
 
-main().finally(() => prisma.$disconnect());
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
