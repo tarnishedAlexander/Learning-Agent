@@ -30,10 +30,8 @@ const [students,setStudents]=useState<StudentInfo[]>([])
   }
 
   const fetchClase = async (id:string)=>{
-    //TODO - Todavía no se implmentó el endpoint de clase por id
-    //const curso = await claseService.getClaseById(id)
-    setCurso("Curso de Prueba")   //Aqui debería ir el nombre del curso obtenido del endpoint
-
+    const curso = await claseService.getClaseById(id)
+    setCurso(curso.name)   
     const students = await studentService.getStudentsByClassId(id)
     setStudents(students)
   }

@@ -12,7 +12,6 @@ export const claseService = {
     }
   },
   
-  //TODO - Falta implementar el endpoint de clase por id
   async getClaseById(id: string): Promise<Clase> {
     try {
       const response = await apiClient.get(`/gestion_academica/classes/${id}`);

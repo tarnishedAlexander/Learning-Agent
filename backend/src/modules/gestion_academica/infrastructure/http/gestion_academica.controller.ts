@@ -9,12 +9,14 @@ import { CreateEnrollmentUseCase } from '../../application/commands/create-enrol
 import { CreateEnrollmentDto } from './dtos/create-enrollment.dto';
 import { GetClassesByStudentUseCase } from '../../application/queries/get-classes-by-student.usecase';
 import { GetStudentsByClassUseCase } from '../../application/queries/get-students-by-class.usecase';
+import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
 
 @Controller('gestion_academica')
 export class Gestion_academicaController {
   constructor(
     private readonly listClasses: ListClassesUseCase,
     private readonly listStudents: ListStudentsUseCase,
+    private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
     private readonly createClasses: CreateClassUseCase,
@@ -28,6 +30,10 @@ export class Gestion_academicaController {
   @Get('students')
   listStudentEndPoint() {
     return this.listStudents.execute();
+  }
+  @Get('classes/:id')
+  getClassByIdEndpoint(@Param('id') id: string) {
+    return this.getClassById.execute(id);
   }
   @Get('classes/by-student/:studentId')
   getClassesByStudentEndpoint(@Param('studentId') studentId: string) {
