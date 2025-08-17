@@ -1,0 +1,37 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { DocumentRepository } from '../../domain/ports/document.repository.port';
+import { DocumentEntity } from '../../domain/entities/document.entity';
+import type { Document as PrismaDocument } from '@prisma/client';
+
+@Injectable()
+export class DocumentPrismaRepository implements DocumentRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async save(doc: Omit<DocumentEntity, 'id'>): Promise<DocumentEntity> {
+    const created: PrismaDocument = await this.prisma.document.create({
+      data: {
+        name: doc.storedName, 
+        minIOKey: doc.s3Key,
+        size: doc.size,
+        contentType: doc.contentType,
+        uploadAt: doc.uploadedAt,
+      },
+    });
+
+    return new DocumentEntity(
+      created.id,
+      doc.originalName,
+      created.name,
+      created.minIOKey,
+      created.size,
+      created.contentType,
+      created.uploadAt,
+    );
+  }
+} 
