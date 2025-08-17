@@ -74,7 +74,22 @@ export function ClassMenu() {
     );
 
   return (
-    <div>
+    <div
+      className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+      style={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        padding: "24px 24px",
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <img
+          src="/src/assets/upb_logo.png"
+          alt="UPB Logo"
+          style={{ width: 350, height: "auto" }}
+        />
+      </div>
       <CursosForm
         open={modalOpen}
         onClose={() => setModalOpen(false)}
