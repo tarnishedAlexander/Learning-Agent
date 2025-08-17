@@ -22,9 +22,9 @@ export class GenerateQuestionsCommandHandler {
     ExamFactory.create({
       subject: cmd.subject,
       difficulty: cmd.difficulty,
-      attempts: 1, // dummy, no afecta
+      attempts: 1, 
       totalQuestions: cmd.totalQuestions,
-      timeMinutes: 1, // dummy
+      timeMinutes: 1,
       reference: cmd.reference ?? null,
     });
 

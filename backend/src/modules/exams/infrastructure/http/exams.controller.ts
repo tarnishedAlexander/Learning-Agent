@@ -1,7 +1,6 @@
-import { Body, Controller, Post, UsePipes, ValidationPipe } from '@nestjs/common';
-import { CreateExamCommand, CreateExamCommandHandler } from '../../application/commands/create-exam.command';
+import { Body, Controller, Post, UsePipes, ValidationPipe, HttpCode, BadGatewayException, BadRequestException } from '@nestjs/common';
 import { CreateExamDto } from './dtos/create-exam.dto';
-import { GenerateQuestionsDto } from './dtos/generate-questions.dto';
+import { CreateExamCommand, CreateExamCommandHandler } from '../../application/commands/create-exam.command';
 import { GenerateQuestionsCommand, GenerateQuestionsCommandHandler } from '../../application/commands/generate-questions.command';
 
 @Controller('exams')
@@ -12,37 +11,38 @@ export class ExamsController {
   ) {}
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  async create(@Body() dto: CreateExamDto) {
-    const cmd = new CreateExamCommand(
-      dto.subject, dto.difficulty, dto.attempts,
-      dto.totalQuestions, dto.timeMinutes, dto.reference ?? null,
-    );
-    const exam = await this.createExamHandler.execute(cmd);
-    return { ok: true, data: exam.toJSON() };
-  }
-
-  @Post('questions')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  async generate(@Body() dto: GenerateQuestionsDto) {
-    const cmd = new GenerateQuestionsCommand(
+  @UsePipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+    transformOptions: { enableImplicitConversion: true },
+  }))
+  async createWithQuestions(@Body() dto: CreateExamDto) {
+    const genCmd = new GenerateQuestionsCommand(
       dto.subject,
-      dto.difficulty,
+      dto.difficulty as 'fácil' | 'medio' | 'difícil',
       dto.totalQuestions,
       dto.reference ?? null,
-      dto.preferredType ?? 'mixed',
     );
+
+    let questions: any[];
     try {
-      const questions = await this.generateQuestionsHandler.execute(cmd);
-      return { ok: true, data: questions };
+      questions = await this.generateQuestionsHandler.execute(genCmd);
     } catch (e: any) {
-      // 502 si falla proveedor IA; 400 si validación de dominio
-      const message = e?.message ?? 'Error interno';
-      const status = /JSON válido|AI request failed/.test(message) ? 502 : 400;
-      return {
-        ok: false,
-        error: { code: status, message },
-      };
+      throw new BadGatewayException(e?.message ?? 'No se pudieron generar preguntas con la IA.');
     }
+
+    const createCmd = new CreateExamCommand(
+      dto.subject,
+      dto.difficulty as 'fácil' | 'medio' | 'difícil',
+      dto.attempts,
+      dto.totalQuestions,
+      dto.timeMinutes,
+      dto.reference ?? null,
+    );
+    const exam = await this.createExamHandler.execute(createCmd);
+
+    return { ok: true, data: { exam: exam.toJSON(), questions } };
   }
+
 }

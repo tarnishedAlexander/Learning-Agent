@@ -1,4 +1,3 @@
-// src/modules/exams/exams.module.ts
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
 import { EXAM_REPO, EXAM_AI_GENERATOR } from './tokens';
@@ -13,14 +12,11 @@ import { AiConfigService } from '../../core/ai/ai.config';
   imports: [PrismaModule],
   controllers: [ExamsController],
   providers: [
-    // Persistencia
+    // persistencia
     { provide: EXAM_REPO, useClass: ExamPrismaRepository },
-
-    // IA (adapter)
+    // adaptador IA
     { provide: EXAM_AI_GENERATOR, useClass: AIQuestionGenerator },
     AiConfigService,
-
-    // Application
     CreateExamCommandHandler,
     GenerateQuestionsCommandHandler,
   ],
