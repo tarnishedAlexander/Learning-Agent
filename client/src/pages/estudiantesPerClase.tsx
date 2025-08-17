@@ -1,17 +1,19 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
 import { useEffect } from "react";
-import { Button, Card, Table } from "antd";
+import { Button, Card, Table, Space } from "antd";
 import { StudentUpload } from "../components/studentUpload";
+import { FolderOutlined } from '@ant-design/icons';
 
 export function StudentsCurso() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { fetchClase, curso, students, createStudents } = useClasses()
+  
   useEffect(() => {
     if (id) {
       fetchClase(id)
     }
-    console.log(students)
   }, [id])
 
   const columns = [
@@ -54,16 +56,27 @@ export function StudentsCurso() {
 
   return (
     <div style={{ padding: '1rem' }}>
-      <h1> {curso}</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1>{curso}</h1>
+        <Button 
+          type="primary" 
+          icon={<FolderOutlined />}
+          onClick={() => navigate(`/curso/${id}/documents`)}
+          style={{ backgroundColor: '#1A2A80' }}
+        >
+          Documentos
+        </Button>
+      </div>
 
       {students ? (
         <>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-        
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>1er Parcial</Button>
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>2do Parcial</Button>
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>Final</Button>
-      </div>
+          <Space>
+            <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>1er Parcial</Button>
+            <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>2do Parcial</Button>
+            <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>Final</Button>
+          </Space>
+        </div>
         <Table
           columns={columns}
           dataSource={students?.students || []}
