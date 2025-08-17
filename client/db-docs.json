@@ -1,0 +1,18 @@
+{
+  "documents": [
+    {
+      "id": "2b6cd7c7-c611-4051-8f0b-e2edba0b090c",
+      "name": "elegance.pdf",
+      "uploadDate": "2025-08-17T04:59:07.825Z",
+      "size": 71,
+      "url": "blob:http://localhost:5173/31e805fa-08e8-44b5-addd-21434787532b"
+    },
+    {
+      "id": "6cdae91c-c356-4c50-8dd4-21a0d798305a",
+      "name": "Activity Report 02-10-2025 to 02-16-2025.pdf",
+      "uploadDate": "2025-08-17T05:11:19.347Z",
+      "size": 89891,
+      "url": "blob:http://localhost:5173/07e78482-76e4-4d9b-9623-20a6d15e2389"
+    }
+  ]
+}
