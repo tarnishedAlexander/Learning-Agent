@@ -1,18 +1,26 @@
 import { useParams } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
-import { useEffect } from "react";
-import { Button, Card, Table } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Card, Table, message } from "antd";
 import { StudentUpload } from "../components/studentUpload";
+import { DownloadOutlined } from "@ant-design/icons";
+import { downloadFileByKey } from "../services/fileService";
+import type { Student as IStudent } from "../interfaces/studentInterface";
+
+// Extiende la interfaz del proyecto si necesitas la propiedad documentKey
+type StudentWithKey = IStudent & { documentKey?: string };
 
 export function StudentsCurso() {
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents } = useClasses()
+  const { fetchClase, curso, students, createStudents } = useClasses();
+  // aceptar string o number ya que record.codigo en tu proyecto es number
+  const [downloadingId, setDownloadingId] = useState<string | number | null>(null);
+
   useEffect(() => {
     if (id) {
-      fetchClase(id)
+      fetchClase(id);
     }
-    console.log(students)
-  }, [id])
+  }, [id, fetchClase]);
 
   const columns = [
     {
@@ -50,6 +58,35 @@ export function StudentsCurso() {
       dataIndex: "final",
       key: "final",
     },
+    {
+      title: "Acciones",
+      key: "acciones",
+      render: (_: unknown, record: StudentWithKey) => {
+        const isLoading = downloadingId === record.codigo;
+        return (
+          <Button
+            type="default"
+            icon={<DownloadOutlined />}
+            loading={isLoading}
+            onClick={async () => {
+              try {
+                setDownloadingId(record.codigo);
+                const key = record.documentKey ?? `documents/${record.codigo}.pdf`;
+                await downloadFileByKey(key);
+                message.success("Descarga iniciada");
+              } catch (e: unknown) {
+                const err = e as Error;
+                message.error(err?.message || "Error al descargar");
+              } finally {
+                setDownloadingId(null);
+              }
+            }}
+          >
+            Descargar
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
@@ -86,7 +123,7 @@ export function StudentsCurso() {
                   createStudents({
                     claseId: id,
                     students: parsedStudents,
-                  })
+                  });
                 }
               }}
             />
@@ -95,5 +132,5 @@ export function StudentsCurso() {
 
       )}
     </div>
-  )
+  );
 }
