@@ -47,8 +47,8 @@ export function StudentProfile() {
     courses: [
       { 
         id: "examenes", 
-        title: "Examenes AWS", 
-        description: "Demuestra tus conocimientos en cloud computing" 
+        title: (subject: string) => `Exámenes de ${subject}`,
+        description: "Demuestra tus conocimientos en esta materia" 
       },
       { 
         id: "entrevistas", 
@@ -260,7 +260,9 @@ export function StudentProfile() {
                           zIndex: 1
                         }}
                       >
-                        {course.title}
+                        {typeof course.title === 'function' 
+                          ? course.title(activeSubject) 
+                          : course.title}
                       </Typography.Title>
                     </div>
                     <Typography.Text 
