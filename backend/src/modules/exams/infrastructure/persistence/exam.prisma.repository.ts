@@ -4,6 +4,7 @@ import { ExamRepositoryPort } from '../../domain/ports/exam.repository.port';
 import { Exam } from '../../domain/entities/exam.entity';
 import { Difficulty } from '../../domain/entities/difficulty.vo';
 import { PositiveInt } from '../../domain/entities/positive-int.vo';
+import { DistributionVO } from '../../domain/entities/distribution.vo';
 
 @Injectable()
 export class ExamPrismaRepository implements ExamRepositoryPort {
@@ -18,10 +19,36 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
         attempts: exam.attempts.getValue(),
         totalQuestions: exam.totalQuestions.getValue(),
         timeMinutes: exam.timeMinutes.getValue(),
-        reference: exam.reference,
+        reference: exam.reference ?? null,
+
+        mcqCount:          exam.distribution?.value.multiple_choice ?? 0,
+        trueFalseCount:    exam.distribution?.value.true_false ?? 0,
+        openAnalysisCount: exam.distribution?.value.open_analysis ?? 0,
+        openExerciseCount: exam.distribution?.value.open_exercise ?? 0,
+
         createdAt: exam.createdAt,
       },
     });
+
+    const sum =
+      row.mcqCount +
+      row.trueFalseCount +
+      row.openAnalysisCount +
+      row.openExerciseCount;
+
+    const distVO =
+      sum > 0
+        ? new DistributionVO(
+            {
+              multiple_choice: row.mcqCount,
+              true_false: row.trueFalseCount,
+              open_analysis: row.openAnalysisCount,
+              open_exercise: row.openExerciseCount,
+            },
+            row.totalQuestions,
+          )
+        : null;
+
     return new Exam(
       row.id,
       row.subject,
@@ -30,6 +57,7 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
       PositiveInt.create('Total de preguntas', row.totalQuestions),
       PositiveInt.create('Tiempo (min)', row.timeMinutes),
       row.reference ?? null,
+      distVO,     
       row.createdAt,
     );
   }
@@ -37,6 +65,26 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
   async findById(id: string): Promise<Exam | null> {
     const row = await this.prisma.exam.findUnique({ where: { id } });
     if (!row) return null;
+
+    const sum =
+      row.mcqCount +
+      row.trueFalseCount +
+      row.openAnalysisCount +
+      row.openExerciseCount;
+
+    const distVO =
+      sum > 0
+        ? new DistributionVO(
+            {
+              multiple_choice: row.mcqCount,
+              true_false: row.trueFalseCount,
+              open_analysis: row.openAnalysisCount,
+              open_exercise: row.openExerciseCount,
+            },
+            row.totalQuestions,
+          )
+        : null;
+
     return new Exam(
       row.id,
       row.subject,
@@ -45,6 +93,7 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
       PositiveInt.create('Total de preguntas', row.totalQuestions),
       PositiveInt.create('Tiempo (min)', row.timeMinutes),
       row.reference ?? null,
+      distVO,
       row.createdAt,
     );
   }

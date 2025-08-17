@@ -1,4 +1,23 @@
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class DistributionDto {
+  @IsInt()
+  @IsPositive()
+  multiple_choice!: number;
+
+  @IsInt()
+  @IsPositive()
+  true_false!: number;
+
+  @IsInt()
+  @IsPositive()
+  open_analysis!: number;
+
+  @IsInt()
+  @IsPositive()
+  open_exercise!: number;
+}
 
 export class GenerateQuestionsDto {
   @IsString()
@@ -22,4 +41,8 @@ export class GenerateQuestionsDto {
   @IsOptional()
   @IsIn(['open', 'multiple_choice', 'mixed'])
   preferredType?: 'open' | 'multiple_choice' | 'mixed';
+
+  @ValidateNested()
+  @Type(() => DistributionDto)
+  distribution!: DistributionDto;
 }

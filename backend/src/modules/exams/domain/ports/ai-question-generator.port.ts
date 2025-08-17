@@ -1,4 +1,5 @@
 import { Question } from '../entities/question.entity';
+import type { Distribution } from '../entities/distribution.vo';
 
 export interface AIQuestionGeneratorPort {
   generate(params: {
@@ -7,5 +8,6 @@ export interface AIQuestionGeneratorPort {
     totalQuestions: number;
     reference?: string | null;
     preferredType?: 'open' | 'multiple_choice' | 'mixed';
+    distribution?: Distribution;
   }): Promise<Question[]>;
 }
