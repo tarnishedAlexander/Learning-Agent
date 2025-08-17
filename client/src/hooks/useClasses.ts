@@ -12,7 +12,7 @@ const [curso,setCurso]=useState('')
 const [students,setStudents]=useState<StudentGroup|null>(null)
   useEffect(() => {
     fetchClases();
-  }, []);
+  });
 
   const fetchClases = async () => {
     const data = await claseService.getClases();
