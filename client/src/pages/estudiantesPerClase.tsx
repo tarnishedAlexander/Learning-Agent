@@ -1,12 +1,14 @@
 import { useParams } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Table } from "antd";
 import { StudentUpload } from "../components/studentUpload";
+import { SingleStudentForm } from "../components/singleStudentForm";
 
 export function StudentsCurso() {
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents } = useClasses()
+  const { fetchClase, curso, students} = useClasses()
+  const [formOpen, setFormOpen] = useState(false);
   useEffect(() => {
     if (id) {
       fetchClase(id)
@@ -71,7 +73,9 @@ export function StudentsCurso() {
           pagination={{ pageSize: 20 }}
           bordered
         />
+        <Button style={{margin:4,width:120}} type="primary" onClick={() => { setFormOpen (true) }}>Añadir Estudiante</Button>
         </>
+        
         
       ) : (
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 20 }}>
@@ -89,6 +93,15 @@ export function StudentsCurso() {
         </div>
 
       )}
+      <SingleStudentForm
+        open={formOpen}
+        onClose={() => { setFormOpen(false)}}
+        onSubmit={(values) => {
+          console.log("Estudiante creado:", values);
+          console.log("ID del curso:", id);
+          //createStudents(values);
+        }}>
+      </SingleStudentForm>
     </div>
   )
 }
