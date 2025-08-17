@@ -1,5 +1,4 @@
 
-// client/src/routes/routes.tsx
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ClassMenu } from "../pages/clasesMenu"
 import { StudentsCurso } from "../pages/estudiantesPerClase"

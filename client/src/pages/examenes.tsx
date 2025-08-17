@@ -1,4 +1,4 @@
-// client/src/pages/Examenes.tsx
+
 import { Card, Typography, Button } from "antd";
 import { Link } from "react-router-dom";
 

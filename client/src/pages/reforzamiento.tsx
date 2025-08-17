@@ -3,17 +3,17 @@ import { Card, Divider, Typography, Avatar, Layout, FloatButton, Modal, Input, B
 import { UserOutlined, MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
-// PALETA DE COLORES - Usando solo los colores especificados
+
 const COLORS = {
-  deepNavy: "#1A2A80",       // Azul oscuro principal
-  royalPurple: "#3B38A0",     // Azul medio
-  softPeriwinkle: "#7A85C1", // Azul claro
-  paleLavender: "#B2B0E8",    // Azul pastel
-  pureWhite: "#FFFFFF",       // Blanco puro
-  darkCharcoal: "#222222"     // Texto principal
+  deepNavy: "#1A2A80",       
+  royalPurple: "#3B38A0",     
+  softPeriwinkle: "#7A85C1", 
+  paleLavender: "#B2B0E8",    
+  pureWhite: "#FFFFFF",       
+  darkCharcoal: "#222222"     
 };
 
-// ESTILOS PRINCIPALES
+
 const layoutStyle: React.CSSProperties = {
   minHeight: "100vh",
   background: COLORS.pureWhite,
@@ -31,7 +31,7 @@ const siderStyle: React.CSSProperties = {
 };
 
 export function StudentProfile() {
-  // Estados para controlar la interfaz
+  
   const [activeSubject, setActiveSubject] = useState("Matemáticas");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -39,7 +39,7 @@ export function StudentProfile() {
   const [inputValue, setInputValue] = useState("");
   const chatBodyRef = useRef<HTMLDivElement>(null);
 
-  // Datos del estudiante
+  
   const studentData = {
     name: "Juan Pérez",
     role: "Estudiante",
@@ -58,10 +58,10 @@ export function StudentProfile() {
     ]
   };
 
-  // Función para abrir el chat con animación de "escribiendo" antes del mensaje
+  
   const handleChatClick = () => {
     setIsChatOpen(true);
-    setMessages([]); // Limpiar mensajes para asegurar que la animación ocurra primero
+    setMessages([]); 
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -72,7 +72,7 @@ export function StudentProfile() {
     }, 1800);
   };
 
-  // Función para enviar mensajes en el chat
+  
   const handleSendMessage = () => {
     if (inputValue.trim()) {
       const newMessage = { sender: "user", text: inputValue.trim() };
@@ -93,7 +93,7 @@ export function StudentProfile() {
     }
   };
 
-  // Desplazar automáticamente al mensaje más reciente
+  
   useEffect(() => {
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
@@ -313,8 +313,8 @@ export function StudentProfile() {
         open={isChatOpen}
         onCancel={() => setIsChatOpen(false)}
         footer={null}
-        width="90vw" // Modal responsivo con ancho relativo
-        style={{ top: "40px", maxWidth: "500px" }} // Limite máximo y centrado
+        width="90vw" 
+        style={{ top: "40px", maxWidth: "500px" }}
         closable={false}
         bodyStyle={{ padding: 0, borderRadius: "20px" }}
       >
@@ -380,7 +380,7 @@ export function StudentProfile() {
                   borderRadius: message.sender === 'user' ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
                   marginLeft: message.sender === 'user' ? "auto" : "0",
                   marginRight: message.sender === 'user' ? "0" : "auto",
-                  maxWidth: "80%", // Asegura que las burbujas sean responsivas
+                  maxWidth: "80%", 
                   boxShadow: message.sender === 'user' 
                     ? "0 4px 12px rgba(58, 56, 160, 0.15)" 
                     : "0 4px 12px rgba(0, 0, 0, 0.05)",
@@ -388,7 +388,7 @@ export function StudentProfile() {
                   animationDelay: `${index * 0.05}s`,
                   opacity: 0,
                   animationFillMode: "forwards",
-                  wordBreak: "break-word" // Evita desbordamiento de texto largo
+                  wordBreak: "break-word" 
                 }}
               >
                 {message.text}
