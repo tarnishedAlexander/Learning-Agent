@@ -94,6 +94,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         >
           <DatePicker
             style={{ width: '100%' }}
+            format="DD-MM-YYYY"
             disabledDate={(current: Dayjs) => {
               const threeWeeksAgo = new Date();
               threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
@@ -128,6 +129,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         >
           <DatePicker
             style={{ width: '100%' }}
+            format="DD-MM-YYYY"
             disabledDate={(current: Dayjs) => {
               if (!startDate) return false;
               return current && current.toDate() <= startDate;
