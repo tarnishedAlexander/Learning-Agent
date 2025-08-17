@@ -10,6 +10,8 @@ import { CreateEnrollmentDto } from './dtos/create-enrollment.dto';
 import { GetClassesByStudentUseCase } from '../../application/queries/get-classes-by-student.usecase';
 import { GetStudentsByClassUseCase } from '../../application/queries/get-students-by-class.usecase';
 import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
+import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
+import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
 
 @Controller('gestion_academica')
 export class Gestion_academicaController {
@@ -22,6 +24,7 @@ export class Gestion_academicaController {
     private readonly createClasses: CreateClassUseCase,
     private readonly createProfileStudent: CreateStudentProfileUseCase,
     private readonly createEnrollment: CreateEnrollmentUseCase,
+    private readonly enrollSingle: EnrollSingleStudentUseCase,
   ) { }
   @Get('classes')
   listClassesEndPoint() {
@@ -55,6 +58,10 @@ export class Gestion_academicaController {
   @Post('enrollments')
   createEnrollmentEndpoint(@Body() dto: CreateEnrollmentDto) {
     return this.createEnrollment.execute(dto);
+  }
+  @Post('enrollments/single-student')
+  enrollSingleStudentEndpoint(@Body() dto: EnrollSingleStudentDto) {
+    return this.enrollSingle.execute(dto);
   }
 
 }
