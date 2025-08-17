@@ -5,3 +5,9 @@ import { IdentityModule } from './modules/identity/identity.module';
 
 @Module({ imports: [PrismaModule, RbacModule, IdentityModule] })
 export class AppModule {}
+
+@Module({
+  imports: [DocumentModule],
+  providers: [PrismaService],
+})
+export class AppModule {}
