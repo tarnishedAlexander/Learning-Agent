@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { DocumentRepository } from '../../domain/ports/document.repository.port';
+import type { DocumentRepository } from '../../domain/ports/document.repository.port';
 import { S3StorageService } from '../../infraestructure/storage/s3.storage.service';
-import { DocumentEntity } from '../../domain/entities/document.entity';
 
 export interface UploadResult {
   id: string;

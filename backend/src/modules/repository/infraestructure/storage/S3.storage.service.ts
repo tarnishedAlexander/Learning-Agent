@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   S3Client,
@@ -17,10 +19,16 @@ export class S3StorageService {
     const secretAccessKey = process.env.MINIO_SECRET_KEY;
     this.bucket = process.env.MINIO_BUCKET || 'documents';
 
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error('MINIO_ACCESS_KEY and MINIO_SECRET_KEY must be defined');
+    }
     this.client = new S3Client({
       region,
       endpoint,
-      credentials: { accessKeyId, secretAccessKey },
+      credentials: {
+        accessKeyId: accessKeyId as string,
+        secretAccessKey: secretAccessKey as string,
+      },
       forcePathStyle: process.env.MINIO_FORCE_PATH_STYLE === 'true',
     });
   }
