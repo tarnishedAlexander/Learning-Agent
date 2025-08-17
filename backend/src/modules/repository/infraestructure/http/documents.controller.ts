@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Post,
@@ -6,6 +9,9 @@ import {
   HttpException,
   HttpStatus,
   Body,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -33,6 +39,7 @@ function pdfFileFilter(
 
 @Controller('api/documents')
 export class DocumentsController {
+  s3: any;
   constructor(private readonly uploadUseCase: UploadDocumentUseCase) {}
 
   @Post('upload')
@@ -85,6 +92,36 @@ export class DocumentsController {
       throw new HttpException(
         `Upload failed: ${(err as Error).message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async download(@Param('filename') filename: string) {
+    try {
+      // 1) validar existencia
+      const exists = await this.s3.exists(filename);
+      if (!exists) {
+        throw new NotFoundException({ error: 'File not found', filename });
+      }
+
+      // 2) generar presigned url (15 minutos)
+      const expires = 15 * 60; // segundos
+      // eslint-disable-next-line prettier/prettier
+      const presignedUrl = await this.s3.getPresignedUrl(filename, filename, expires);
+
+      // 3) retornar JSON con url y metadata útil
+      return {
+        url: presignedUrl,
+        filename,
+        expiresInSeconds: expires,
+      };
+      // Si prefieres redirigir directamente:
+      // return { redirectTo: presignedUrl }  o usar Response.redirect
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+      // si ya lanzamos InternalServerErrorException desde el servicio, lo propaga.
+      throw new InternalServerErrorException(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        'Error generating download URL: ' + (err?.message || err),
       );
     }
   }
