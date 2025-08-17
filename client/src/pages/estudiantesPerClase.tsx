@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { Button, Card, Table } from "antd";
 import { StudentUpload } from "../components/studentUpload";
 import { SingleStudentForm } from "../components/singleStudentForm";
+import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
+import useEnrollment from "../hooks/useEnrollment";
 
 export function StudentsCurso() {
   const { id } = useParams<{ id: string }>();
   const { fetchClase, curso, students} = useClasses()
+  const { enrollSingleStudent }  = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
   useEffect(() => {
     if (id) {
@@ -15,6 +18,10 @@ export function StudentsCurso() {
     }
     console.log(students)
   }, [id])
+  
+  const handleSubmit = (values: createEnrollmentInterface) => {
+    enrollSingleStudent(values)
+  }
 
   const columns = [
     {
@@ -97,8 +104,12 @@ export function StudentsCurso() {
         open={formOpen}
         onClose={() => { setFormOpen(false)}}
         onSubmit={(values) => {
-          console.log("Estudiante creado:", values);
-          console.log("ID del curso:", id);
+            const data: createEnrollmentInterface = {
+              ...values,
+              classId: id || "",
+            };
+            console.log("Datos del formulario:", data);
+            handleSubmit(data) 
           //createStudents(values);
         }}>
       </SingleStudentForm>
