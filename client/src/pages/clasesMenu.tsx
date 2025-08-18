@@ -14,7 +14,7 @@ export function ClassMenu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
-  const goToReforzamiento = () => {
+  const goToReinforcement = () => {
     navigate('/reinforcement');
   };
 
@@ -94,7 +94,7 @@ export function ClassMenu() {
           />
         </Space>
         <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
-        <Button type="primary" onClick={goToReforzamiento}>page4</Button>
+        <Button type="primary" onClick={goToReinforcement}>page4</Button>
       </div>
 
       <h1>Cursos Actuales</h1>
