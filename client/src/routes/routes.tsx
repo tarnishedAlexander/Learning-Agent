@@ -1,11 +1,11 @@
-
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Route, Routes, Navigate} from "react-router-dom";
 import { ClassMenu } from "../pages/clasesMenu"
 import { StudentsCurso } from "../pages/estudiantesPerClase"
 import { StudentProfile } from "../pages/reinforcement";
 import Exam from "../pages/exam";
 import Interview from "../pages/interview";
 import Login from "../pages/Login"
+import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 
 
 export const AppRoutes = () => {
@@ -18,6 +18,9 @@ export const AppRoutes = () => {
       <Route path="/reinforcement" element={<StudentProfile />} />
       <Route path="/exam" element={<Exam />} />
       <Route path="/interview" element={<Interview />} />
+      <Route path="/" element={<Navigate to="/exams/create" replace />} />
+      <Route path="/exams/create" element={<ExamsCreatePage />} />
+      <Route path="*" element={<Navigate to="/exams/create" replace />} />
     </Routes>
 
     </BrowserRouter>
