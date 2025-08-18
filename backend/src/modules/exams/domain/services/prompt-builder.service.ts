@@ -7,56 +7,63 @@ export class PromptBuilder {
     totalQuestions: number;
     reference?: string | null;
     preferredType?: 'open' | 'multiple_choice' | 'mixed';
-    distribution?: Distribution; 
+    distribution?: Distribution;
   }): string {
+    const difficultyMap: Record<'fácil' | 'medio' | 'difícil', 'easy' | 'medium' | 'hard'> = {
+      'fácil': 'easy',
+      'medio': 'medium',
+      'difícil': 'hard',
+    };
+    const difficultyEn = difficultyMap[p.difficulty];
+
     if (p.distribution) {
       return [
-        `Genera EXACTAMENTE ${p.totalQuestions} preguntas de examen sobre "${p.subject}".`,
-        `Dificultad: ${p.difficulty}.`,
-        `Referencia: ${p.reference ?? 'ninguna'}.`,
-        `Debes RESPETAR esta distribución por tipo (cantidades exactas):`,
+        `Generate EXACTLY ${p.totalQuestions} exam questions about "${p.subject}".`,
+        `Difficulty: ${difficultyEn} (original: ${p.difficulty}).`,
+        `Reference: ${p.reference ?? 'none'}.`,
+        `You MUST RESPECT this exact distribution of question types (absolute counts):`,
         JSON.stringify(p.distribution),
-        ``,
-        `DEVUELVE ÚNICAMENTE JSON VÁLIDO (application/json).`,
-        `El resultado debe ser un OBJETO con 4 ARRAYS, con este formato EXACTO (sin texto adicional, sin markdown, sin comentarios):`,
-        `{"multiple_choice":[{"type":"multiple_choice","text":"string no vacía","options":["A","B","C","D"]}, ...],`,
-        `"true_false":[{"type":"true_false","text":"string no vacía"} , ...],`,
-        `"open_analysis":[{"type":"open_analysis","text":"string no vacía"} , ...],`,
-        `"open_exercise":[{"type":"open_exercise","text":"string no vacía"} , ...]}`,
-        ``,
-        `REGLAS ESTRICTAS:`,
-        `- No incluyas NADA fuera del JSON (ni encabezados, ni notas).`,
-        `- Cada "text" debe ser claro y sin HTML.`,
-        `- "multiple_choice": incluye entre 3 y 5 opciones, distintas, sin marcar la respuesta.`,
-        `- "true_false": NO incluyas opciones (solo la afirmación).`,
-        `- Usa comillas dobles estándar; sin comas colgantes; sin valores undefined.`,
-        `- El JSON DEBE parsear con JSON.parse sin errores.`,
+        '',
+        `RETURN ONLY VALID JSON (application/json).`,
+        `The output must be ONE OBJECT containing 4 ARRAYS, in this EXACT format (no extra text, no markdown, no comments):`,
+        `{"multiple_choice":[{"type":"multiple_choice","text":"non-empty string","options":["A","B","C","D"]}, ...],` +
+          `"true_false":[{"type":"true_false","text":"non-empty string"}, ...],` +
+          `"open_analysis":[{"type":"open_analysis","text":"non-empty string"}, ...],` +
+          `"open_exercise":[{"type":"open_exercise","text":"non-empty string"}, ...]}`,
+        '',
+        `STRICT RULES:`,
+        `- Do not include ANYTHING outside the JSON (no headers, notes, or markdown fences).`,
+        `- Every "text" must be clear, plain text, no HTML.`,
+        `- "multiple_choice": include 3–5 distinct options, do not mark the answer.`,
+        `- "true_false": DO NOT include options (only the statement).`,
+        `- Use standard double quotes; no trailing commas; no undefined values.`,
+        `- The JSON MUST parse successfully with JSON.parse.`,
       ].join('\n');
     }
 
     return [
-      `Genera exactamente ${p.totalQuestions} preguntas de examen sobre "${p.subject}".`,
-      `Dificultad: ${p.difficulty}.`,
-      `Referencia: ${p.reference ?? 'ninguna'}.`,
-      `Tipo preferido: ${p.preferredType ?? 'mixed'}.`,
-      ``,
-      `DEVUELVE ÚNICAMENTE JSON VÁLIDO (application/json), sin texto adicional, sin comentarios, sin markdown.`,
-      `El resultado debe ser un ARRAY JSON, no un objeto, con esta forma EXACTA (sin comas finales):`,
+      `Generate exactly ${p.totalQuestions} exam questions about "${p.subject}".`,
+      `Difficulty: ${difficultyEn} (original: ${p.difficulty}).`,
+      `Reference: ${p.reference ?? 'none'}.`,
+      `Preferred type: ${p.preferredType ?? 'mixed'}.`,
+      '',
+      `RETURN ONLY VALID JSON (application/json), no extra text, no comments, no markdown.`,
+      `The output must be a JSON ARRAY, not an object, in this EXACT format (no trailing commas):`,
       `[`,
       `  {`,
       `    "type": "open" | "multiple_choice",`,
-      `    "text": "string no vacía",`,
-      `    "options": ["string","string","string","string"] (solo si "type" = "multiple_choice", 3 a 5 opciones)`,
+      `    "text": "non-empty string",`,
+      `    "options": ["string","string","string","string"] (only if "type" = "multiple_choice", 3–5 options)`,
       `  }`,
       `]`,
-      ``,
-      `REGLAS ESTRICTAS:`,
-      `- No incluyas nada fuera del JSON (ni encabezados, ni notas).`,
-      `- "text" debe ser legible, sin HTML, sin saltos de línea excesivos.`,
-      `- Si "type" = "open": NO incluyas "options".`,
-      `- Si "type" = "multiple_choice": incluye entre 3 y 5 opciones, todas distintas, sin la respuesta marcada.`,
-      `- Usa comillas dobles estándar, sin comas colgantes, sin valores undefined.`,
-      `- El JSON DEBE parsear correctamente con JSON.parse.`,
+      '',
+      `STRICT RULES:`,
+      `- Do not include anything outside the JSON (no headers, no notes).`,
+      `- "text" must be readable, plain text, no HTML, no excessive line breaks.`,
+      `- If "type" = "open": DO NOT include "options".`,
+      `- If "type" = "multiple_choice": include 3–5 distinct options, without marking the answer.`,
+      `- Use standard double quotes, no trailing commas, no undefined values.`,
+      `- The JSON MUST parse correctly with JSON.parse.`,
     ].join('\n');
   }
 }
