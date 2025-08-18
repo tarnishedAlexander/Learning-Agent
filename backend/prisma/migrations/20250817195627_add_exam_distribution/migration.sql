@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "public"."Exam" ADD COLUMN     "mcqCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "openAnalysisCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "openExerciseCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "trueFalseCount" INTEGER NOT NULL DEFAULT 0;

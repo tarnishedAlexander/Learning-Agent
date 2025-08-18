@@ -134,12 +134,19 @@ model UserSession {
 model Exam {
   id             String   @id @default(uuid())
   subject        String
-  difficulty     String // validar en dominio: "fácil" | "medio" | "difícil"
+  difficulty     String
   attempts       Int
   totalQuestions Int
   timeMinutes    Int
   reference      String?  @db.Text
-  createdAt      DateTime @default(now())
 
+  // distribución por tipo
+  
+  mcqCount          Int   @default(0) // opción múltiple
+  trueFalseCount    Int   @default(0) // verdadero/falso
+  openAnalysisCount Int   @default(0) // abiertas: análisis
+  openExerciseCount Int   @default(0) // abiertas: ejercicio
+
+  createdAt      DateTime @default(now())
   @@index([subject])
 }
