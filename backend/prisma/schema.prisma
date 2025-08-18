@@ -134,6 +134,15 @@ model UserSession {
   @@index([userId, expiresAt])
 }
 
+model Document {
+  id          String   @id @default(uuid())
+  originalName String
+  storedName   String   @unique
+  s3Key        String
+  size         Int
+  contentType  String
+  uploadedAt   DateTime @default(now())
+}
 /**
  * ===========================
  * Exams generation

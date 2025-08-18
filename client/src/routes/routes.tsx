@@ -6,7 +6,8 @@ import Exam from "../pages/exam";
 import Interview from "../pages/interview";
 import Login from "../pages/Login"
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
-
+import UploadPdfPage from "../pages/UploadPdfPage";
+import { DocumentsPage } from "../pages/repository/DocumentsPage";
 
 export const AppRoutes = () => {
   return (
@@ -21,8 +22,10 @@ export const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/exams/create" replace />} />
       <Route path="/exams/create" element={<ExamsCreatePage />} />
       <Route path="*" element={<Navigate to="/exams/create" replace />} />
-    </Routes>
+      <Route path="/upload-pdf" element={<UploadPdfPage />} />
+      <Route path="/documents" element={<DocumentsPage />} />
 
+    </Routes>
     </BrowserRouter>
   );
 };
