@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Post,
@@ -6,15 +9,17 @@ import {
   HttpException,
   HttpStatus,
   Body,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { UploadResponseDto } from './dtos/upload-response.dto';
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-
-// fileFilter: accept only pdf
+const MAX_SIZE = 10 * 1024 * 1024; 
 function pdfFileFilter(
   req: Express.Request,
   file: Express.Multer.File,
@@ -33,6 +38,7 @@ function pdfFileFilter(
 
 @Controller('api/documents')
 export class DocumentsController {
+  s3: any;
   constructor(private readonly uploadUseCase: UploadDocumentUseCase) {}
 
   @Post('upload')
@@ -52,8 +58,6 @@ export class DocumentsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    // Additional validation (safety): check mimetype and size again
     if (file.size > MAX_SIZE) {
       throw new HttpException(
         'File too large. Max 10MB allowed',
@@ -81,10 +85,33 @@ export class DocumentsController {
       );
       return result;
     } catch (err) {
-      // Distinguish known errors if quieres
       throw new HttpException(
         `Upload failed: ${(err as Error).message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+    
+  @Get(':filename')
+  async download(@Param('filename') filename: string) {
+    try {
+      const exists = await this.s3.exists(filename);
+      if (!exists) {
+        throw new NotFoundException({ error: 'File not found', filename });
+      }
+      const expires = 15 * 60; 
+      // eslint-disable-next-line prettier/prettier
+      const presignedUrl = await this.s3.getPresignedUrl(filename, filename, expires);
+      return {
+        url: presignedUrl,
+        filename,
+        expiresInSeconds: expires,
+      };
+    } catch (err) {
+      if (err instanceof NotFoundException) throw err;
+      throw new InternalServerErrorException(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        'Error generating download URL: ' + (err?.message || err),
       );
     }
   }
