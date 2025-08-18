@@ -12,15 +12,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Param,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { UploadResponseDto } from './dtos/upload-response.dto';
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-
-// fileFilter: accept only pdf
+const MAX_SIZE = 10 * 1024 * 1024; 
 function pdfFileFilter(
   req: Express.Request,
   file: Express.Multer.File,
@@ -59,8 +58,6 @@ export class DocumentsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    // Additional validation (safety): check mimetype and size again
     if (file.size > MAX_SIZE) {
       throw new HttpException(
         'File too large. Max 10MB allowed',
@@ -88,37 +85,30 @@ export class DocumentsController {
       );
       return result;
     } catch (err) {
-      // Distinguish known errors if quieres
       throw new HttpException(
         `Upload failed: ${(err as Error).message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
+    
+  @Get(':filename')
   async download(@Param('filename') filename: string) {
     try {
-      // 1) validar existencia
       const exists = await this.s3.exists(filename);
       if (!exists) {
         throw new NotFoundException({ error: 'File not found', filename });
       }
-
-      // 2) generar presigned url (15 minutos)
-      const expires = 15 * 60; // segundos
+      const expires = 15 * 60; 
       // eslint-disable-next-line prettier/prettier
       const presignedUrl = await this.s3.getPresignedUrl(filename, filename, expires);
-
-      // 3) retornar JSON con url y metadata útil
       return {
         url: presignedUrl,
         filename,
         expiresInSeconds: expires,
       };
-      // Si prefieres redirigir directamente:
-      // return { redirectTo: presignedUrl }  o usar Response.redirect
     } catch (err) {
       if (err instanceof NotFoundException) throw err;
-      // si ya lanzamos InternalServerErrorException desde el servicio, lo propaga.
       throw new InternalServerErrorException(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         'Error generating download URL: ' + (err?.message || err),

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -8,9 +9,11 @@ import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { DocumentRepository } from '../../domain/ports/document.repository.port';
 import { DocumentEntity } from '../../domain/entities/document.entity';
 import type { Document as PrismaDocument } from '@prisma/client';
+import { Readable } from 'stream';
 
 @Injectable()
 export class DocumentPrismaRepository implements DocumentRepository {
+  storage: any;
   constructor(private readonly prisma: PrismaService) {}
 
   async save(doc: Omit<DocumentEntity, 'id'>): Promise<DocumentEntity> {
@@ -33,5 +36,17 @@ export class DocumentPrismaRepository implements DocumentRepository {
       created.contentType,
       created.uploadAt,
     );
+  }
+
+
+async download(s3Key: string): Promise<Readable> {
+    const document = await this.prisma.document.findFirst({
+      where: { minIOKey: s3Key },
+    });
+
+    if (!document) {
+      throw new Error('Document not found');
+    }
+    return this.storage.getFile(document.minIOKey);
   }
 } 

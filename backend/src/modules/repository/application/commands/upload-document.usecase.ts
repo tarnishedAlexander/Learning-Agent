@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { Inject, Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import type { DocumentRepository } from '../../domain/ports/document.repository.port';
-import { S3StorageService } from '../../infraestructure/storage/s3.storage.service';
+import { S3StorageService } from '../../infraestructure/storage/S3.storage.service';
 
 export interface UploadResult {
   id: string;
@@ -18,6 +19,7 @@ export interface UploadResult {
 export class UploadDocumentUseCase {
   constructor(
     private readonly storage: S3StorageService,
+    @Inject('DocumentRepository')
     private readonly repository: DocumentRepository,
   ) {}
 
@@ -33,8 +35,6 @@ export class UploadDocumentUseCase {
     await this.storage.upload(fileBuffer, s3Key, contentType);
 
     const uploadedAt = new Date();
-
-    // persist metadata
     const saved = await this.repository.save({
       originalName,
       storedName,

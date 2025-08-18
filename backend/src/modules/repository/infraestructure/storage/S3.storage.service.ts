@@ -13,15 +13,16 @@ import {
   HeadObjectCommand,
   HeadObjectCommandOutput,
   GetObjectCommand,
+  HeadBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Readable } from 'stream';
 
 @Injectable()
 export class S3StorageService {
   private client: S3Client;
   private bucket: string;
   private endpoint: string;
-  safeFilename: any;
 
   constructor() {
     const endpoint = process.env.MINIO_ENDPOINT || 'http://localhost:9000';
@@ -34,23 +35,40 @@ export class S3StorageService {
     if (!accessKeyId || !secretAccessKey) {
       throw new Error('MINIO_ACCESS_KEY and MINIO_SECRET_KEY must be defined');
     }
+
     this.client = new S3Client({
       region,
       endpoint,
       credentials: {
-        accessKeyId: accessKeyId as string,
-        secretAccessKey: secretAccessKey as string,
+        accessKeyId,
+        secretAccessKey,
       },
       forcePathStyle: process.env.MINIO_FORCE_PATH_STYLE === 'true',
     });
   }
 
-  async upload(
-    buffer: Buffer,
-    key: string,
-    contentType: string,
-  ): Promise<{ key: string; etag?: string }> {
+  private async ensureBucketExists() {
     try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+    } catch (err: any) {
+      throw new InternalServerErrorException(
+        `Bucket "${this.bucket}" does not exist or is not accessible: ${err?.message || err}`,
+      );
+    }
+  }
+
+  async upload(buffer: Buffer, key: string, contentType: string) {
+    try {
+      await this.ensureBucketExists();
+
+      if (!buffer || buffer.length === 0) {
+        throw new Error('File buffer is empty');
+      }
+
+      if (!contentType) {
+        contentType = 'application/octet-stream'; // fallback
+      }
+
       const command = new PutObjectCommand({
         Bucket: this.bucket,
         Key: key,
@@ -58,24 +76,24 @@ export class S3StorageService {
         ContentType: contentType,
       });
 
-      const res: PutObjectCommandOutput = await this.client.send(command);
+      const res = await this.client.send(command);
       return { key, etag: res.ETag };
-    } catch (err) {
+    } catch (err: any) {
+      console.error('UPLOAD ERROR (raw):', err); // log detallado
       throw new InternalServerErrorException(
-        'Error uploading file to storage: ' + (err as any).message,
+        'Error uploading file to storage: ' + (err?.message || err?.Code || err),
       );
     }
   }
 
   getPublicUrl(key: string) {
-    // utilidad si quieres URL no firmada (depende de configuración MinIO)
     return `${this.endpoint.replace(/\/$/, '')}/${this.bucket}/${encodeURIComponent(key)}`;
   }
 
   async exists(key: string): Promise<boolean> {
     try {
       const cmd = new HeadObjectCommand({ Bucket: this.bucket, Key: key });
-      const res: HeadObjectCommandOutput = await this.client.send(cmd);
+      await this.client.send(cmd);
       return true;
     } catch (err: any) {
       if (err?.$metadata?.httpStatusCode === 404) return false;
@@ -86,31 +104,34 @@ export class S3StorageService {
     }
   }
 
-  async getPresignedUrl(
-    key: string,
-    downloadFilename?: string,
-    expiresInSeconds = 900,
-  ): Promise<string> {
+  private safeFilename(name: string): string {
+    return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  async getPresignedUrl(key: string, downloadFilename?: string, expiresInSeconds = 900) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const safeName = downloadFilename
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        ? this.safeFilename(downloadFilename)
-        : key;
+      const safeName = downloadFilename ? this.safeFilename(downloadFilename) : key;
       const getCmd = new GetObjectCommand({
         Bucket: this.bucket,
         Key: key,
         ResponseContentDisposition: `attachment; filename="${safeName}"`,
       });
-      const url = await getSignedUrl(this.client, getCmd, {
-        expiresIn: expiresInSeconds,
-      });
-      return url;
+      const url = await getSignedUrl(this.client, getCmd, { expiresIn: expiresInSeconds });
       return url;
     } catch (err: any) {
       throw new InternalServerErrorException(
         'Error generating presigned URL: ' + (err?.message || err),
       );
     }
+  }
+
+  async getFile(key: string): Promise<Readable> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    const response = await this.client.send(command);
+    return response.Body as Readable;
   }
 }
