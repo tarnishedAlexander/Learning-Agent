@@ -1,10 +1,21 @@
-import jsonInstance from "../api/jsonIntance";
-import type { StudentGroup } from "../interfaces/studentInterface";
+import { apiClient } from "../api/apiClient";
+import type { StudentInfo, StudentGroup } from "../interfaces/studentInterface";
 
 export const studentService = {
+
+  async getStudentsByClassId(classId: string): Promise<StudentInfo[]> {
+    try {
+      const response = await apiClient.get(`/gestion_academica/students/by-class/${classId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch students by classId", error);
+      throw error;
+    }
+  },
+
   async getStudentGroups(): Promise<StudentGroup[]> {
     try {
-      const response = await jsonInstance.get("/students");
+      const response = await apiClient.get("/students");
       return response.data;
     } catch (error) {
       console.error("Failed to fetch student groups", error);
@@ -14,7 +25,7 @@ export const studentService = {
 
   async getStudentGroupById(claseId: string): Promise<StudentGroup | null> {
   try {
-    const response = await jsonInstance.get("/students");
+    const response = await apiClient.get("/students");
     const groups: StudentGroup[] = response.data;
     const match = groups.find((group) => group.claseId === claseId);
     return match ?? null;
@@ -26,7 +37,7 @@ export const studentService = {
 
   async createStudentGroup(group: Omit<StudentGroup, "id">): Promise<StudentGroup> {
     try {
-      const response = await jsonInstance.post("/students", group);
+      const response = await apiClient.post("/students", group);
       return response.data;
     } catch (error) {
       console.error("Failed to create student group", error);
@@ -36,7 +47,7 @@ export const studentService = {
 
   async updateStudentGroup(id: string, groupData: Partial<StudentGroup>): Promise<StudentGroup> {
     try {
-      const response = await jsonInstance.patch(`/students/${id}`, groupData);
+      const response = await apiClient.patch(`/students/${id}`, groupData);
       return response.data;
     } catch (error) {
       console.error("Failed to update student group", error);
@@ -46,7 +57,7 @@ export const studentService = {
 
   async deleteStudentGroup(id: string): Promise<void> {
     try {
-      await jsonInstance.delete(`/students/${id}`);
+      await apiClient.delete(`/students/${id}`);
     } catch (error) {
       console.error("Failed to delete student group", error);
       throw error;

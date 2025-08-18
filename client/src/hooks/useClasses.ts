@@ -4,12 +4,12 @@ import { useClaseStore } from "../store/claseStore";
 import type { Clase } from "../interfaces/claseInterface";
 import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
-import type { StudentGroup } from "../interfaces/studentInterface";
+import type { StudentInfo } from "../interfaces/studentInterface";
 
 const useClasses = () =>{
 const { clases, setClases,addClase } = useClaseStore();
 const [curso,setCurso]=useState('')
-const [students,setStudents]=useState<StudentGroup|null>(null)
+const [students,setStudents]=useState<StudentInfo[]>([])
   useEffect(() => {
     fetchClases();
   }, []);
@@ -31,18 +31,18 @@ const [students,setStudents]=useState<StudentGroup|null>(null)
 
   const fetchClase = async (id:string)=>{
     const curso = await claseService.getClaseById(id)
-    const students = await studentService.getStudentGroupById(id)
-    setCurso(curso.Name)
+    setCurso(curso.name)   
+    const students = await studentService.getStudentsByClassId(id)
     setStudents(students)
   }
 
-  const createStudents=async (newStudentGroup:Omit<StudentGroup,'id'>)=>{
+  const createStudents=async (newStudentGroup:Omit<StudentInfo,'id'>)=>{
     const newStudents={
       ...newStudentGroup,
       id:uuidv4()
     }
-    await studentService.createStudentGroup(newStudents)
-    setStudents(newStudents)
+    //await studentService.createStudentGroup(newStudents)
+    //setStudents(newStudents)
   }
 
   return {

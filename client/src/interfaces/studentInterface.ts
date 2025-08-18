@@ -13,3 +13,14 @@ export interface StudentGroup {
   claseId: string;
   students: Student[];
 }
+
+export interface StudentInfo {
+  userId: string;
+  code: string;
+  name: string;
+  lastname: string;
+  email: string;
+  isActive: boolean;
+  career?: string;
+  admissionYear?: number;
+}

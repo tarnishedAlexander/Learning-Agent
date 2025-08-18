@@ -10,6 +10,9 @@ async function bootstrap() {
   app.useGlobalFilters(new DomainErrorFilter()); // Handle DomainError globally,(en el futuro el dominio lanza DomainErrors)
 
   app.enableShutdownHooks();
+
+  app.enableCors();
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
