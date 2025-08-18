@@ -12,5 +12,5 @@ export const AppRoutes = () => {
       <Route path="curso/:id" element={<StudentsCurso />} />
     </Routes>
     </BrowserRouter>
-  )
-}
+  );
+};
