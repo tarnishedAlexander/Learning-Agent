@@ -15,23 +15,23 @@ export function ClassMenu() {
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const goToReforzamiento = () => {
-    navigate('/reforzamiento');
+    navigate('/reinforcement');
   };
 
-  // 1) Lista base segura
+  
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),
     [clases]
   );
 
-  // 2) Filtrado derivado (sin useEffect)
+  
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
     return clasesSafe.filter((cl) => (cl.Name ?? "").toLowerCase().includes(term));
   }, [clasesSafe, searchTerm]);
 
-  // 3) Actuales / Pasados derivados
+  
   const { cursosActuales, cursosPasados } = useMemo(() => {
     const now = new Date();
     const byEndDesc = (a: Clase, b: Clase) =>

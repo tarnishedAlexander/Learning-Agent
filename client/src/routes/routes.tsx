@@ -2,9 +2,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ClassMenu } from "../pages/clasesMenu"
 import { StudentsCurso } from "../pages/estudiantesPerClase"
-import { StudentProfile } from "../pages/reforzamiento";
-import Examenes from "../pages/examenes";
-import Entrevistas from "../pages/entrevistas";
+import { StudentProfile } from "../pages/reinforcement";
+import Exam from "../pages/exam";
+import Interview from "../pages/interview";
 import Login from "../pages/Login"
 
 
@@ -15,9 +15,9 @@ export const AppRoutes = () => {
       <Route path="/" element={<ClassMenu/>}/>
       <Route path="/login" element={<Login />} />
       <Route path="curso/:id" element={<StudentsCurso />} />
-      <Route path="/reforzamiento" element={<StudentProfile />} />
-      <Route path="/examenes" element={<Examenes />} />
-      <Route path="/entrevistas" element={<Entrevistas />} />
+      <Route path="/reinforcement" element={<StudentProfile />} />
+      <Route path="/exam" element={<Exam />} />
+      <Route path="/interview" element={<Interview />} />
     </Routes>
 
     </BrowserRouter>
