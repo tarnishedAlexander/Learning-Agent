@@ -111,9 +111,6 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
           {sending ? 'Enviando…' : 'Generar'}
         </button>
         <button type="button" className="btn btn-secondary" onClick={onReset}>Limpiar</button>
-        <span className="badge" style={{ color: valid ? '#25a18e' : '#374151' }}>
-          {valid ? 'Listo para enviar' : 'Borrador'}
-        </span>
       </div>
     </form>
   );
