@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Upload, Button, Progress, message, Typography } from "antd";
+import { Upload, Button, Progress, Alert, Typography } from "antd";
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import axios from "axios";
@@ -23,27 +23,33 @@ type CustomReqOptions = {
   [key: string]: unknown;
 };
 
-const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, disabled }) => {
+const PdfUploader: React.FC<PdfUploaderProps> = ({
+  onUploadComplete,
+  uploadUrl,
+  disabled,
+}) => {
   const [uploading, setUploading] = useState(false);
   const [percent, setPercent] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
 
   const beforeUpload = (file: File) => {
     setError(null);
+    setSuccess(null);
 
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
       const msg = "Formato inválido: solo se permiten archivos PDF.";
       setError(msg);
-      message.error(msg);
       return Upload.LIST_IGNORE;
     }
 
     if (file.size > MAX_BYTES) {
       const msg = "Archivo muy grande: máximo 10 MB.";
       setError(msg);
-      message.error(msg);
       return Upload.LIST_IGNORE;
     }
 
@@ -53,15 +59,14 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
   const customRequest = async (options: CustomReqOptions): Promise<void> => {
     const { file: rawFile, onProgress, onSuccess, onError } = options;
 
-    
     const file = rawFile instanceof File ? rawFile : (rawFile as File);
 
     setError(null);
+    setSuccess(null);
     setUploading(true);
     setPercent(0);
     setSelectedFileName((file as File)?.name ?? String(rawFile ?? ""));
 
-    
     if (!uploadUrl) {
       let cur = 0;
       const timer = setInterval(() => {
@@ -73,7 +78,7 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
           clearInterval(timer);
           setUploading(false);
           setPercent(100);
-          message.success(`${(file as File).name || "Archivo"} listo (simulado).`);
+          setSuccess(`${(file as File).name || "Archivo"} listo.`);
           onSuccess?.("ok");
           onUploadComplete?.(file as File, { simulated: true });
         }
@@ -99,16 +104,17 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
 
       setUploading(false);
       setPercent(100);
-      message.success(`${f.name} subido correctamente.`);
+      setSuccess(`${f.name} subido correctamente.`);
       onSuccess?.(resp.data);
       onUploadComplete?.(f, resp.data);
     } catch (errUnknown: unknown) {
       setUploading(false);
       const normalizedError =
-        errUnknown instanceof Error ? errUnknown : new Error(String(errUnknown));
+        errUnknown instanceof Error
+          ? errUnknown
+          : new Error(String(errUnknown));
       const errMsg = normalizedError.message || "Error al subir archivo";
-      setError(errMsg);
-      message.error(`Error al subir: ${errMsg}`);
+      setError(`Error al subir: ${errMsg}`);
 
       try {
         onError?.(normalizedError);
@@ -124,7 +130,6 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
     accept: ".pdf,application/pdf",
     showUploadList: false,
     beforeUpload,
-    
     customRequest: customRequest as unknown as UploadProps["customRequest"],
     disabled,
   };
@@ -136,17 +141,25 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
           <InboxOutlined />
         </p>
         <p className="ant-upload-text">Arrastra un archivo PDF aquí</p>
-        <p className="ant-upload-hint">O usa el botón para seleccionar un archivo. Máx 10 MB. Solo PDF.</p>
+        <p className="ant-upload-hint">
+          O usa el botón para seleccionar un archivo. Máx 10 MB. Solo PDF.
+        </p>
       </Dragger>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+      <div
+        style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}
+      >
         <Upload {...props}>
           <Button icon={<UploadOutlined />} disabled={disabled || uploading}>
             Seleccionar archivo
           </Button>
         </Upload>
 
-        {selectedFileName && <Text ellipsis style={{ maxWidth: 220 }}>{selectedFileName}</Text>}
+        {selectedFileName && (
+          <Text ellipsis style={{ maxWidth: 220 }}>
+            {selectedFileName}
+          </Text>
+        )}
       </div>
 
       {uploading && (
@@ -156,9 +169,29 @@ const PdfUploader: React.FC<PdfUploaderProps> = ({ onUploadComplete, uploadUrl, 
         </div>
       )}
 
+      {success && (
+        <div style={{ marginTop: 12 }}>
+          <Alert
+            message="Éxito"
+            description={success}
+            type="success"
+            showIcon
+            closable
+            onClose={() => setSuccess(null)}
+          />
+        </div>
+      )}
+
       {error && (
         <div style={{ marginTop: 12 }}>
-          <Text type="danger">{error}</Text>
+          <Alert
+            message="Error"
+            description={error}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError(null)}
+          />
         </div>
       )}
     </div>
