@@ -14,10 +14,13 @@ datasource db {
  */
 
 model User {
-  id       String        @id @default(uuid())
-  email    String        @unique
-  password String
-  isActive Boolean       @default(true)
+  id        String   @id @default(uuid())
+  name      String
+  lastname  String
+  email     String   @unique
+  password  String
+  isActive  Boolean  @default(true)
+
   // relation 1:N
   roles    UserRole[]
   sessions UserSession[]
@@ -91,6 +94,13 @@ model TeacherProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  academicUnit String?  // departamento/escuela
+
+  // relation 1:N
+  classes      Classes[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model StudentProfile {
@@ -102,6 +112,11 @@ model StudentProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // relation 1:N
+  enrollment    Enrollment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 /**
@@ -148,4 +163,37 @@ model Exam {
 
   createdAt      DateTime @default(now())
   @@index([subject])
+}
+
+/* ===========================
+   Academic Management (classes and enrollment)
+   =========================== */
+
+model Classes {
+  id            String            @id @default(uuid())
+  name          String
+  semester      String
+  isActive      Boolean           @default(true)
+  dateBegin     DateTime
+  dateEnd       DateTime
+
+  // relation 1:N
+  enrollment    Enrollment[]
+
+  teacherId     String
+  teacher       TeacherProfile    @relation(fields: [teacherId], references: [userId])
+}
+
+// relation N:N - StudentProfile-Classes
+model Enrollment {
+  studentId     String
+  student       StudentProfile    @relation(fields: [studentId], references: [userId])
+  classId       String
+  class         Classes           @relation(fields: [classId], references: [id])
+  isActive      Boolean           @default(true)
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@id([studentId, classId])
 }
