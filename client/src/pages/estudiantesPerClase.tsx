@@ -1,26 +1,20 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
-import { useEffect, useState } from "react";
-import { Button, Card, Table, message } from "antd";
+import { useEffect } from "react";
+import { Button, Card, Table, Space } from "antd";
 import { StudentUpload } from "../components/studentUpload";
-import { DownloadOutlined } from "@ant-design/icons";
-import { downloadFileByKey } from "../services/fileService";
-import type { Student as IStudent } from "../interfaces/studentInterface";
-
-// Extiende la interfaz del proyecto si necesitas la propiedad documentKey
-type StudentWithKey = IStudent & { documentKey?: string };
+import { FolderOutlined } from "@ant-design/icons";
 
 export function StudentsCurso() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { fetchClase, curso, students, createStudents } = useClasses();
-  // aceptar string o number ya que record.codigo en tu proyecto es number
-  const [downloadingId, setDownloadingId] = useState<string | number | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchClase(id);
     }
-  }, [id, fetchClase]);
+  }, [id]);
 
   const columns = [
     {
@@ -71,7 +65,8 @@ export function StudentsCurso() {
             onClick={async () => {
               try {
                 setDownloadingId(record.codigo);
-                const key = record.documentKey ?? `documents/${record.codigo}.pdf`;
+                const key =
+                  record.documentKey ?? `documents/${record.codigo}.pdf`;
                 await downloadFileByKey(key);
                 message.success("Descarga iniciada");
               } catch (e: unknown) {
@@ -90,30 +85,86 @@ export function StudentsCurso() {
   ];
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h1> {curso}</h1>
+    <div style={{ padding: "1rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <h1>{curso}</h1>
+        <Button
+          type="primary"
+          icon={<FolderOutlined />}
+          onClick={() => navigate(`/curso/${id}/documents`)}
+          style={{ backgroundColor: "#1A2A80" }}
+        >
+          Documentos
+        </Button>
+      </div>
 
       {students ? (
         <>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-        
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>1er Parcial</Button>
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>2do Parcial</Button>
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => {}}>Final</Button>
-      </div>
-        <Table
-          columns={columns}
-          dataSource={students?.students || []}
-          rowKey={(record) => record.codigo}
-          pagination={{ pageSize: 20 }}
-          bordered
-        />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 24,
+            }}
+          >
+            <Space>
+              <Button
+                style={{ margin: 4, width: 120 }}
+                type="primary"
+                onClick={() => {}}
+              >
+                1er Parcial
+              </Button>
+              <Button
+                style={{ margin: 4, width: 120 }}
+                type="primary"
+                onClick={() => {}}
+              >
+                2do Parcial
+              </Button>
+              <Button
+                style={{ margin: 4, width: 120 }}
+                type="primary"
+                onClick={() => {}}
+              >
+                Final
+              </Button>
+            </Space>
+          </div>
+          <Table
+            columns={columns}
+            dataSource={students?.students || []}
+            rowKey={(record) => record.codigo}
+            pagination={{ pageSize: 20 }}
+            bordered
+          />
         </>
-        
       ) : (
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 20 }}>
-
-          <Card style={{ width: '80%', height: "100%", textAlign: 'center', borderRadius: 20 }}>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingTop: 20,
+          }}
+        >
+          <Card
+            style={{
+              width: "80%",
+              height: "100%",
+              textAlign: "center",
+              borderRadius: 20,
+            }}
+          >
             <h2>No hay estudiantes asignados a este curso.</h2>
             <StudentUpload
               disabled={!!students}
@@ -129,7 +180,6 @@ export function StudentsCurso() {
             />
           </Card>
         </div>
-
       )}
     </div>
   );
