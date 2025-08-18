@@ -23,7 +23,7 @@ async function main() {
       description: 'Estudiante inscrito en materias',
     },
   });
-
+  
   // --- Hash de contraseñas ---
   const docentePassword = await bcrypt.hash('Docente123!', 10);
   const estudiantePassword = await bcrypt.hash('Estudiante123!', 10);
@@ -34,6 +34,8 @@ async function main() {
       email: 'docente@example.com',
       password: docentePassword,
       isActive: true,
+      name: 'Doc',
+      lastname: 'Ejemplo',
       roles: {
         create: [{ roleId: docenteRole.id }],
       },
@@ -53,6 +55,8 @@ async function main() {
       email: 'estudiante@example.com',
       password: estudiantePassword,
       isActive: true,
+      name: 'Patricio', 
+      lastname: 'Estrella',
       roles: {
         create: [{ roleId: estudianteRole.id }],
       },
@@ -72,7 +76,7 @@ async function main() {
   await prisma.user.upsert({
     where: { email },
     update: {},
-    create: { email, password: pass, isActive: true },
+    create: { email, password: pass, isActive: true, name: 'Patricio', lastname: 'Estrella', },
   });
 }
 
