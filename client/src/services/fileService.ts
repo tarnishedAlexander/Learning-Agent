@@ -32,10 +32,11 @@ export async function downloadFileByKey(key: string) {
   window.URL.revokeObjectURL(urlBlob);
 }
 
-export const uploadPdf = (file: File, onProgress?: (p: number) => void) => {
+export const uploadPdf = async (file: File, onProgress?: (p: number) => void) => {
   const fd = new FormData();
   fd.append("file", file, file.name);
-  return axios.post("/api/upload", fd, {
+  
+  const response = await axios.post("/api/upload", fd, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: (ev) => {
       if (ev.total) {
@@ -44,4 +45,7 @@ export const uploadPdf = (file: File, onProgress?: (p: number) => void) => {
       }
     },
   });
+  
+  // Retornar los datos de la respuesta en lugar de toda la respuesta
+  return response.data;
 };
