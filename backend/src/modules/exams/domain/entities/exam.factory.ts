@@ -1,8 +1,9 @@
-import { Exam } from '../entities/exam.entity';
-import { Difficulty } from '../entities/difficulty.vo';
-import { PositiveInt } from '../entities/positive-int.vo';
-import { DomainError } from '../entities/domain-error';
 import { randomUUID } from 'crypto';
+import { Exam } from './exam.entity';
+import { Difficulty } from './difficulty.vo';
+import { PositiveInt } from './positive-int.vo';
+import { DomainError } from './domain-error';
+import { DistributionVO, type Distribution } from './distribution.vo';
 
 export type ExamProps = {
   subject: string;
@@ -11,14 +12,13 @@ export type ExamProps = {
   totalQuestions: number;
   timeMinutes: number;
   reference?: string | null;
+  distribution?: Distribution;
 };
 
 export class ExamFactory {
   static create(props: ExamProps): Exam {
     const subject = props.subject?.trim();
-    if (!subject) {
-      throw new DomainError('Materia (subject) es obligatoria y no puede estar vacía.');
-    }
+    if (!subject) throw new DomainError('Materia (subject) es obligatoria y no puede estar vacía.');
 
     const reference = props.reference?.trim();
     if (reference && /[<>]/.test(reference)) {
@@ -27,17 +27,28 @@ export class ExamFactory {
 
     const difficulty = Difficulty.create(props.difficulty);
     const attempts = PositiveInt.create('Intentos', props.attempts);
-    const totalQuestions = PositiveInt.create('Total de preguntas', props.totalQuestions);
-    const timeMinutes = PositiveInt.create('Tiempo (min)', props.timeMinutes);
+    const total = PositiveInt.create('Total de preguntas', props.totalQuestions);
+    const time = PositiveInt.create('Tiempo (min)', props.timeMinutes);
+
+    let distributionVO: DistributionVO | null = null;
+    if (props.distribution) {
+      try {
+        distributionVO = new DistributionVO(props.distribution, total.getValue());
+      } catch (e: any) {
+        throw new DomainError(e?.message ?? 'Distribución inválida.');
+      }
+    }
 
     return new Exam(
       randomUUID(),
       subject,
       difficulty,
       attempts,
-      totalQuestions,
-      timeMinutes,
+      total,
+      time,
       reference ?? null,
+      distributionVO,      
+      new Date(),            
     );
   }
 }

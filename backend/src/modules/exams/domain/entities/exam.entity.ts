@@ -1,28 +1,44 @@
 import { Difficulty } from '../entities/difficulty.vo';
 import { PositiveInt } from '../entities/positive-int.vo';
+import { DistributionVO } from './distribution.vo'; 
 
 export class Exam {
   constructor(
     public readonly id: string,
-    public subject: string,
-    public difficulty: Difficulty,
-    public attempts: PositiveInt,
-    public totalQuestions: PositiveInt,
-    public timeMinutes: PositiveInt,
-    public reference?: string | null,
-    public readonly createdAt: Date = new Date(),
+    public readonly subject: string,
+    public readonly difficulty: Difficulty,
+    public readonly attempts: PositiveInt,
+    public readonly totalQuestions: PositiveInt,
+    public readonly timeMinutes: PositiveInt,
+    public readonly reference: string | null,
+    public readonly distribution: DistributionVO | null,
+    public readonly createdAt?: Date,
   ) {}
-
+  
   toJSON() {
-    return {
+    const base = {
       id: this.id,
       subject: this.subject,
-      difficulty: this.difficulty.getValue(),
-      attempts: this.attempts.getValue(),
-      totalQuestions: this.totalQuestions.getValue(),
-      timeMinutes: this.timeMinutes.getValue(),
-      reference: this.reference ?? null,
-      createdAt: this.createdAt.toISOString(),
+      difficulty: this.difficulty.getValue?.() ?? String(this.difficulty),
+      attempts: this.attempts.getValue?.() ?? Number(this.attempts),
+      totalQuestions: this.totalQuestions.getValue?.() ?? Number(this.totalQuestions),
+      timeMinutes: this.timeMinutes.getValue?.() ?? Number(this.timeMinutes),
+      reference: this.reference,
+      createdAt: this.createdAt ?? null,
     };
+
+    if (this.distribution) {
+      return {
+        ...base,
+        distribution: {
+          multiple_choice: this.distribution.value.multiple_choice,
+          true_false: this.distribution.value.true_false,
+          open_analysis: this.distribution.value.open_analysis,
+          open_exercise: this.distribution.value.open_exercise,
+        },
+      };
+    }
+
+    return base;
   }
 }
