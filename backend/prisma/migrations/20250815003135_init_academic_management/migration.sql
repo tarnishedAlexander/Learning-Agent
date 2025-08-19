@@ -6,8 +6,8 @@
 
 */
 -- AlterTable
-ALTER TABLE "public"."User" ADD COLUMN     "lastname" TEXT NOT NULL,
-ADD COLUMN     "name" TEXT NOT NULL;
+ALTER TABLE "public"."User" ADD COLUMN "lastname" TEXT DEFAULT 'Pendiente';
+ALTER TABLE "public"."User" ADD COLUMN "name"     TEXT DEFAULT 'Pendiente';
 
 -- CreateTable
 CREATE TABLE "public"."Classes" (
