@@ -49,16 +49,6 @@ async function main() {
   //   },
   // });
 
-<<<<<<< HEAD
-  // crear user
-  const email = 'admin@example.com';
-  const pass = await bcrypt.hash('admin123', 10);
-  await prisma.user.upsert({
-    where: { email },
-    update: {},
-    create: { email, password: pass, isActive: true },
-  });
-=======
   // // --- Crear usuario estudiante ---
   // const estudiante = await prisma.user.create({
   //   data: {
@@ -88,7 +78,6 @@ async function main() {
   //   update: {},
   //   create: { email, password: pass, isActive: true, name: 'Patricio', lastname: 'Estrella', },
   // });
->>>>>>> f2fb0418c8a187cc0064d66ecde98e6e0fe25ef6
 }
 
 main()
