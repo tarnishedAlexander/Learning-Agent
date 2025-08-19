@@ -94,7 +94,6 @@ model TeacherProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  academicUnit String?  // departamento/escuela
 
   // relation 1:N
   classes      Classes[]
