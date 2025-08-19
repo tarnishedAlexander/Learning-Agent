@@ -90,10 +90,7 @@ model TeacherProfile {
   user         User    @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
   title        String? // Ing., Mgr., PhD, etc.
   bio          String?
-  academicUnit String? // departamento/escuela
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  academicUnit String?  // departamento/escuela
 
   // relation 1:N
   classes      Classes[]
@@ -138,6 +135,15 @@ model UserSession {
   @@index([userId, expiresAt])
 }
 
+model Document {
+  id          String   @id @default(uuid())
+  originalName String
+  storedName   String   @unique
+  s3Key        String
+  size         Int
+  contentType  String
+  uploadedAt   DateTime @default(now())
+}
 /**
  * ===========================
  * Exams generation
@@ -164,6 +170,7 @@ model Exam {
   @@index([subject])
 }
 
+}
 /* ===========================
    Academic Management (classes and enrollment)
    =========================== */
