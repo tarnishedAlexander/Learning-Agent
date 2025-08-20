@@ -36,11 +36,11 @@ export const useDocuments = () => {
     }
   }, []);
   
-  const downloadFile = useCallback(async (doc: Document): Promise<void> => {
+  const downloadDocument = useCallback(async (document: Document): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      await documentService.downloadPdf(doc.id);
+      await documentService.downloadPdf(document.url, document.name);
     } catch (error) {
       setError('Error downloading file');
       throw error;
