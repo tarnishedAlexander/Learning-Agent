@@ -272,7 +272,6 @@ export function StudentProfile() {
             ))}
           </div>
         </div>
-<<<<<<< HEAD
         <div className="float-button-animation" style={{ position: "fixed", right: "40px", bottom: "40px", zIndex: 100 }}>
 =======
 
@@ -297,17 +296,8 @@ export function StudentProfile() {
         open={isChatOpen}
         onCancel={() => setIsChatOpen(false)}
         footer={null}
-        width="90vw" 
-        style={{ 
-          top: "auto", 
-          bottom: 0,
-          left: "auto",
-          right: 0,
-          margin: 15,
-          position: "fixed",
-          maxWidth: "65%",
-          padding: 12 
-        }}
+        width="90vw"
+        style={{ top: "40px", maxWidth: "500px" }}
         closable={false}
         bodyStyle={{ padding: 0, background: "transparent", boxShadow: "none" }}
         className="chat-modal"
