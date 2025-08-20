@@ -1,7 +1,8 @@
 export interface Document {
-  id: string;
-  name: string;
-  uploadDate: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
   size: number;
-  url: string;
+  downloadUrl: string;
+  uploadedAt: string;
 }
