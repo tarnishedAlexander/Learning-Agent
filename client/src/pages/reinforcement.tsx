@@ -273,11 +273,9 @@ export function StudentProfile() {
           </div>
         </div>
         <div className="float-button-animation" style={{ position: "fixed", right: "40px", bottom: "40px", zIndex: 100 }}>
-=======
 
         
         <div className="float-button-animation" style={{ position: "fixed", right: "40px", bottom: "5px", zIndex: 100 }}>
->>>>>>> 250ecf0 (Cambio en la ubicacion de la burbuja y el modal del chat)
           <FloatButton
             icon={<MessageOutlined style={{ fontSize: "20px" }} />}
             type="primary"
