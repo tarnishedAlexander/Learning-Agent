@@ -40,7 +40,7 @@ export const useDocuments = () => {
     setLoading(true);
     setError(null);
     try {
-      await documentService.downloadPdf(document.url, document.name);
+      await documentService.downloadPdf(document.downloadUrl, document.originalName);
     } catch (error) {
       setError('Error downloading file');
       throw error;
@@ -56,7 +56,7 @@ export const useDocuments = () => {
   return {
     documents,
     uploadDocument,
-    downloadFile,
+    downloadDocument,
     loadDocuments,
     loading,
     error,
