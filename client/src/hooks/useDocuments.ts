@@ -1,31 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Document } from '../interfaces/documentInterface';
 import { documentService } from '../services/documentService';
 
 export const useDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchDocuments = async () => {
+  const loadDocuments = useCallback(async (): Promise<void> => { // Prevents unnecessary re-renders
     setLoading(true);
+    setError(null);
     try {
-      const data = await documentService.getDocuments();
-      setDocuments(data);
+      const docs = await documentService.getDocuments();
+      setDocuments(docs);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      setError('Error loading documents');
+      throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // La funcionalidad de agregar y eliminar documentos será implementada por otro desarrollador
+  const uploadDocument = useCallback(async (document: File): Promise<Document> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newFile = await documentService.uploadDocument(document);
+      setDocuments((prevDocs) => [...prevDocs, newFile]);
+      return newFile;
+    } catch (error) {
+      setError('Error uploading file');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  const downloadFile = useCallback(async (doc: Document): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await documentService.downloadPdf(doc.id);
+    } catch (error) {
+      setError('Error downloading file');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
+    loadDocuments();
+  }, [loadDocuments]);
 
   return {
     documents,
-    loading
+    uploadDocument,
+    downloadFile,
+    loadDocuments,
+    loading,
+    error,
   };
 };
