@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { IdentityModule } from './modules/identity/identity.module';
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config';
 import { DocumentModule } from './modules/repository/document.module';
+import { GestionAcademicaModule } from './modules/gestion_academica/gestion_academica.module';
+import { ExamsModule } from './modules/exams/exams.module';
 
 @Module({
   imports: [
@@ -11,7 +13,9 @@ import { DocumentModule } from './modules/repository/document.module';
     RbacModule,
     IdentityModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    DocumentModule
+    GestionAcademicaModule,
+    ExamsModule,
+    DocumentModule,
   ],
   controllers: [],
   providers: [],

@@ -1,19 +1,6 @@
 import axios from "axios";
 const jsonInstance = axios.create({ baseURL: import.meta.env.VITE_API_BASE || "" });
 
-export const uploadPdf = (file: File, onProgress?: (p: number) => void) => {
-  const fd = new FormData();
-  fd.append("file", file, file.name);
-  return axios.post("/api/upload", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: (ev) => {
-      if (ev.total) {
-        const percent = Math.round((ev.loaded * 100) / ev.total);
-        onProgress?.(percent);
-      }
-    },
-  });
-};
 
 export async function downloadFileByKey(key: string) {
   const url = `/files/${encodeURIComponent(key)}`;
@@ -44,3 +31,21 @@ export async function downloadFileByKey(key: string) {
   link.remove();
   window.URL.revokeObjectURL(urlBlob);
 }
+
+export const uploadPdf = async (file: File, onProgress?: (p: number) => void) => {
+  const fd = new FormData();
+  fd.append("file", file, file.name);
+  
+  const response = await axios.post("/api/upload", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: (ev) => {
+      if (ev.total) {
+        const percent = Math.round((ev.loaded * 100) / ev.total);
+        onProgress?.(percent);
+      }
+    },
+  });
+  
+  // Retornar los datos de la respuesta en lugar de toda la respuesta
+  return response.data;
+};

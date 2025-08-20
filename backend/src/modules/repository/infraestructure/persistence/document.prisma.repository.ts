@@ -19,34 +19,35 @@ export class DocumentPrismaRepository implements DocumentRepository {
   async save(doc: Omit<DocumentEntity, 'id'>): Promise<DocumentEntity> {
     const created: PrismaDocument = await this.prisma.document.create({
       data: {
-        name: doc.storedName, 
-        minIOKey: doc.s3Key,
+        originalName: doc.originalName,
+        storedName: doc.storedName,
+        s3Key: doc.s3Key,
         size: doc.size,
         contentType: doc.contentType,
-        uploadAt: doc.uploadedAt,
+        uploadedAt: doc.uploadedAt,
       },
     });
 
     return new DocumentEntity(
       created.id,
       doc.originalName,
-      created.name,
-      created.minIOKey,
+      created.originalName,
+      created.s3Key,
       created.size,
       created.contentType,
-      created.uploadAt,
+      created.uploadedAt,
     );
   }
 
 
 async download(s3Key: string): Promise<Readable> {
     const document = await this.prisma.document.findFirst({
-      where: { minIOKey: s3Key },
+      where: { s3Key: s3Key },
     });
 
     if (!document) {
       throw new Error('Document not found');
     }
-    return this.storage.getFile(document.minIOKey);
+    return this.storage.getFile(document.s3Key);
   }
 } 
