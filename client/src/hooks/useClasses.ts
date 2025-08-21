@@ -8,6 +8,7 @@ import type { StudentInfo } from "../interfaces/studentInterface";
 
 const useClasses = () =>{
 const { clases, setClases,addClase } = useClaseStore();
+const [objClass, setObjClass] = useState<Clase>();
 const [curso,setCurso]=useState('')
 const [students,setStudents]=useState<StudentInfo[]>([])
   useEffect(() => {
@@ -31,6 +32,7 @@ const [students,setStudents]=useState<StudentInfo[]>([])
 
   const fetchClase = async (id:string)=>{
     const curso = await claseService.getClaseById(id)
+    setObjClass(curso);
     setCurso(curso.name)   
     const students = await studentService.getStudentsByClassId(id)
     setStudents(students)
@@ -50,6 +52,7 @@ const [students,setStudents]=useState<StudentInfo[]>([])
     fetchClases,
     addClases,
     fetchClase,
+    objClass,
     curso,
     students,
     createStudents

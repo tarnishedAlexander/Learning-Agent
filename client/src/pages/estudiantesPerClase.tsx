@@ -7,22 +7,23 @@ import { SingleStudentForm } from "../components/singleStudentForm";
 import { DownloadOutlined, FolderOutlined } from "@ant-design/icons";
 import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
 import useEnrollment from "../hooks/useEnrollment";
+import PageTemplate from "../components/PageTemplate";
 
 export function StudentsCurso() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents } = useClasses()
-  const { enrollSingleStudent }  = useEnrollment();
+  const { fetchClase, curso, students, createStudents, objClass } = useClasses()
+  const { enrollSingleStudent } = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
-  const [downloadingId, setDownloadingId] = useState<string|null>();   
+  const [downloadingId, setDownloadingId] = useState<string | null>();
   useEffect(() => {
     if (id) {
       fetchClase(id);
     }
-    
+
     console.log(students)
   }, [id])
-  
+
   const handleSubmit = (values: createEnrollmentInterface) => {
     enrollSingleStudent(values)
   }
@@ -66,8 +67,8 @@ export function StudentsCurso() {
     {
       title: "Acciones",
       key: "acciones",
-//      render: (_: unknown, record: StudentWithKey) => {
-        render: (_: unknown, record: any) => {
+      //      render: (_: unknown, record: StudentWithKey) => {
+      render: (_: unknown, record: any) => {
         const isLoading = downloadingId === record.codigo;
         return (
           <Button
@@ -97,117 +98,122 @@ export function StudentsCurso() {
   ];
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-        }}
-      >
-        <h1>{curso}</h1>
-        <Button
-          type="primary"
-          icon={<FolderOutlined />}
-          onClick={() => navigate(`/curso/${id}/documents`)}
-          style={{ backgroundColor: "#1A2A80" }}
-        >
-          Documentos
-        </Button>
-      </div>
-
-      {students ? (
-        <>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: 24,
-            }}
-          >
-            <Space>
-              <Button
-                style={{ margin: 4, width: 120 }}
-                type="primary"
-                onClick={() => {}}
-              >
-                1er Parcial
-              </Button>
-              <Button
-                style={{ margin: 4, width: 120 }}
-                type="primary"
-                onClick={() => {}}
-              >
-                2do Parcial
-              </Button>
-              <Button
-                style={{ margin: 4, width: 120 }}
-                type="primary"
-                onClick={() => {}}
-              >
-                Final
-              </Button>
-            </Space>
-          </div>
-          <Table
-            columns={columns}
-            dataSource={students || []}
-            rowKey={(record) => record.code}
-            pagination={{ pageSize: 20 }}
-            bordered
-          />
-        <Button style={{margin:4,width:120}} type="primary" onClick={() => { setFormOpen (true) }}>Añadir Estudiante</Button>
-        </>
-      ) : (
+    <PageTemplate
+      title={`Curso: ${objClass?.name}`}
+      subtitle={`Lista de datos del curso ${objClass?.name}`}
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases", href: "/classes" }, { label: `${objClass?.name}`, href: `/classes/${objClass?.id}` }]}
+    >
+      <div style={{ padding: "1rem" }}>
         <div
           style={{
-            width: "100%",
             display: "flex",
-            flexDirection: "column",
+            justifyContent: "space-between",
             alignItems: "center",
-            justifyContent: "center",
-            paddingTop: 20,
+            marginBottom: 24,
           }}
         >
-          <Card
+          <Button
+            type="primary"
+            icon={<FolderOutlined />}
+            onClick={() => navigate(`/curso/${id}/documents`)}
+            style={{ backgroundColor: "#1A2A80" }}
+          >
+            Documentos
+          </Button>
+        </div>
+
+        {students ? (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}
+            >
+              <Space>
+                <Button
+                  style={{ margin: 4, width: 120 }}
+                  type="primary"
+                  onClick={() => { }}
+                >
+                  1er Parcial
+                </Button>
+                <Button
+                  style={{ margin: 4, width: 120 }}
+                  type="primary"
+                  onClick={() => { }}
+                >
+                  2do Parcial
+                </Button>
+                <Button
+                  style={{ margin: 4, width: 120 }}
+                  type="primary"
+                  onClick={() => { }}
+                >
+                  Final
+                </Button>
+              </Space>
+            </div>
+            <Table
+              columns={columns}
+              dataSource={students || []}
+              rowKey={(record) => record.code}
+              pagination={{ pageSize: 20 }}
+              bordered
+            />
+            <Button style={{ margin: 4, width: 120 }} type="primary" onClick={() => { setFormOpen(true) }}>Añadir Estudiante</Button>
+          </>
+        ) : (
+          <div
             style={{
-              width: "80%",
-              height: "100%",
-              textAlign: "center",
-              borderRadius: 20,
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingTop: 20,
             }}
           >
-            <h2>No hay estudiantes asignados a este curso.</h2>
-            <StudentUpload
-              disabled={!!students}
-              onStudentsParsed={(parsedStudents) => {
-                console.log("Estudiantes leídos:", parsedStudents);
-                /*if (id) {
-                  createStudents({
-                    classId: id,
-                    students: parsedStudents,
-                  });
-                }*/
-                //TODO manejar la subida de estudiantes
+            <Card
+              style={{
+                width: "80%",
+                height: "100%",
+                textAlign: "center",
+                borderRadius: 20,
               }}
-            />
-          </Card>
-        </div>
-      )}
-      <SingleStudentForm
-        open={formOpen}
-        onClose={() => { setFormOpen(false)}}
-        onSubmit={(values) => {
+            >
+              <h2>No hay estudiantes asignados a este curso.</h2>
+              <StudentUpload
+                disabled={!!students}
+                onStudentsParsed={(parsedStudents) => {
+                  console.log("Estudiantes leídos:", parsedStudents);
+                  /*if (id) {
+                    createStudents({
+                      classId: id,
+                      students: parsedStudents,
+                    });
+                  }*/
+                  //TODO manejar la subida de estudiantes
+                }}
+              />
+            </Card>
+          </div>
+        )}
+        <SingleStudentForm
+          open={formOpen}
+          onClose={() => { setFormOpen(false) }}
+          onSubmit={(values) => {
             const data: createEnrollmentInterface = {
               ...values,
               classId: id || "",
             };
             console.log("Datos del formulario:", data);
-            handleSubmit(data) 
-          //createStudents(values);
-        }}>
-      </SingleStudentForm>
-    </div>
+            handleSubmit(data)
+            //createStudents(values);
+          }}>
+        </SingleStudentForm>
+      </div>
+    </PageTemplate>
   );
 }

@@ -5,13 +5,14 @@ import { CursosForm } from "../components/cursosForm";
 import type { Clase } from "../interfaces/claseInterface";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import PageTemplate from "../components/PageTemplate";
 
 function parseISO(d: string | Date): Date {
   return d instanceof Date ? d : new Date(d);
 }
 
 export function ClassMenu() {
-  const { clases, addClases } = useClasses(); 
+  const { clases, addClases } = useClasses();
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -19,20 +20,20 @@ export function ClassMenu() {
     navigate('/reinforcement');
   };
 
-  
+
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),
     [clases]
   );
 
-  
+
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
     return clasesSafe.filter((cl) => (cl.name ?? "").toLowerCase().includes(term));
   }, [clasesSafe, searchTerm]);
 
-  
+
   const { cursosActuales, cursosPasados } = useMemo(() => {
     const now = new Date();
     const byEndDesc = (a: Clase, b: Clase) =>
@@ -53,7 +54,7 @@ export function ClassMenu() {
     await addClases(values);
   };
 
-  const goToStudents = (id: string) => navigate(`curso/${id}`);
+  const goToStudents = (id: string) => navigate(`/classes/${id}`);
 
   const renderGrid = (items: Clase[]) =>
     items.length ? (
@@ -77,47 +78,55 @@ export function ClassMenu() {
     );
 
   return (
-    <div
-      className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-      style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "24px 24px",
-      }}
+    <PageTemplate
+      title="Clases"
+      subtitle="Clases y cursos a las que está asociado"
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases", href: "/classes" }]}
     >
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <img
-          src="/src/assets/upb_logo.png"
-          alt="UPB Logo"
-          style={{ width: 350, height: "auto" }}
-        />
-      </div>
-      <CursosForm
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAddClase}
-      />
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-        <Space>
-          <Input
-            placeholder="Buscar curso"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            allowClear
-            style={{ width: 240 }}
+      <div
+        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "24px 24px",
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img
+            src="/src/assets/upb_logo.png"
+            alt="UPB Logo"
+            style={{ width: 350, height: "auto" }}
           />
-        </Space>
-        <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
-        <Button type="primary" onClick={goToReinforcement}>page4</Button>
+        </div>
+        <CursosForm
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleAddClase}
+        />
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
+          <Space>
+            <Input
+              placeholder="Buscar curso"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              allowClear
+              style={{ width: 240 }}
+            />
+          </Space>
+          <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
+          <Button type="primary" onClick={goToReinforcement}>page4</Button>
+        </div>
+
+        <h1>Cursos Actuales</h1>
+        {renderGrid(cursosActuales)}
+
+        <h1 style={{ marginTop: 24 }}>Cursos Pasados</h1>
+        {renderGrid(cursosPasados)}
       </div>
+    </PageTemplate>
 
-      <h1>Cursos Actuales</h1>
-      {renderGrid(cursosActuales)}
 
-      <h1 style={{ marginTop: 24 }}>Cursos Pasados</h1>
-      {renderGrid(cursosPasados)}
-    </div>
   );
 }
