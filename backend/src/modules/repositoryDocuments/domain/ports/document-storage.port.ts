@@ -4,7 +4,7 @@ import {
   DocumentListItem,
 } from '../value-objects/upload-document.vo';
 
-export interface DocumentRepository {
+export interface DocumentStoragePort {
   uploadDocument(req: UploadDocumentRequest): Promise<Document>;
   generateDownloadUrl(fileName: string): Promise<string>;
   listDocuments(): Promise<DocumentListItem[]>;
