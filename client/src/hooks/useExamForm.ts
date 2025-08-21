@@ -7,6 +7,10 @@ type Values = {
   totalQuestions: string | number;
   timeMinutes: string | number;
   reference?: string;
+  multipleChoice: string | number;
+  trueFalse: string | number;
+  analysis: string | number;
+  openEnded: string | number;
 };
 
 const limits = { subjectMax: 80, referenceMax: 1000 };
@@ -14,7 +18,17 @@ const limits = { subjectMax: 80, referenceMax: 1000 };
 export function useExamForm() {
   const draft = (readJSON('exam:draft') || {}) as Partial<Values>;
   let values: Values = {
-    subject: '', difficulty: '', attempts: '', totalQuestions: '', timeMinutes: '', reference: '', ...draft
+    subject: '',
+    difficulty: '',
+    attempts: '',
+    totalQuestions: '',
+    timeMinutes: '',
+    reference: '',
+    multipleChoice: '',
+    trueFalse: '',
+    analysis: '',
+    openEnded: '',
+    ...draft
   };
   let errors: Record<string, string> = {};
 
@@ -25,7 +39,18 @@ export function useExamForm() {
   };
 
   const reset = () => {
-    values = { subject:'', difficulty:'', attempts:'', totalQuestions:'', timeMinutes:'', reference:'' };
+    values = {
+      subject:'',
+      difficulty:'',
+      attempts:'',
+      totalQuestions:'',
+      timeMinutes:'',
+      reference:'',
+      multipleChoice:'',
+      trueFalse:'',
+      analysis:'',
+      openEnded:'',
+    };
     errors = {}; removeItem('exam:draft');
   };
 
@@ -43,6 +68,13 @@ export function useExamForm() {
     if (!posInt(values.attempts)) errors.attempts = 'Debe ser entero > 0.';
     if (!posInt(values.totalQuestions)) errors.totalQuestions = 'Debe ser entero > 0.';
     if (!posInt(values.timeMinutes)) errors.timeMinutes = 'Debe ser entero > 0.';
+    // Validar tipos de pregunta (opcional, puedes personalizar)
+    ['multipleChoice','trueFalse','analysis','openEnded'].forEach((k) => {
+      if (values[k as keyof Values] !== undefined && values[k as keyof Values] !== '') {
+        const n = Number(values[k as keyof Values]);
+        if (!(Number.isInteger(n) && n >= 0)) errors[k] = 'Debe ser entero >= 0.';
+      }
+    });
 
     if (values.reference && values.reference.length > limits.referenceMax) {
       errors.reference = `Máximo ${limits.referenceMax} caracteres.`;
