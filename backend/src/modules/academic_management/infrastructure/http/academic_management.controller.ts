@@ -16,6 +16,8 @@ import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-gro
 import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
 import { UpdateClassUseCase } from '../../application/commands/update-class.usecase';
 import { EditClassDTO } from './dtos/edit-class.dto';
+import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-class.usecase';
+import { DeleteClassDTO } from './dtos/delete-class.dto';
 
 @Controller('academic')
 export class AcademicManagementController {
@@ -31,6 +33,7 @@ export class AcademicManagementController {
     private readonly enrollSingle: EnrollSingleStudentUseCase,
     private readonly enrollGroup: EnrollGroupStudentUseCase,
     private readonly updateClass: UpdateClassUseCase,
+    private readonly softDeleteClass: SoftDeleteClassUseCase,
   ) { }
   @Get('classes')
   listClassesEndPoint() {
@@ -85,5 +88,12 @@ export class AcademicManagementController {
       dateEnd: dto.dateEnd
     }
     return this.updateClass.execute(input);
+  }
+  @Put('classes/remove/:id')
+  softDeleteEndpoint(@Param('id') id: string, @Body() dto: DeleteClassDTO) {
+    return this.softDeleteClass.execute({
+      teacherId: dto.teacherId,
+      classId: id
+    })
   }
 }

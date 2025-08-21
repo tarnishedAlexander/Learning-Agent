@@ -21,6 +21,7 @@ import { GetClassByIdUseCase } from './application/queries/get-class-by-id.useca
 import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-student.usecase';
 import { EnrollGroupStudentUseCase } from './application/commands/enroll-group-students.usecase';
 import { UpdateClassUseCase } from './application/commands/update-class.usecase';
+import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -43,6 +44,7 @@ import { UpdateClassUseCase } from './application/commands/update-class.usecase'
     EnrollSingleStudentUseCase,
     EnrollGroupStudentUseCase,
     UpdateClassUseCase,
+    SoftDeleteClassUseCase,
   ],
 })
 export class AcademicManagementModule {}
