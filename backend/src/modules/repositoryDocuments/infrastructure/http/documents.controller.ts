@@ -1,9 +1,22 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Delete,
+  Param,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
+import { DeleteDocumentUseCase } from '../../application/commands/delete-document.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
 } from './dtos/list-documents.dto';
+import {
+  DeleteDocumentParamDto,
+  DeleteDocumentResponseDto,
+  DeleteDocumentErrorDto,
+} from './dtos/delete-document.dto';
 
 /**
  * Documents Controller
@@ -17,7 +30,10 @@ import {
  */
 @Controller('api/documents')
 export class DocumentsController {
-  constructor(private readonly listDocumentsUseCase: ListDocumentsUseCase) {}
+  constructor(
+    private readonly listDocumentsUseCase: ListDocumentsUseCase,
+    private readonly deleteDocumentUseCase: DeleteDocumentUseCase,
+  ) {}
 
   /**
    * Endpoint GET /api/documents
@@ -86,6 +102,72 @@ export class DocumentsController {
           error: 'Internal Server Error',
           details: errorMessage,
         },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Endpoint DELETE /api/documents/:filename
+   * Elimina un documento específico moviéndolo a la carpeta deleted/ (soft delete)
+   *
+   * @param params - Parámetros de la URL conteniendo el filename
+   * @returns Confirmación de eliminación con metadata
+   * @throws HttpException en caso de documento no encontrado o errores de eliminación
+   */
+  @Delete(':filename')
+  async deleteDocument(
+    @Param() params: DeleteDocumentParamDto,
+  ): Promise<DeleteDocumentResponseDto> {
+    try {
+      const result = await this.deleteDocumentUseCase.execute(params.filename);
+
+      if (!result.success) {
+        // Documento no encontrado
+        if (result.error === 'DOCUMENT_NOT_FOUND') {
+          throw new HttpException(
+            new DeleteDocumentErrorDto(
+              'Document Not Found',
+              result.message,
+              params.filename,
+            ),
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        // Otros errores
+        throw new HttpException(
+          new DeleteDocumentErrorDto(
+            'Delete Failed',
+            result.message,
+            params.filename,
+          ),
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      return new DeleteDocumentResponseDto(
+        result.message,
+        params.filename,
+        result.deletedAt!,
+      );
+    } catch (error) {
+      // Si ya es una HttpException, re-lanzarla
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Error inesperado
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in deleteDocument:', errorMessage);
+
+      throw new HttpException(
+        new DeleteDocumentErrorDto(
+          'Internal Server Error',
+          `Error interno del servidor al eliminar documento: ${errorMessage}`,
+          params.filename,
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

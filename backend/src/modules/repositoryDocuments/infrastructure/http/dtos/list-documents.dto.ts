@@ -1,9 +1,30 @@
+import {
+  IsString,
+  IsNumber,
+  IsUrl,
+  IsDateString,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
 export class DocumentListItemDto {
+  @IsString()
   fileName: string;
+
+  @IsString()
   originalName: string;
+
+  @IsString()
   mimeType: string;
+
+  @IsNumber()
   size: number;
+
+  @IsUrl()
   downloadUrl: string;
+
+  @IsDateString()
   uploadedAt: Date;
 
   constructor(
@@ -24,8 +45,15 @@ export class DocumentListItemDto {
 }
 
 export class DocumentListResponseDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DocumentListItemDto)
   documents: DocumentListItemDto[];
+
+  @IsNumber()
   total: number;
+
+  @IsString()
   message: string;
 
   constructor(
@@ -40,9 +68,16 @@ export class DocumentListResponseDto {
 }
 
 export class ErrorResponseDto {
+  @IsNumber()
   statusCode: number;
+
+  @IsString()
   message: string;
+
+  @IsString()
   error: string;
+
+  @IsString()
   details: string;
 
   constructor(

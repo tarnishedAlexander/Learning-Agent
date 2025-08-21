@@ -4,6 +4,7 @@ import { FILE_STORAGE_REPO } from './tokens';
 import { DocumentsController } from './infrastructure/http/documents.controller';
 import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
 import { ListDocumentsUseCase } from './application/queries/list-documents.usecase';
+import { DeleteDocumentUseCase } from './application/commands/delete-document.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -20,7 +21,14 @@ import { ListDocumentsUseCase } from './application/queries/list-documents.useca
       },
       inject: [FILE_STORAGE_REPO],
     },
+    {
+      provide: DeleteDocumentUseCase,
+      useFactory: (storageAdapter: S3StorageAdapter) => {
+        return new DeleteDocumentUseCase(storageAdapter);
+      },
+      inject: [FILE_STORAGE_REPO],
+    },
   ],
-  exports: [ListDocumentsUseCase],
+  exports: [ListDocumentsUseCase, DeleteDocumentUseCase],
 })
 export class DocumentsModule {}
