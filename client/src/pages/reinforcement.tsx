@@ -288,11 +288,18 @@ export function StudentProfile() {
           />
         </div>
       </Layout.Content>
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
       <Modal
+=======
+
+      {/* --- MODAL DE CHAT (MÁS ANCHO Y RESPONSIVO) --- */}
+            <Modal
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
         title={null}
         open={isChatOpen}
         onCancel={() => setIsChatOpen(false)}
         footer={null}
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
         width="90vw" 
         style={{ 
           top: "auto", 
@@ -307,6 +314,13 @@ export function StudentProfile() {
         closable={false}
         bodyStyle={{ padding: 0, background: "transparent", boxShadow: "none" }}
         className="chat-modal"
+=======
+        width="90vw"
+        style={{ top: "40px", maxWidth: "500px" }}
+        closable={false}
+        bodyStyle={{ padding: 0, borderRadius: "20px", background: "transparent" }}
+        className="aws-chat-modal"
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
       >
         <div style={{
           height: '300px',
@@ -320,8 +334,14 @@ export function StudentProfile() {
         }}>
           <div style={{
             background: `linear-gradient(135deg, ${COLORS.deepNavy} 0%, ${COLORS.royalPurple} 100%)`,
-            padding: "24px",
-            textAlign: "center"
+            padding: "24px 0",
+            textAlign: "center",
+            width: "calc(100% + 48px)",
+            marginLeft: "-24px",
+            marginRight: "-24px",
+            boxSizing: "border-box",
+            borderTopLeftRadius: "20px",
+            borderTopRightRadius: "20px"
           }}>
             <Typography.Title
               level={4}
@@ -345,7 +365,12 @@ export function StudentProfile() {
               Estoy aquí para ayudarte con tus cursos
             </Typography.Text>
           </div>
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
           <div
+=======
+
+          <div 
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
             ref={chatBodyRef}
             style={{
               flex: 1,
@@ -367,8 +392,13 @@ export function StudentProfile() {
                   marginLeft: message.sender === 'user' ? "auto" : "0",
                   marginRight: message.sender === 'user' ? "0" : "auto",
                   maxWidth: "80%",
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
                   boxShadow: message.sender === 'user'
                     ? "0 4px 12px rgba(58, 56, 160, 0.15)"
+=======
+                  boxShadow: message.sender === 'user' 
+                    ? "0 4px 12px rgba(58, 56, 160, 0.15)" 
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
                     : "0 4px 12px rgba(0, 0, 0, 0.05)",
                   animation: "fadeInUp 0.3s ease-out",
                   animationDelay: `${index * 0.05}s`,
@@ -408,8 +438,15 @@ export function StudentProfile() {
               </div>
             )}
           </div>
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
           <div style={{
             padding: "16px 24px",
+=======
+
+          <div style={{ 
+            padding: "16px 24px", 
+            background: COLORS.pureWhite,
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
             borderTop: "1px solid rgba(0, 0, 0, 0.05)"
           }}>
             <div style={{
@@ -454,6 +491,133 @@ export function StudentProfile() {
           </div>
         </div>
       </Modal>
+<<<<<<< HEAD:client/src/pages/reinforcement.tsx
     </Layout>
   );
 }
+=======
+
+      <style>
+        {`
+          .subject-hover:hover {
+            background: #3B38A033 !important;
+            transform: translateX(4px) !important;
+          }
+          
+          .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(58, 56, 160, 0.2) !important;
+          }
+          .card-hover {
+            transition: all 0.4s ease;
+          }
+          .card-hover:hover .card-glow {
+            opacity: 0.8;
+          }
+          .card-hover:hover .card-line {
+            height: 5px;
+            background: linear-gradient(90deg, ${COLORS.softPeriwinkle} 0%, ${COLORS.royalPurple} 100%);
+          }
+          
+          .float-button-animation {
+            animation: float 3s ease-in-out infinite;
+          }
+          
+          .avatar-hover:hover {
+            transform: scale(1.05);
+          }
+          
+          .input-hover:hover {
+            box-shadow: 0 0 0 2px ${COLORS.paleLavender};
+          }
+          
+          .button-hover:hover button {
+            transform: scale(1.1);
+          }
+          
+          .typing-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: ${COLORS.deepNavy};
+            border-radius: 50%;
+            margin: 0 2px;
+            opacity: 0.6;
+            animation: pulse 1.5s infinite;
+          }
+          
+          @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+          }
+          
+          @keyframes pulse {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.2; transform: scale(0.8); }
+          }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          
+          @keyframes fadeInUp {
+            from { 
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes scaleIn {
+            from { 
+              opacity: 0;
+              transform: scale(0.95);
+            }
+            to { 
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+
+          .ant-modal-content {
+            padding: 0 !important;
+            background: transparent !important;
+            border-radius: 20px;
+            overflow: visible;
+            box-shadow: none;
+          }
+
+          .aws-chat-modal .ant-modal-body {
+            padding: 0 !important;
+            background: transparent !important;
+          }
+
+          .input-hover::placeholder {
+            color: #5a5a5a;
+            opacity: 1;
+          }
+          
+          @media (max-width: 768px) {
+            .ant-modal {
+              max-width: 90vw !important;
+              margin: 0 auto;
+            }
+            .ant-modal-content {
+              padding: 0 !important;
+            }
+            .ant-modal-body {
+              padding: 0 !important;
+            }
+          }
+        `}
+      </style>
+     </Layout> 
+     ); 
+    }
+>>>>>>> c7226b1 (Correction of chat layout):client/src/pages/reforzamiento.tsx
