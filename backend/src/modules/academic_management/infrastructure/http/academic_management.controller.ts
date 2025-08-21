@@ -12,6 +12,8 @@ import { GetStudentsByClassUseCase } from '../../application/queries/get-student
 import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
 import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
+import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-group-students.usecase';
+import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
 
 @Controller('academic')
 export class AcademicManagementController {
@@ -25,6 +27,7 @@ export class AcademicManagementController {
     private readonly createProfileStudent: CreateStudentProfileUseCase,
     private readonly createEnrollment: CreateEnrollmentUseCase,
     private readonly enrollSingle: EnrollSingleStudentUseCase,
+    private readonly enrollGroup: EnrollGroupStudentUseCase,
   ) { }
   @Get('classes')
   listClassesEndPoint() {
@@ -63,5 +66,8 @@ export class AcademicManagementController {
   enrollSingleStudentEndpoint(@Body() dto: EnrollSingleStudentDto) {
     return this.enrollSingle.execute(dto);
   }
-
+  @Post('enrollments/group-students')
+  enrollGroupStudentEndpoint(@Body() dto: EnrollGroupStudentDTO) {
+    return this.enrollGroup.execute(dto);
+  }
 }
