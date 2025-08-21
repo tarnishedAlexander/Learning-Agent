@@ -24,7 +24,8 @@ export const AppRoutes = () => {
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="curso/:id" element={<StudentsCurso />} />
+            <Route path="/classes" element={<ClassMenu />} />
+            <Route path="/classes/:id" element={<StudentsCurso />} />
             <Route path="/reinforcement" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />
