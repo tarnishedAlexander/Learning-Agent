@@ -7,6 +7,8 @@ import {
   GetObjectCommand,
   ListObjectsV2Command,
   HeadObjectCommand,
+  CopyObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DocumentStoragePort } from '../../domain/ports/document-storage.port';
@@ -180,7 +182,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
     // Extraer la extensión del archivo
     const extension = originalFileName.split('.').pop()?.toLowerCase() || 'pdf';
 
-    // Sanitizar el nombre original (solo mantener letras, números, guiones y puntos)
+    // Sanitizar el nombre original
     const baseName = originalFileName
       .replace(/\.[^/.]+$/, '') // Remover extensión
       .replace(/[^a-zA-Z0-9.-]/g, '_') // Reemplazar caracteres especiales
@@ -204,7 +206,6 @@ export class S3StorageAdapter implements DocumentStoragePort {
     extension: string;
   } | null {
     try {
-      // Remover el prefijo "documents/"
       const baseFileName = fileName.replace('documents/', '');
 
       // Buscar el patrón: timestamp_uuid_nombreOriginal.extension
@@ -219,7 +220,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
       return {
         timestamp: parseInt(timestampStr, 10),
         uuid,
-        originalName: originalName.replace(/_/g, ' '), // Restaurar espacios
+        originalName: originalName.replace(/_/g, ' '),
         extension,
       };
     } catch {
@@ -246,6 +247,57 @@ export class S3StorageAdapter implements DocumentStoragePort {
         return false;
       }
       throw error;
+    }
+  }
+
+  /**
+   * Verifica si un documento existe en MinIO
+   * @param fileName - Nombre del archivo a verificar
+   * @returns true si el archivo existe, false en caso contrario
+   */
+  async documentExists(fileName: string): Promise<boolean> {
+    try {
+      const headCommand = new HeadObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+      });
+
+      await this.s3Client.send(headCommand);
+      return true;
+    } catch (error: any) {
+      if (error.$metadata?.httpStatusCode === 404) {
+        return false;
+      }
+      throw new Error(`Error checking if document exists: ${error.message}`);
+    }
+  }
+
+  /**
+   * Realiza un soft delete moviendo el archivo a la carpeta deleted/
+   * @param fileName - Nombre del archivo a mover
+   */
+  async softDeleteDocument(fileName: string): Promise<void> {
+    try {
+      const deletedFileName = `deleted/${fileName}`;
+
+      // Copiar el archivo a la carpeta deleted/
+      const copyCommand = new CopyObjectCommand({
+        Bucket: this.bucketName,
+        CopySource: `${this.bucketName}/${fileName}`,
+        Key: deletedFileName,
+      });
+
+      await this.s3Client.send(copyCommand);
+
+      // Eliminar el archivo original
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+      });
+
+      await this.s3Client.send(deleteCommand);
+    } catch (error: any) {
+      throw new Error(`Error performing soft delete: ${error.message}`);
     }
   }
 
