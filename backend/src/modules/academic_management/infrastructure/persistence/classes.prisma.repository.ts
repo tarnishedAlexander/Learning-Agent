@@ -70,6 +70,15 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
         })
     }
 
+    async softDelete(id: string): Promise<Classes> {
+        return this.prisma.classes.update({
+            where: {id},
+            data: {
+                isActive:false
+            }
+        })
+    }
+
     async list(): Promise<Classes[]> {
         const rows = await this.prisma.classes.findMany({ orderBy: { name: 'asc' } });
         return rows.map((c) => new Classes(

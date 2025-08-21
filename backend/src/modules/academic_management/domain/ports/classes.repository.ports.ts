@@ -16,5 +16,8 @@ export interface ClassesRepositoryPort {
         dateBegin: Date,
         dateEnd: Date
     ): Promise<Classes>;
+    softDelete(
+        id: string
+    ): Promise<Classes>;
     list(): Promise<Classes[]>;
 }
