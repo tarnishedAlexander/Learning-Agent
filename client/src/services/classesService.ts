@@ -4,7 +4,7 @@ import type { Clase } from "../interfaces/claseInterface";
 export const claseService = {
   async getClases(): Promise<Clase[]> {
     try {
-      const response = await apiClient.get("/gestion_academica/classes/");
+      const response = await apiClient.get("/academic/classes/");
       return response.data;
     } catch (error) {
       console.error("Failed to fetch clases", error);
@@ -14,7 +14,7 @@ export const claseService = {
   
   async getClaseById(id: string): Promise<Clase> {
     try {
-      const response = await apiClient.get(`/gestion_academica/classes/${id}`);
+      const response = await apiClient.get(`/academic/classes/${id}`);
       return response.data;
     } catch (error) {
       console.error("Failed to fetch clase", error);
@@ -24,7 +24,7 @@ export const claseService = {
 
   async createClase(clase: Omit<Clase, "id">): Promise<Clase> {
     try {
-      const response = await apiClient.post("/gestion_academica/classes", clase);
+      const response = await apiClient.post("/academic/classes", clase);
       return response.data;
     } catch (error) {
       console.error("Failed to create clase", error);
@@ -35,7 +35,7 @@ export const claseService = {
   //TODO - Falta implementar el endpoint de actualizar clase
   async updateClase(id: string, claseData: Partial<Clase>): Promise<Clase> {
     try {
-      const response = await apiClient.put(`/gestion_academica/classes/${id}`, claseData);
+      const response = await apiClient.put(`/academic/classes/${id}`, claseData);
       return response.data;
     } catch (error) {
       console.error("Failed to update clase", error);
@@ -46,7 +46,7 @@ export const claseService = {
   //TODO - Falta implementar el endpoint de eliminar clase
   async deleteClase(id: string): Promise<void> {
     try {
-      await apiClient.delete(`/gestion_academica/classes/${id}`);
+      await apiClient.delete(`/academic/classes/${id}`);
     } catch (error) {
       console.error("Failed to delete clase", error);
       throw error;

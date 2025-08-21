@@ -10,7 +10,7 @@ import { CreateUserUseCase } from './application/commands/create-user.usecase';
 import { ClassesPrismaRepository } from './infrastructure/persistence/classes.prisma.repository';
 import { StudentPrismaRepository } from './infrastructure/persistence/student.prisma.repository';
 import { UserPrismaRepository } from './infrastructure/persistence/user.prisma.repository';
-import { Gestion_academicaController } from './infrastructure/http/gestion_academica.controller';
+import { AcademicManagementController } from './infrastructure/http/academic_management.controller';
 import { ListClassesUseCase } from './application/queries/list-classes.usecase';
 import { ListStudentsUseCase } from './application/queries/list-student.usecase';
 import { EnrollmentPrismaRepository } from './infrastructure/persistence/enrollment.prisma.repository';
@@ -22,7 +22,7 @@ import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-
 
 @Module({
   imports: [PrismaModule],
-  controllers: [Gestion_academicaController],
+  controllers: [AcademicManagementController],
   providers: [
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
     {provide: STUDENT_REPO,  useClass: StudentPrismaRepository}  ,
@@ -41,4 +41,4 @@ import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-
     EnrollSingleStudentUseCase,
   ],
 })
-export class GestionAcademicaModule {}
+export class AcademicManagementModule {}
