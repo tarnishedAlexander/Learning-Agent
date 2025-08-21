@@ -12,12 +12,11 @@ export type LoginValues = {
 
 type Props = {
   onSubmit?: (values: LoginValues) => Promise<void> | void;
-  brand?: string; // texto superior izquierdo (ej. "REERUI")
 };
 
 const { Title, Text } = Typography;
 
-export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
+export default function LoginPage({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
         await onSubmit(values);
       } else {
         const response = await login(values);
-        debugger;
       }
       navigate("/", { replace: true });
     } catch (e: any) {
