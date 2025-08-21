@@ -3,7 +3,7 @@ import { ENROLLMENT_REPO, STUDENT_REPO, USER_REPO } from "../../tokens";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
 import type { UserRepositoryPort } from "../../domain/ports/user.repository.ports";
-import { UserInfoDTO } from "./response_dtos/UserInfo.dto";
+import { UserInfoDTO } from "../../infrastructure/http/dtos/response.user-info.dto";
 
 @Injectable()
 export class GetStudentsByClassUseCase {
