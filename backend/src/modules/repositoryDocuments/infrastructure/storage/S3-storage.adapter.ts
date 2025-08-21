@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
@@ -16,17 +17,6 @@ import {
 } from '../../domain/value-objects/upload-document.vo';
 import { minioConfig } from '../config/minio.config';
 
-/**
- * S3 Storage Adapter
- *
- * Implementa la interfaz DocumentRepositoryPort para almacenar documentos
- * en MinIO (S3 compatible).
- *
- * Funcionalidades:
- * - Subida de documentos a MinIO
- * - Generación de URLs firmadas para descarga
- * - Listado de documentos almacenados
- */
 @Injectable()
 export class S3StorageAdapter implements DocumentStoragePort {
   private readonly s3Client: S3Client;

@@ -7,9 +7,9 @@ export interface MinioConfig {
 }
 
 export const minioConfig: MinioConfig = {
-  endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9090',
-  accessKeyId: process.env.MINIO_ROOT_USER || 'adminminio',
-  secretAccessKey: process.env.MINIO_ROOT_PASSWORD || 'adminpassword',
+  endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
+  accessKeyId: process.env.MINIO_ROOT_USER || 'minioadmin',
+  secretAccessKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin',
   bucketName: process.env.MINIO_BUCKET_NAME || 'documents',
   region: process.env.MINIO_REGION || 'us-east-1',
 };

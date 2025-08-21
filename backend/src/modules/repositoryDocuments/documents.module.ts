@@ -1,26 +1,26 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DOCUMENT_REPO, FILE_STORAGE_REPO } from './tokens';
-// TODO: Casos de uso e infraestructura a implementar
-// import { DocumentPrismaRepository } from './infrastructure/persistence/document.prisma.repository';
-// import { FileStoragePrismaRepository } from './infrastructure/persistence/file-storage.prisma.repository';
-// import { CreateDocumentUseCase } from './application/commands/create-document.usecase';
-// import { UploadDocumentUseCase } from './application/commands/upload-document.usecase';
-// import { ListDocumentsUseCase } from './application/queries/list-documents.usecase';
-// import { GetDocumentByIdUseCase } from './application/queries/get-document-by-id.usecase';
+import { FILE_STORAGE_REPO } from './tokens';
 import { DocumentsController } from './infrastructure/http/documents.controller';
+import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
+import { ListDocumentsUseCase } from './application/queries/list-documents.usecase';
 
 @Module({
   imports: [PrismaModule],
   controllers: [DocumentsController],
   providers: [
-    // { provide: DOCUMENT_REPO, useClass: DocumentPrismaRepository },
-    // { provide: FILE_STORAGE_REPO, useClass: FileStoragePrismaRepository },
-    // CreateDocumentUseCase,
-    // UploadDocumentUseCase,
-    // ListDocumentsUseCase,
-    // GetDocumentByIdUseCase,
+    // Storage provider
+    { provide: FILE_STORAGE_REPO, useClass: S3StorageAdapter },
+
+    // Use cases
+    {
+      provide: ListDocumentsUseCase,
+      useFactory: (storageAdapter: S3StorageAdapter) => {
+        return new ListDocumentsUseCase(storageAdapter);
+      },
+      inject: [FILE_STORAGE_REPO],
+    },
   ],
+  exports: [ListDocumentsUseCase],
 })
 export class DocumentsModule {}
