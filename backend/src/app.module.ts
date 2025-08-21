@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DocumentModule } from './modules/repository/document.module';
 import { GestionAcademicaModule } from './modules/gestion_academica/gestion_academica.module';
 import { ExamsModule } from './modules/exams/exams.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ExamsModule } from './modules/exams/exams.module';
     GestionAcademicaModule,
     ExamsModule,
     DocumentModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [],
