@@ -5,23 +5,24 @@ import type { Document } from '../../interfaces/documentInterface';
 interface DocumentTableProps {
   documents: Document[];
   loading: boolean;
-  onDelete?: (id: string) => Promise<void>; // Opcional ya que será implementado después
+  onDelete?: (fileName: string) => Promise<void>;
+  onDownload?: (doc: Document) => Promise<void>;
 }
 
-export const DocumentTable = ({ documents, loading }: DocumentTableProps) => {
+export const DocumentTable = ({ documents, loading, onDelete, onDownload }: DocumentTableProps) => {
   const columns = [
     {
       title: 'Nombre del archivo',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a: Document, b: Document) => a.name.localeCompare(b.name),
+      dataIndex: 'originalName',
+      key: 'originalName',
+      sorter: (a: Document, b: Document) => a.originalName.localeCompare(b.originalName),
     },
     {
       title: 'Fecha de subida',
-      dataIndex: 'uploadDate',
-      key: 'uploadDate',
-      sorter: (a: Document, b: Document) => 
-        new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime(),
+      dataIndex: 'uploadedAt',
+      key: 'uploadedAt',
+      sorter: (a: Document, b: Document) =>
+        new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime(),
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
     },
     {
@@ -30,11 +31,8 @@ export const DocumentTable = ({ documents, loading }: DocumentTableProps) => {
       key: 'size',
       render: (size: number) => {
         const kb = size / 1024;
-        if (kb < 1024) {
-          return `${kb.toFixed(2)} KB`;
-        }
-        const mb = kb / 1024;
-        return `${mb.toFixed(2)} MB`;
+        if (kb < 1024) return `${kb.toFixed(2)} KB`;
+        return `${(kb / 1024).toFixed(2)} MB`;
       },
     },
     {
@@ -42,19 +40,19 @@ export const DocumentTable = ({ documents, loading }: DocumentTableProps) => {
       key: 'actions',
       render: (_: any, record: Document) => (
         <Space>
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             icon={<DownloadOutlined />}
-            disabled
+            onClick={() => onDownload?.(record)}
             style={{ color: '#3B38A0' }}
           >
             Descargar
           </Button>
-          <Button 
-            type="link" 
-            disabled
-            danger 
+          <Button
+            type="link"
+            danger
             icon={<DeleteOutlined />}
+            onClick={() => onDelete?.(record.fileName)}
           >
             Eliminar
           </Button>
@@ -68,12 +66,12 @@ export const DocumentTable = ({ documents, loading }: DocumentTableProps) => {
       columns={columns}
       dataSource={documents}
       loading={loading}
-      rowKey="id"
+      rowKey="fileName"
       pagination={{ pageSize: 10 }}
       style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
       }}
     />
   );
