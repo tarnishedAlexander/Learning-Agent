@@ -29,3 +29,7 @@ h1 {
   font-size: 2.4em;
   line-height: 1.1;
 }
+
+.ant-btn-primary {
+  box-shadow: none !important;
+}

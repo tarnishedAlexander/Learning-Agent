@@ -4,6 +4,7 @@ import type { PasswordHasherPort } from '../../domain/ports/password-hasher.port
 import type { TokenServicePort } from '../../domain/ports/token-service.port';
 import { HASHER, SESSION_REPO, TOKEN_SERVICE, USER_REPO } from '../../tokens';
 import type { SessionRepositoryPort } from '../../domain/ports/session.repository.port';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class LoginUseCase {
@@ -26,15 +27,17 @@ export class LoginUseCase {
     const ok = await this.hasher.compare(input.password, user.passwordHash);
     if (!ok) throw new Error('Invalid credentials');
 
-    const payload = { sub: user.id, email: user.email };
-    const accessToken = this.tokens.signAccess(payload);
-    const refreshToken = this.tokens.signRefresh(payload);
-
     // (Estrategia simple) revoca sesiones previas y crea una nueva
     await this.sessions.revokeAll(user.id);
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+    };
+    const accessToken = this.tokens.signAccess(payload); // TTL corto (p.ej. 15m)
+    const refreshToken = this.tokens.signRefresh(payload);
 
     const expiresAt = this.addTTLToDate(process.env.JWT_REFRESH_TTL || '7d');
-    await this.sessions.createSession({
+    const session = await this.sessions.createSession({
       userId: user.id,
       token: accessToken,
       refreshToken,

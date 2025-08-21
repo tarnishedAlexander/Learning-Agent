@@ -5,4 +5,5 @@ export interface RoleRepositoryPort {
   create(name: string, description?: string | null): Promise<Role>;
   list(): Promise<Role[]>;
   attachPermission(roleId: string, permissionId: string): Promise<void>;
+  listForUser(userId: string): Promise<Role[]>;
 }
