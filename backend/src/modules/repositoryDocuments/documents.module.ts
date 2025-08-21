@@ -9,14 +9,12 @@ import { DOCUMENT_REPO, FILE_STORAGE_REPO } from './tokens';
 // import { UploadDocumentUseCase } from './application/commands/upload-document.usecase';
 // import { ListDocumentsUseCase } from './application/queries/list-documents.usecase';
 // import { GetDocumentByIdUseCase } from './application/queries/get-document-by-id.usecase';
-// import { DocumentsController } from './infrastructure/http/documents.controller';
+import { DocumentsController } from './infrastructure/http/documents.controller';
 
 @Module({
   imports: [PrismaModule],
-  // TODO: controlador
-  // controllers: [DocumentsController],
+  controllers: [DocumentsController],
   providers: [
-    // TODO: infraestructura
     // { provide: DOCUMENT_REPO, useClass: DocumentPrismaRepository },
     // { provide: FILE_STORAGE_REPO, useClass: FileStoragePrismaRepository },
     // CreateDocumentUseCase,
