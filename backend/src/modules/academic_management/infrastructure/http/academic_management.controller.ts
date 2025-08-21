@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
 import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
@@ -14,6 +14,8 @@ import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
 import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
 import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-group-students.usecase';
 import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
+import { UpdateClassUseCase } from '../../application/commands/update-class.usecase';
+import { EditClassDTO } from './dtos/edit-class.dto';
 
 @Controller('academic')
 export class AcademicManagementController {
@@ -28,6 +30,7 @@ export class AcademicManagementController {
     private readonly createEnrollment: CreateEnrollmentUseCase,
     private readonly enrollSingle: EnrollSingleStudentUseCase,
     private readonly enrollGroup: EnrollGroupStudentUseCase,
+    private readonly updateClass: UpdateClassUseCase,
   ) { }
   @Get('classes')
   listClassesEndPoint() {
@@ -69,5 +72,18 @@ export class AcademicManagementController {
   @Post('enrollments/group-students')
   enrollGroupStudentEndpoint(@Body() dto: EnrollGroupStudentDTO) {
     return this.enrollGroup.execute(dto);
+  }
+
+  @Put('classes/:id')
+  updateClassEndpoint(@Param('id') id: string, @Body() dto: EditClassDTO) {
+    const input = {
+      teacherId: dto.teacherId,
+      classId: id,
+      name: dto.name,
+      semester: dto.semester,
+      dateBegin: dto.dateBegin,
+      dateEnd: dto.dateEnd
+    }
+    return this.updateClass.execute(input);
   }
 }
