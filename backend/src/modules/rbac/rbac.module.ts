@@ -9,6 +9,7 @@ import { AttachPermissionUseCase } from './application/commands/attach-permissio
 import { ListRolesUseCase } from './application/queries/list-roles.usecase';
 import { ListPermissionsUseCase } from './application/queries/list-permissions.usecase';
 import { RbacController } from './infrastructure/http/rbac.controller';
+import { GetRolesForUserUseCase } from './application/queries/get-roles-for-user.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -21,6 +22,8 @@ import { RbacController } from './infrastructure/http/rbac.controller';
     AttachPermissionUseCase,
     ListRolesUseCase,
     ListPermissionsUseCase,
+    GetRolesForUserUseCase,
   ],
+  exports: [GetRolesForUserUseCase],
 })
 export class RbacModule {}
