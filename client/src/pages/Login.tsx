@@ -2,6 +2,7 @@ import { useState } from "react";
 import { App, Button, Checkbox, Form, Input, Typography, Card } from "antd";
 import { Mail, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../services/authService";
 
 export type LoginValues = {
   email: string;
@@ -27,10 +28,9 @@ export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
       if (onSubmit) {
         await onSubmit(values);
       } else {
-        // demo: simula latencia y éxito
-        await new Promise((r) => setTimeout(r, 900));
+        const response = await login(values);
+        debugger;
       }
-      message.success("Bienvenido 👋");
       navigate("/", { replace: true });
     } catch (e: any) {
       message.error(e?.message ?? "No se pudo iniciar sesión");

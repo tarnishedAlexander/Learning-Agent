@@ -8,23 +8,25 @@ import Login from "../pages/Login"
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
+import PublicRoute from "./PublicRoute";
 
 export const AppRoutes = () => {
   return (
     <BrowserRouter>
     <Routes>
-      <Route path="/" element={<ClassMenu/>}/>
-      <Route path="/login" element={<Login />} />
-      <Route path="curso/:id" element={<StudentsCurso />} />
-      <Route path="/reinforcement" element={<StudentProfile />} />
-      <Route path="/exam" element={<Exam />} />
-      <Route path="/interview" element={<Interview />} />
-      <Route path="/" element={<Navigate to="/exams/create" replace />} />
-      <Route path="/exams/create" element={<ExamsCreatePage />} />
-      <Route path="*" element={<Navigate to="/exams/create" replace />} />
-      <Route path="/upload-pdf" element={<UploadPdfPage />} />
-      <Route path="/documents" element={<DocumentsPage />} />
-
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<ClassMenu/>}/>
+          <Route path="/login" element={<Login />} />
+          <Route path="curso/:id" element={<StudentsCurso />} />
+          <Route path="/reinforcement" element={<StudentProfile />} />
+          <Route path="/exam" element={<Exam />} />
+          <Route path="/interview" element={<Interview />} />
+          <Route path="/" element={<Navigate to="/exams/create" replace />} />
+          <Route path="/exams/create" element={<ExamsCreatePage />} />
+          <Route path="*" element={<Navigate to="/exams/create" replace />} />
+          <Route path="/upload-pdf" element={<UploadPdfPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+        </Route>
     </Routes>
     </BrowserRouter>
   );
