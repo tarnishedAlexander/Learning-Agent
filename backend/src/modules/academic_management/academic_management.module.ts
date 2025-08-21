@@ -19,6 +19,7 @@ import { GetStudentsByClassUseCase } from './application/queries/get-students-by
 import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
 import { GetClassByIdUseCase } from './application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-student.usecase';
+import { EnrollGroupStudentUseCase } from './application/commands/enroll-group-students.usecase';
 
 @Module({
   imports: [PrismaModule],
@@ -39,6 +40,7 @@ import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-
     CreateUserUseCase,
     CreateStudentProfileUseCase,
     EnrollSingleStudentUseCase,
+    EnrollGroupStudentUseCase,
   ],
 })
 export class AcademicManagementModule {}
