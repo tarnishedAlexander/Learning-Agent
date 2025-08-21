@@ -19,7 +19,8 @@ export class SoftDeleteClassUseCase {
             throw new Error(`Class ${objClass.id}-${objClass.name} doesnt belongs to teacher ${input.teacherId}`)
         }
 
-        const pendingEnrollments = await this.enrollmentRepo.findByClassId(input.classId)
+        const enrollments = await this.enrollmentRepo.findByClassId(input.classId)
+        const pendingEnrollments = enrollments.filter((e)=>e.isActive)
         if (pendingEnrollments.length > 0) {
             throw new Error(`Class ${objClass.id}-${objClass.name} has pending enrollments`)
         }
