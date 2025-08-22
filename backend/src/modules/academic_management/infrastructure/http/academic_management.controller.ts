@@ -13,8 +13,8 @@ import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.u
 import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
 import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
 
-@Controller('gestion_academica')
-export class Gestion_academicaController {
+@Controller('academic')
+export class AcademicManagementController {
   constructor(
     private readonly listClasses: ListClassesUseCase,
     private readonly listStudents: ListStudentsUseCase,
