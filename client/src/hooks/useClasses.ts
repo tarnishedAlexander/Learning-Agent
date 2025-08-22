@@ -6,11 +6,11 @@ import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
 
-const useClasses = () =>{
-const { clases, setClases,addClase } = useClaseStore();
-const [objClass, setObjClass] = useState<Clase>();
-const [curso,setCurso]=useState('')
-const [students,setStudents]=useState<StudentInfo[]>([])
+const useClasses = () => {
+  const { clases, setClases, addClase } = useClaseStore();
+  const [objClass, setObjClass] = useState<Clase>();
+  const [curso, setCurso] = useState('')
+  const [students, setStudents] = useState<StudentInfo[]>([])
   useEffect(() => {
     fetchClases();
   }, []);
@@ -20,28 +20,23 @@ const [students,setStudents]=useState<StudentInfo[]>([])
     setClases(data);
   };
 
-  const addClases = async (newClase: Omit<Clase,'id'>) =>{
-    const claseToAdd = {
-      ...newClase,
-      id:uuidv4()
-    }
-    await claseService.createClase(claseToAdd);
-    addClase(claseToAdd)
-
+  const createClass = async (newClase: Omit<Clase, 'id'>) => {
+    const objClass = await claseService.createClase(newClase);
+    addClase(objClass)
   }
 
-  const fetchClase = async (id:string)=>{
+  const fetchClase = async (id: string) => {
     const curso = await claseService.getClaseById(id)
     setObjClass(curso);
-    setCurso(curso.name)   
+    setCurso(curso.name)
     const students = await studentService.getStudentsByClassId(id)
     setStudents(students)
   }
 
-  const createStudents=async (newStudentGroup:Omit<StudentInfo,'id'>)=>{
-    const newStudents={
+  const createStudents = async (newStudentGroup: Omit<StudentInfo, 'id'>) => {
+    const newStudents = {
       ...newStudentGroup,
-      id:uuidv4()
+      id: uuidv4()
     }
     //await studentService.createStudentGroup(newStudents)
     //setStudents(newStudents)
@@ -50,7 +45,7 @@ const [students,setStudents]=useState<StudentInfo[]>([])
   return {
     clases,
     fetchClases,
-    addClases,
+    createClass,
     fetchClase,
     objClass,
     curso,

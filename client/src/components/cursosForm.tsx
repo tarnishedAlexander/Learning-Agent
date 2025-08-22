@@ -1,6 +1,7 @@
 import { Modal, Form, Input, DatePicker, Button, Select } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
+import { meAPI } from '../services/authService';
 import * as Yup from 'yup';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
@@ -8,11 +9,27 @@ import dayjs from 'dayjs';
 interface CreateClaseModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { name: string; dateBegin: string; dateEnd: string; semester: string; teacherId: string}) => void;
+  onSubmit: (values: { name: string; dateBegin: string; dateEnd: string; semester: string; teacherId: string }) => void;
 }
 
 export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
+  const [userData, setUserData] = useState<any>();
+
+  const fetchUser = async () => {
+    const authData = localStorage.getItem("auth");
+    if (!authData) {
+      console.log("Sin datos Auth guardados en localstorage")
+      return
+    }
+    const parsedData = JSON.parse(authData);
+    const user = await meAPI(parsedData.accessToken)
+    setUserData(user)
+  }
+
+  useEffect(() => {
+    fetchUser();
+  }, [open])
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required('Nombre requerido'),
@@ -37,12 +54,13 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
       name: '',
       semester: '',
       dateBegin: '',
-      dateEnd: '',
-      teacherId: 'test6', //TODO - Aun no contamos con login, valor por defecto
+      dateEnd: ''
     },
     validationSchema,
     onSubmit: (values, { resetForm }) => {
-      onSubmit(values);
+      onSubmit({
+        ...values, teacherId: userData.id
+      });
       resetForm();
       onClose();
     }
@@ -60,10 +78,10 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
   }));
 
   return (
-    <Modal open={open} onCancel={onClose} onOk={() => {}} footer={null} centered title="Añadir Curso">
-      <Form layout="vertical" style={{ display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column'}} onFinish={formik.handleSubmit}>
+    <Modal open={open} onCancel={onClose} onOk={() => { }} footer={null} centered title="Añadir Curso">
+      <Form layout="vertical" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }} onFinish={formik.handleSubmit}>
         <Form.Item
-          style={{width:'100%'}}
+          style={{ width: '100%' }}
           label="Nombre"
           validateStatus={formik.errors.name && formik.touched.name ? 'error' : ''}
           help={formik.touched.name && formik.errors.name}
@@ -72,22 +90,22 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         </Form.Item>
 
         <Form.Item
-        style={{width:'100%'}}
-        label="Semestre"
-        validateStatus={formik.errors.semester && formik.touched.semester ? 'error' : ''}
-        help={formik.touched.semester && formik.errors.semester}
-      >
-        <Select
-          placeholder="Selecciona semestre"
-          options={semesterOptions}
-          value={formik.values.semester || undefined}
-          onChange={(val) => formik.setFieldValue('semester', val)}
-          onBlur={() => formik.setFieldTouched('semester', true)}
-        />
-      </Form.Item>
+          style={{ width: '100%' }}
+          label="Semestre"
+          validateStatus={formik.errors.semester && formik.touched.semester ? 'error' : ''}
+          help={formik.touched.semester && formik.errors.semester}
+        >
+          <Select
+            placeholder="Selecciona semestre"
+            options={semesterOptions}
+            value={formik.values.semester || undefined}
+            onChange={(val) => formik.setFieldValue('semester', val)}
+            onBlur={() => formik.setFieldTouched('semester', true)}
+          />
+        </Form.Item>
 
         <Form.Item
-        style={{width:'100%'}}
+          style={{ width: '100%' }}
           label="Inicio de Módulo"
           validateStatus={formik.errors.dateBegin && formik.touched.dateBegin ? 'error' : ''}
           help={formik.touched.dateBegin && formik.errors.dateBegin}
@@ -122,7 +140,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
         </Form.Item>
 
         <Form.Item
-        style={{width:'100%'}}
+          style={{ width: '100%' }}
           label="Fin de Módulo"
           validateStatus={formik.errors.dateEnd && formik.touched.dateEnd ? 'error' : ''}
           help={formik.touched.dateEnd && formik.errors.dateEnd}
@@ -143,7 +161,7 @@ export const CursosForm = ({ open, onClose, onSubmit }: CreateClaseModalProps) =
           />
         </Form.Item>
 
-        <Form.Item style={{width:'70%'}}>
+        <Form.Item style={{ width: '70%' }}>
           <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
             Guardar
           </Button>
