@@ -2,12 +2,18 @@ import {
   Controller,
   Get,
   Delete,
+  Post,
   Param,
   HttpException,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
 import { DeleteDocumentUseCase } from '../../application/commands/delete-document.usecase';
+import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -17,31 +23,18 @@ import {
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
+import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
+import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
-/**
- * Documents Controller
- *
- * Controlador para manejar las operaciones HTTP relacionadas con documentos.
- * Este controlador manejará:
- * - Subida de documentos
- * - Descarga de documentos
- * - Listado de documentos
- * - Eliminación de documentos
- */
 @Controller('api/documents')
 export class DocumentsController {
   constructor(
     private readonly listDocumentsUseCase: ListDocumentsUseCase,
     private readonly deleteDocumentUseCase: DeleteDocumentUseCase,
+    private readonly uploadDocumentUseCase: UploadDocumentUseCase,
+    private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
   ) {}
 
-  /**
-   * Endpoint GET /api/documents
-   * Lista todos los documentos PDF almacenados en MinIO, excluyendo archivos eliminados
-   *
-   * @returns Lista de documentos con metadatos (nombre original, tamaño, fecha de subida, URL)
-   * @throws HttpException en caso de errores de conexión o bucket vacío
-   */
   @Get()
   async listDocuments(): Promise<DocumentListResponseDto> {
     try {
@@ -107,14 +100,6 @@ export class DocumentsController {
     }
   }
 
-  /**
-   * Endpoint DELETE /api/documents/:filename
-   * Elimina un documento específico moviéndolo a la carpeta deleted/ (soft delete)
-   *
-   * @param params - Parámetros de la URL conteniendo el filename
-   * @returns Confirmación de eliminación con metadata
-   * @throws HttpException en caso de documento no encontrado o errores de eliminación
-   */
   @Delete(':filename')
   async deleteDocument(
     @Param() params: DeleteDocumentParamDto,
@@ -168,6 +153,87 @@ export class DocumentsController {
           `Error interno del servidor al eliminar documento: ${errorMessage}`,
           params.filename,
         ),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDocument(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UploadDocumentResponseDto> {
+    try {
+      if (!file) {
+        throw new BadRequestException('No se ha proporcionado ningún archivo');
+      }
+
+      const document = await this.uploadDocumentUseCase.execute(file);
+
+      return {
+        fileName: document.fileName,
+        originalName: document.originalName,
+        mimeType: document.mimeType,
+        size: document.size,
+        downloadUrl: document.url,
+        uploadedAt: document.uploadedAt,
+      };
+    } catch (error) {
+      // Si ya es una BadRequestException o HttpException, re-lanzarla
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      // Error inesperado
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in uploadDocument:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al subir archivo',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('download/:filename')
+  async downloadDocument(
+    @Param('filename') filename: string,
+  ): Promise<{ downloadUrl: string }> {
+    try {
+      if (!filename) {
+        throw new BadRequestException(
+          'No se ha proporcionado el nombre de archivo',
+        );
+      }
+
+      const downloadUrl = await this.downloadDocumentUseCase.execute(filename);
+      return { downloadUrl };
+    } catch (error) {
+      if (
+        error instanceof HttpException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in downloadDocument:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al generar URL de descarga',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
