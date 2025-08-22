@@ -19,9 +19,11 @@ import { GetStudentsByClassUseCase } from './application/queries/get-students-by
 import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
 import { GetClassByIdUseCase } from './application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-student.usecase';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { IdentityModule } from '../identity/identity.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule,IdentityModule],
   controllers: [AcademicManagementController],
   providers: [
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
@@ -39,6 +41,7 @@ import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-
     CreateUserUseCase,
     CreateStudentProfileUseCase,
     EnrollSingleStudentUseCase,
+    JwtAuthGuard,
   ],
 })
 export class AcademicManagementModule {}
