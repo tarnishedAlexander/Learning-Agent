@@ -258,5 +258,3 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
     </form>
   );
 });
-
-
