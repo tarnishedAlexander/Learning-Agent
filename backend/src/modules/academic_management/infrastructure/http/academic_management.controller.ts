@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
@@ -12,8 +12,11 @@ import { GetStudentsByClassUseCase } from '../../application/queries/get-student
 import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
 import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
+import { JwtTokenService } from '../../../identity/infrastructure/jwt/jwt.token.service'; 
+
 
 @Controller('academic')
+@UseGuards(JwtTokenService)  
 export class AcademicManagementController {
   constructor(
     private readonly listClasses: ListClassesUseCase,
