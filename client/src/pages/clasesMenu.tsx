@@ -12,7 +12,7 @@ function parseISO(d: string | Date): Date {
 }
 
 export function ClassMenu() {
-  const { clases, addClases } = useClasses();
+  const { clases, createClass } = useClasses();
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -20,19 +20,16 @@ export function ClassMenu() {
     navigate('/reinforcement');
   };
 
-
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),
     [clases]
   );
-
 
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
     return clasesSafe.filter((cl) => (cl.name ?? "").toLowerCase().includes(term));
   }, [clasesSafe, searchTerm]);
-
 
   const { cursosActuales, cursosPasados } = useMemo(() => {
     const now = new Date();
@@ -51,7 +48,7 @@ export function ClassMenu() {
   }, [filteredClases]);
 
   const handleAddClase = async (values: Omit<Clase, "id">) => {
-    await addClases(values);
+    await createClass(values);
   };
 
   const goToStudents = (id: string) => navigate(`/classes/${id}`);
