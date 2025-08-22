@@ -24,6 +24,7 @@ import {
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
 import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
+import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
 @Controller('api/documents')
 export class DocumentsController {
@@ -31,6 +32,7 @@ export class DocumentsController {
     private readonly listDocumentsUseCase: ListDocumentsUseCase,
     private readonly deleteDocumentUseCase: DeleteDocumentUseCase,
     private readonly uploadDocumentUseCase: UploadDocumentUseCase,
+    private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
   ) {}
 
   @Get()
@@ -193,6 +195,42 @@ export class DocumentsController {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al subir archivo',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('download/:filename')
+  async downloadDocument(
+    @Param('filename') filename: string,
+  ): Promise<{ downloadUrl: string }> {
+    try {
+      if (!filename) {
+        throw new BadRequestException(
+          'No se ha proporcionado el nombre de archivo',
+        );
+      }
+
+      const downloadUrl = await this.downloadDocumentUseCase.execute(filename);
+      return { downloadUrl };
+    } catch (error) {
+      if (
+        error instanceof HttpException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in downloadDocument:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al generar URL de descarga',
           error: 'Internal Server Error',
           details: errorMessage,
         },
