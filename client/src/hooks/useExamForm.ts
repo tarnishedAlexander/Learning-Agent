@@ -4,24 +4,29 @@ type Values = {
   subject: string;
   difficulty: 'fácil' | 'medio' | 'difícil' | '';
   attempts: string | number;
-  totalQuestions: string | number;
   timeMinutes: string | number;
   reference?: string;
   multipleChoice: string | number;
   trueFalse: string | number;
-  analysis: string | number;
-  openEnded: string | number;
+  analysis: string | number;     
+  openEnded: string | number;    
 };
 
 const limits = { subjectMax: 80, referenceMax: 1000 };
 
+const toInt = (v: any) => Number.isInteger(Number(v)) ? Number(v) : NaN;
+const isPosInt = (v: any) => {
+  const n = toInt(v);
+  return Number.isInteger(n) && n > 0;
+};
+
 export function useExamForm() {
   const draft = (readJSON('exam:draft') || {}) as Partial<Values>;
+
   let values: Values = {
     subject: '',
     difficulty: '',
     attempts: '',
-    totalQuestions: '',
     timeMinutes: '',
     reference: '',
     multipleChoice: '',
@@ -30,83 +35,131 @@ export function useExamForm() {
     openEnded: '',
     ...draft
   };
+
   let errors: Record<string, string> = {};
 
   const setValue = (name: keyof Values, value: any) => {
-    (values as any)[name] = value;
-    validateField(name, value);
+    const v = name === 'subject' ? String(value ?? '').replace(/\s+/g, ' ').trimStart() : value;
+    (values as any)[name] = v;
+    validateField(name, v);
     saveJSON('exam:draft', values);
   };
 
   const reset = () => {
     values = {
-      subject:'',
-      difficulty:'',
-      attempts:'',
-      totalQuestions:'',
-      timeMinutes:'',
-      reference:'',
-      multipleChoice:'',
-      trueFalse:'',
-      analysis:'',
-      openEnded:'',
+      subject: '',
+      difficulty: '',
+      attempts: '',
+      timeMinutes: '',
+      reference: '',
+      multipleChoice: '',
+      trueFalse: '',
+      analysis: '',
+      openEnded: '',
     };
-    errors = {}; removeItem('exam:draft');
+    errors = {};
+    removeItem('exam:draft');
   };
 
-  const asInt = (v: any) => Number.isInteger(Number(v)) ? Number(v) : NaN;
-  const posInt = (v: any) => asInt(v) > 0;
+  const getTotalQuestions = () => {
+    const parts = [
+      values.multipleChoice,
+      values.trueFalse,
+      values.analysis,
+      values.openEnded
+    ].map(v => toInt(v || 0));
+    if (parts.some(Number.isNaN)) return 0;
+    return parts.reduce((a, b) => a + b, 0);
+  };
 
   const validate = () => {
     errors = {};
-    if (!values.subject || !values.subject.toString().trim()) errors.subject = 'La materia es obligatoria.';
-    else if (values.subject.toString().trim().length > limits.subjectMax) errors.subject = `Máximo ${limits.subjectMax} caracteres.`;
+
+    if (!values.subject || !values.subject.toString().trim()) {
+      errors.subject = 'La materia es obligatoria.';
+    } else if (values.subject.toString().trim().length > limits.subjectMax) {
+      errors.subject = `Máximo ${limits.subjectMax} caracteres.`;
+    }
 
     const allowed = ['fácil','medio','difícil'];
-    if (!allowed.includes(values.difficulty || '')) errors.difficulty = 'Selecciona una dificultad válida.';
+    if (!allowed.includes(values.difficulty || '')) {
+      errors.difficulty = 'Selecciona una dificultad válida.';
+    }
 
-    if (!posInt(values.attempts)) errors.attempts = 'Debe ser entero > 0.';
-    if (!posInt(values.totalQuestions)) errors.totalQuestions = 'Debe ser entero > 0.';
-    if (!posInt(values.timeMinutes)) errors.timeMinutes = 'Debe ser entero > 0.';
-    // Validar tipos de pregunta (opcional, puedes personalizar)
-    ['multipleChoice','trueFalse','analysis','openEnded'].forEach((k) => {
-      if (values[k as keyof Values] !== undefined && values[k as keyof Values] !== '') {
-        const n = Number(values[k as keyof Values]);
-        if (!(Number.isInteger(n) && n >= 0)) errors[k] = 'Debe ser entero >= 0.';
+    if (!isPosInt(values.attempts)) errors.attempts = 'Debe ser entero > 0.';
+    if (!isPosInt(values.timeMinutes)) errors.timeMinutes = 'Debe ser entero > 0.';
+
+    ([
+      ['multipleChoice','Opción múltiple'],
+      ['trueFalse','Verdadero/Falso'],
+      ['analysis','Análisis'],
+      ['openEnded','Ejercicio']
+    ] as const).forEach(([key, label]) => {
+      const raw = (values as any)[key];
+      const n = toInt(raw === '' || raw === undefined ? 0 : raw);
+      if (Number.isNaN(n) || n < 0) {
+        errors[key] = `${label} debe ser un entero ≥ 0.`;
       }
     });
 
-    if (values.reference && values.reference.length > limits.referenceMax) {
+    if (values.reference && String(values.reference).length > limits.referenceMax) {
       errors.reference = `Máximo ${limits.referenceMax} caracteres.`;
     }
+
+    if (getTotalQuestions() <= 0) {
+      errors['__total'] = 'Debes definir al menos 1 pregunta en total.';
+    }
+
     return { valid: Object.keys(errors).length === 0, errors };
   };
 
   const validateField = (name: keyof Values, value: any) => {
     if (name === 'subject') {
-      if (!value.toString().trim()) errors.subject = 'La materia es obligatoria.';
-      else if (value.toString().trim().length > limits.subjectMax) errors.subject = `Máximo ${limits.subjectMax} caracteres.`;
+      if (!String(value ?? '').trim()) errors.subject = 'La materia es obligatoria.';
+      else if (String(value).trim().length > limits.subjectMax) errors.subject = `Máximo ${limits.subjectMax} caracteres.`;
       else delete errors.subject;
+      return;
     }
     if (name === 'difficulty') {
       const allowed = ['fácil','medio','difícil'];
       if (!allowed.includes(value || '')) errors.difficulty = 'Selecciona una dificultad válida.';
       else delete errors.difficulty;
+      return;
     }
-    if (['attempts','totalQuestions','timeMinutes'].includes(name as any)) {
-      const n = Number(value);
-      if (!(Number.isInteger(n) && n > 0)) errors[name as string] = 'Debe ser entero > 0.';
-      else delete errors[name as string];
+    if (name === 'attempts') {
+      if (!isPosInt(value)) errors.attempts = 'Debe ser entero > 0.'; else delete errors.attempts;
+      return;
     }
+    if (name === 'timeMinutes') {
+      if (!isPosInt(value)) errors.timeMinutes = 'Debe ser entero > 0.'; else delete errors.timeMinutes;
+      return;
+    }
+    if (['multipleChoice','trueFalse','analysis','openEnded'].includes(name as string)) {
+      const raw = value;
+      const n = toInt(raw === '' || raw === undefined ? 0 : raw);
+      if (Number.isNaN(n) || n < 0) {
+        errors[name as string] = 'Debe ser entero ≥ 0.';
+      } else {
+        delete errors[name as string];
+      }
+      if (getTotalQuestions() <= 0) errors['__total'] = 'Debes definir al menos 1 pregunta.';
+      else delete errors['__total'];
+      return;
+    }
+
     if (name === 'reference') {
-      if (value && value.length > limits.referenceMax) errors.reference = `Máximo ${limits.referenceMax} caracteres.`;
+      if (value && String(value).length > limits.referenceMax) errors.reference = `Máximo ${limits.referenceMax} caracteres.`;
       else delete errors.reference;
     }
   };
 
   return {
     setValue, reset, validate,
-    getSnapshot: () => ({ values: { ...values }, errors: { ...errors } }),
+    getTotalQuestions,
+    getSnapshot: () => ({
+      values: { ...values, totalQuestions: getTotalQuestions() },
+      errors: { ...errors }
+    }),
     values
   };
 }

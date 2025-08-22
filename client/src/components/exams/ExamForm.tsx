@@ -5,7 +5,7 @@ import { createExam } from '../../services/exams.service';
 type Props = { onToast: (msg: string, type?: 'success'|'warn'|'error') => void; };
 
 export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function ExamForm({ onToast }, ref) {
-  const { setValue, validate, getSnapshot, values: hookValues } = useExamForm();
+  const { setValue, validate, getSnapshot, values: hookValues, getTotalQuestions } = useExamForm();
   const [values, setValues] = useState({
     ...hookValues,
     multipleChoice: '',
@@ -15,10 +15,8 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
   });
 
   // Calcular el total de preguntas como suma de los tipos
-  const totalQuestions =
-    [values.multipleChoice, values.trueFalse, values.analysis, values.openEnded]
-      .map(v => parseInt(v || '0', 10))
-      .reduce((a, b) => a + b, 0);
+  const totalQuestions = getTotalQuestions();
+
 
   // Paso del wizard
   const [step, setStep] = useState(0);
@@ -38,21 +36,7 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
     const v = name === 'subject' ? value.replace(/\s+/g,' ').trimStart() : value;
     setValues(prev => ({ ...prev, [name]: v }));
     // Si cambia algún tipo, también actualiza totalQuestions en el hook
-    if (["multipleChoice","trueFalse","analysis","openEnded"].includes(name)) {
-      const temp = {
-        ...values,
-        [name]: value
-      };
-      const total = [
-        temp.multipleChoice,
-        temp.trueFalse,
-        temp.analysis,
-        temp.openEnded
-      ].map(v => parseInt(v || '0', 10)).reduce((a, b) => a + b, 0);
-      setValue('totalQuestions', total);
-    } else {
-      setValue(name as any, v);
-    }
+    setValue(name as any, v);
     touchAndValidate();
   };
 
@@ -102,7 +86,6 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
       setValue('trueFalse', '');
       setValue('analysis', '');
       setValue('openEnded', '');
-      setValue('totalQuestions', 0);
       onToast('Cantidad de preguntas limpiada.');
     } else if (step === 2) {
       setValues(prev => ({
