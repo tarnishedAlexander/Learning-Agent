@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
-import { CLASSES_REPO, ENROLLMENT_REPO } from './tokens';
+import { CLASSES_REPO, ENROLLMENT_REPO, TEACHER_REPO } from './tokens';
 import { STUDENT_REPO } from './tokens';
 import { USER_REPO } from './tokens';
 import { CreateClassUseCase } from './application/commands/create-clase.usecase';
@@ -22,6 +22,8 @@ import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-
 import { EnrollGroupStudentUseCase } from './application/commands/enroll-group-students.usecase';
 import { UpdateClassUseCase } from './application/commands/update-class.usecase';
 import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class.usecase';
+import { GetTeacherInfoByIDUseCase } from './application/queries/get-teacher-info-by-id.usecase';
+import { TeacherPrismaRepository } from './infrastructure/persistence/teacher.prisma.repository';
 
 @Module({
   imports: [PrismaModule],
@@ -29,6 +31,7 @@ import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class
   providers: [
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
     {provide: STUDENT_REPO,  useClass: StudentPrismaRepository}  ,
+    {provide: TEACHER_REPO, useClass: TeacherPrismaRepository},
     {provide: USER_REPO,  useClass: UserPrismaRepository}  ,
     {provide: ENROLLMENT_REPO, useClass: EnrollmentPrismaRepository},
     ListClassesUseCase,
@@ -36,6 +39,7 @@ import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class
     GetClassByIdUseCase,
     GetClassesByStudentUseCase,
     GetStudentsByClassUseCase,
+    GetTeacherInfoByIDUseCase,
     CreateClassUseCase,
     CreateStudentUseCase,
     CreateEnrollmentUseCase,

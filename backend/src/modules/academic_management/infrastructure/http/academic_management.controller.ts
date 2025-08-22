@@ -18,6 +18,7 @@ import { UpdateClassUseCase } from '../../application/commands/update-class.usec
 import { EditClassDTO } from './dtos/edit-class.dto';
 import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-class.usecase';
 import { DeleteClassDTO } from './dtos/delete-class.dto';
+import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
 
 @Controller('academic')
 export class AcademicManagementController {
@@ -27,6 +28,7 @@ export class AcademicManagementController {
     private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
+    private readonly getTeacherInfoById: GetTeacherInfoByIDUseCase,
     private readonly createClasses: CreateClassUseCase,
     private readonly createProfileStudent: CreateStudentProfileUseCase,
     private readonly createEnrollment: CreateEnrollmentUseCase,
@@ -54,6 +56,10 @@ export class AcademicManagementController {
   @Get('students/by-class/:classId')
   getStudentsByClassEndpoint(@Param('classId') classId: string) {
     return this.getStudentsByClass.execute(classId);
+  }
+  @Get('teacher/:id')
+  getTeacherInfoByID(@Param('id') id: string) {
+    return this.getTeacherInfoById.execute(id);
   }
 
   @Post('classes')
