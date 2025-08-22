@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { App, Button, Checkbox, Form, Input, Typography, Card } from "antd";
-import { Mail, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 
@@ -73,7 +72,6 @@ export default function LoginPage({ onSubmit }: Props) {
                   <Input
                     autoComplete="email"
                     placeholder="correo@empresa.com"
-                    prefix={<Mail size={18} aria-hidden />}
                   />
                 </Form.Item>
 
@@ -88,7 +86,6 @@ export default function LoginPage({ onSubmit }: Props) {
                   <Input.Password
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    prefix={<Lock size={18} aria-hidden />}
                   />
                 </Form.Item>
 
