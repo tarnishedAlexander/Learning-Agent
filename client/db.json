@@ -71,6 +71,12 @@
       "Name": "Algoritmica III 2025",
       "start_date": "2025-07-09",
       "end_date": "2025-08-12"
+    },
+    {
+      "id": "cdefbfa7-e165-4b1c-b4fb-80ce448e8ab9",
+      "Name": "Proyecto de Ingenieria de Software",
+      "start_date": "2025-08-22",
+      "end_date": "2025-09-25"
     }
   ],
   "students": [

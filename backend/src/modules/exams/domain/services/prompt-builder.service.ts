@@ -6,7 +6,6 @@ export class PromptBuilder {
     difficulty: 'fácil' | 'medio' | 'difícil';
     totalQuestions: number;
     reference?: string | null;
-    preferredType?: 'open' | 'multiple_choice' | 'mixed';
     distribution?: Distribution;
   }): string {
     const difficultyMap: Record<'fácil' | 'medio' | 'difícil', 'easy' | 'medium' | 'hard'> = {
@@ -45,7 +44,6 @@ export class PromptBuilder {
       `Generate exactly ${p.totalQuestions} exam questions about "${p.subject}".`,
       `Difficulty: ${difficultyEn} (original: ${p.difficulty}).`,
       `Reference: ${p.reference ?? 'none'}.`,
-      `Preferred type: ${p.preferredType ?? 'mixed'}.`,
       '',
       `RETURN ONLY VALID JSON (application/json), no extra text, no comments, no markdown.`,
       `The output must be a JSON ARRAY, not an object, in this EXACT format (no trailing commas):`,

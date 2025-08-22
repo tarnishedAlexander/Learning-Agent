@@ -4,6 +4,7 @@ import '../../components/shared/Toast.css';
 import { ExamForm } from '../../components/exams/ExamForm.tsx';
 import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
+import PageTemplate from '../../components/PageTemplate';
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
@@ -41,40 +42,39 @@ export default function ExamsCreatePage() {
   };
 
   return (
-    <div>
-      <header className="toolbar">
-        <h1>Exámenes</h1>
-        <div className="actions">
+    <PageTemplate
+      title="Exámenes"
+      subtitle="Crea un nuevo examen para tu clase."
+      actions={
+        <>
           <button className="btn btn-secondary" data-action="add">Añadir</button>
           <button className="btn btn-primary" data-action="ai" onClick={()=>setAiOpen(true)}>
-             Generar examen IA uwu
+            Generar examen IA uwu
           </button>
-        </div>
-      </header>
+        </>
+      }
+    >
+      <section className="card">
+        <h2>Crear nuevo examen</h2>
+        <ExamForm ref={formRef} onToast={pushToast}/>
+      </section>
 
-      <main>
+      {aiOpen && (
         <section className="card">
-          <h2>Crear nuevo examen</h2>
-          <ExamForm ref={formRef} onToast={pushToast}/>
-        </section>
-
-        {aiOpen && (
-          <section className="card">
-            <h2>Generador IA (Sprint 2)</h2>
-            <p>🚧 En construcción 🚧 <br />
+          <h2>Generador IA (Sprint 2)</h2>
+          <p>🚧 En construcción 🚧 <br />
             El DevTeam estará estresado por esto en el Sprint 2. </p>
-            <div style={{ display:'flex', gap:8, margin:'12px 0' }}>
-              <button className="btn btn-primary" onClick={handleAIPropose}> Generar</button>
-              <button className="btn btn-secondary" onClick={()=>{setAiOpen(false); setAiHtml('')}}>Cerrar</button>
-            </div>
-            <div className="ai-results" dangerouslySetInnerHTML={{ __html: aiHtml }} />
-          </section>
-        )}
-      </main>
+          <div style={{ display:'flex', gap:8, margin:'12px 0' }}>
+            <button className="btn btn-primary" onClick={handleAIPropose}> Generar</button>
+            <button className="btn btn-secondary" onClick={()=>{setAiOpen(false); setAiHtml('')}}>Cerrar</button>
+          </div>
+          <div className="ai-results" dangerouslySetInnerHTML={{ __html: aiHtml }} />
+        </section>
+      )}
 
       {toasts.map(t => (
         <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
       ))}
-    </div>
+    </PageTemplate>
   );
 }
