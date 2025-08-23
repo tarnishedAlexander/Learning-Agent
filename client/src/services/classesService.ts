@@ -42,13 +42,18 @@ export const claseService = {
     }
   },
 
-  //TODO - Falta implementar el endpoint de eliminar clase
-  async deleteClase(id: string): Promise<void> {
+  async softDeleteClase(id: string, teacherId: string) {
     try {
-      await apiClient.delete(`/academic/classes/${id}`);
+      const response = await apiClient.put(`/academic/classes/remove/${id}`, {teacherId});
+      return {
+        success: true,
+        data: response.data
+      }
     } catch (error) {
-      console.error("Failed to delete clase", error);
-      throw error;
+      console.error("Failed to soft-delete clase", error);
+      return {
+        success: false
+      }
     }
   },
 };

@@ -5,15 +5,29 @@ import type { Clase } from "../interfaces/claseInterface";
 import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
-import { message } from "antd";
+import { meAPI } from "../services/authService";
 
 const useClasses = () => {
   const { clases, setClases, addClase } = useClaseStore();
   const [objClass, setObjClass] = useState<Clase>();
   const [curso, setCurso] = useState('')
   const [students, setStudents] = useState<StudentInfo[]>([])
+  const [userData, setUserData] = useState<any>();
+
+  const fetchUser = async () => {
+    const authData = localStorage.getItem("auth");
+    if (!authData) {
+      console.log("Sin datos Auth guardados en localstorage");
+      return;
+    }
+    const parsedData = JSON.parse(authData);
+    const user = await meAPI(parsedData.accessToken);
+    setUserData(user);
+  };
+
   useEffect(() => {
     fetchClases();
+    fetchUser();
   }, []);
 
   const fetchClases = async () => {
@@ -59,6 +73,15 @@ const useClasses = () => {
     }
   }
 
+  const softDeleteClass = async (classId: string) => {
+    try {
+      const userId = userData.id;
+      return await claseService.softDeleteClase(classId, userId);
+    } catch (error) {
+      console.error(`Error deleting class with id ${classId}`)
+    }
+  }
+
   return {
     clases,
     fetchClases,
@@ -69,6 +92,7 @@ const useClasses = () => {
     students,
     createStudents,
     updateClass,
+    softDeleteClass,
   };
 }
 

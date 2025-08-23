@@ -23,7 +23,7 @@ export function StudentsCurso() {
   const [safetyOpen, setSafetyOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents, objClass, updateClass } = useClasses();
+  const { fetchClase, curso, students, createStudents, objClass, updateClass, softDeleteClass } = useClasses();
   const { enrollSingleStudent } = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>();
@@ -62,18 +62,33 @@ export function StudentsCurso() {
 
   const confirmDeleteClase = async () => {
     try {
-      if (!id) return;
-      // await deleteClase(id);
+      if (!id) {
+        handleSoftDeleteError();
+        return
+      }
+      const data = await softDeleteClass(id);
+      console.log(data)
+      if (data && !data.success) {
+        handleSoftDeleteError();
+        return
+      }
+      console.log("Curso eliminado", id)
       message.success("Curso eliminado correctamente");
-      navigate(`/classes`);
-    } catch (error) {
-      message.error(
-        "Ocurrió un error al eliminar el curso. Inténtalo más tarde."
-      );
+
+      setTimeout(() => {
+        navigate(`/classes`);
+      }, 3000);
+    } catch {
+      handleSoftDeleteError();
     } finally {
       setSafetyOpen(false);
     }
   };
+
+  const handleSoftDeleteError = () => {
+    console.log("Error al eliminar curso", id)
+    message.error("Ocurrió un error al eliminar el curso. Inténtalo más tarde.");
+  }
 
   const columns = [
     {
