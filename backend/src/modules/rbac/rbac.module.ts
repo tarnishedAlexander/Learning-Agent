@@ -10,13 +10,16 @@ import { ListRolesUseCase } from './application/queries/list-roles.usecase';
 import { ListPermissionsUseCase } from './application/queries/list-permissions.usecase';
 import { RbacController } from './infrastructure/http/rbac.controller';
 import { GetRolesForUserUseCase } from './application/queries/get-roles-for-user.usecase';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { IdentityModule } from '../identity/identity.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, IdentityModule],
   controllers: [RbacController],
   providers: [
     { provide: ROLE_REPO, useClass: RolePrismaRepository },
     { provide: PERM_REPO, useClass: PermissionPrismaRepository },
+    JwtAuthGuard,
     CreateRoleUseCase,
     CreatePermissionUseCase,
     AttachPermissionUseCase,

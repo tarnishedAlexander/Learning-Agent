@@ -257,3 +257,15 @@ small.error {
     grid-template-columns: 1fr;
   }
 }
+
+.ai-results { 
+  padding: 16px; 
+  background: #fff; 
+  border: 1px solid var(--card-border); 
+  border-radius: 12px; 
+  max-height: 60vh; 
+  overflow: auto;
+}
+.ai-title { margin: 12px 0 4px; }
+.ai-list { margin: 0 0 16px 20px; }
+.ai-options { margin: 6px 0 12px 20px; list-style: disc; }
