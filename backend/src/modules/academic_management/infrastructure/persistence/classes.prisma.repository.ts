@@ -80,7 +80,7 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
     }
 
     async list(): Promise<Classes[]> {
-        const rows = await this.prisma.classes.findMany({ orderBy: { name: 'asc' } });
+        const rows = await this.prisma.classes.findMany({ where: {isActive: true}, orderBy: { name: 'asc' } });
         return rows.map((c) => new Classes(
             c.id,
             c.name,
