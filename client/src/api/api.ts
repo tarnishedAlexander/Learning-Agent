@@ -19,7 +19,7 @@ export async function getResponse(message: string): Promise<string> {
       model: "openai/gpt-oss-20b:free",
       messages: [{ role: "user", content: message }],
       temperature: 0.7,
-      max_tokens: 150,
+      max_tokens: 1500,
     };
 
     const response = await axios.post(OPENAI_API_URL, body, { headers });
