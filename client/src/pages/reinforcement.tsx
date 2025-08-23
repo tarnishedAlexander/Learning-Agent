@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Card, Divider, Typography, Avatar, Layout, FloatButton, Modal, Input, Button } from "antd";
 import { UserOutlined, MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { getResponse } from "../api/api";
 import "./reinforcement.css";
 
 export function StudentProfile() {
@@ -43,22 +44,29 @@ export function StudentProfile() {
     }, 1800);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async() => {
     if (inputValue.trim()) {
       const newMessage = { sender: "user", text: inputValue.trim() };
       setMessages([...messages, newMessage]);
       setInputValue("");
       setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
+
+      try {
+        const botResponse = await getResponse(newMessage.text);
         setMessages(prev => [
           ...prev,
-          {
-            sender: "bot",
-            text: "Gracias por tu mensaje. Estoy aquí para ayudarte con AWS y tus cursos."
-          }
+          { sender: "bot", text: botResponse }
         ]);
-      }, 2000);
+        
+      } catch (error) {
+        console.error(error);
+        setMessages(prev => [
+          ...prev,
+          { sender: "bot", text: (error as Error).message }
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
     }
   };
 
