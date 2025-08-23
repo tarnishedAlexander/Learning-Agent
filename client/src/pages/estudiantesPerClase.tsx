@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
 import { useEffect, useState } from "react";
-import { Button, Card, Table, Space } from "antd";
+import { Button, Card, Table, Space, message } from "antd";
 import { StudentUpload } from "../components/studentUpload";
 import { SingleStudentForm } from "../components/singleStudentForm";
-import { FolderOutlined } from "@ant-design/icons";
+import { DownloadOutlined, FolderOutlined } from "@ant-design/icons";
 import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
 import useEnrollment from "../hooks/useEnrollment";
 
@@ -14,6 +14,7 @@ export function StudentsCurso() {
   const { fetchClase, curso, students, createStudents } = useClasses()
   const { enrollSingleStudent }  = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string|null>();   
   useEffect(() => {
     if (id) {
       fetchClase(id);
@@ -65,7 +66,8 @@ export function StudentsCurso() {
     {
       title: "Acciones",
       key: "acciones",
-      render: (_: unknown, record: StudentWithKey) => {
+//      render: (_: unknown, record: StudentWithKey) => {
+        render: (_: unknown, record: any) => {
         const isLoading = downloadingId === record.codigo;
         return (
           <Button
@@ -77,7 +79,7 @@ export function StudentsCurso() {
                 setDownloadingId(record.codigo);
                 const key =
                   record.documentKey ?? `documents/${record.codigo}.pdf`;
-                await downloadFileByKey(key);
+                //await downloadFileByKey(key);
                 message.success("Descarga iniciada");
               } catch (e: unknown) {
                 const err = e as Error;
@@ -150,8 +152,8 @@ export function StudentsCurso() {
           </div>
           <Table
             columns={columns}
-            dataSource={students?.students || []}
-            rowKey={(record) => record.codigo}
+            dataSource={students || []}
+            rowKey={(record) => record.code}
             pagination={{ pageSize: 20 }}
             bordered
           />
@@ -181,12 +183,12 @@ export function StudentsCurso() {
               disabled={!!students}
               onStudentsParsed={(parsedStudents) => {
                 console.log("Estudiantes leídos:", parsedStudents);
-                if (id) {
+                /*if (id) {
                   createStudents({
-                    claseId: id,
+                    classId: id,
                     students: parsedStudents,
                   });
-                }
+                }*/
                 //TODO manejar la subida de estudiantes
               }}
             />

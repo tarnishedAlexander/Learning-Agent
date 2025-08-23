@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { App, Button, Checkbox, Form, Input, Typography, Card } from "antd";
-import { Mail, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../services/authService";
 
 export type LoginValues = {
   email: string;
@@ -11,12 +11,11 @@ export type LoginValues = {
 
 type Props = {
   onSubmit?: (values: LoginValues) => Promise<void> | void;
-  brand?: string; // texto superior izquierdo (ej. "REERUI")
 };
 
 const { Title, Text } = Typography;
 
-export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
+export default function LoginPage({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
   const navigate = useNavigate();
@@ -27,10 +26,8 @@ export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
       if (onSubmit) {
         await onSubmit(values);
       } else {
-        // demo: simula latencia y éxito
-        await new Promise((r) => setTimeout(r, 900));
+        const response = await login(values);
       }
-      message.success("Bienvenido 👋");
       navigate("/", { replace: true });
     } catch (e: any) {
       message.error(e?.message ?? "No se pudo iniciar sesión");
@@ -75,7 +72,6 @@ export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
                   <Input
                     autoComplete="email"
                     placeholder="correo@empresa.com"
-                    prefix={<Mail size={18} aria-hidden />}
                   />
                 </Form.Item>
 
@@ -90,7 +86,6 @@ export default function LoginPage({ onSubmit, brand = "REERUI" }: Props) {
                   <Input.Password
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    prefix={<Lock size={18} aria-hidden />}
                   />
                 </Form.Item>
 
