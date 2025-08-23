@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import useClasses from "../hooks/useClasses";
 import { useEffect, useState } from "react";
-import { Button, Card, Table, Space, message, Modal } from "antd";
+import { Button, Card, Table, Space, message } from "antd";
 import { StudentUpload } from "../components/studentUpload";
 import { CursosForm } from "../components/cursosForm";
 import { SingleStudentForm } from "../components/singleStudentForm";
@@ -15,7 +15,7 @@ import type { createEnrollmentInterface } from "../interfaces/enrollmentInterfac
 import useEnrollment from "../hooks/useEnrollment";
 import PageTemplate from "../components/PageTemplate";
 import type { Clase } from "../interfaces/claseInterface";
-import { SafetyModal } from "../components/SafetyModal";
+import { SafetyModal } from "../components/safetyModal";
 
 export function StudentsCurso() {
   const navigate = useNavigate();
@@ -23,9 +23,7 @@ export function StudentsCurso() {
   const [safetyOpen, setSafetyOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents, objClass } =
-    //const { fetchClase, curso, students, createStudents, updateClass, deleteClass, objClass } =
-    useClasses();
+  const { fetchClase, curso, students, createStudents, objClass, updateClass } = useClasses();
   const { enrollSingleStudent } = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>();
@@ -46,12 +44,16 @@ export function StudentsCurso() {
     setModalOpen(true);
   };
 
-  const handleUpdateClase = async (
-    values: Omit<Clase, "id"> & { id?: string }
-  ) => {
+  //TODO - Configurar el contexto para mostrar los message
+  const handleUpdateClase = async (values: Clase) => {
     if (!values.id) return;
-    //await updateClase(values); Falta el endPoint para actualizar (LEITO)
-    setModalOpen(false);
+    try {
+      await updateClass(values)
+      message.success("Se ha actualizado la clase correctamente")
+      setModalOpen(false);
+    } catch {
+      message.error("Ha ocurrido un error actualizando la clase")
+    }
   };
 
   const handleDeleteClase = async () => {
@@ -209,21 +211,21 @@ export function StudentsCurso() {
                 <Button
                   style={{ margin: 4, width: 120 }}
                   type="primary"
-                  onClick={() => {}}
+                  onClick={() => { }}
                 >
                   1er Parcial
                 </Button>
                 <Button
                   style={{ margin: 4, width: 120 }}
                   type="primary"
-                  onClick={() => {}}
+                  onClick={() => { }}
                 >
                   2do Parcial
                 </Button>
                 <Button
                   style={{ margin: 4, width: 120 }}
                   type="primary"
-                  onClick={() => {}}
+                  onClick={() => { }}
                 >
                   Final
                 </Button>

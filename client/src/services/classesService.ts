@@ -32,7 +32,6 @@ export const claseService = {
     }
   },
 
-  //TODO - Falta implementar el endpoint de actualizar clase
   async updateClase(id: string, claseData: Partial<Clase>): Promise<Clase> {
     try {
       const response = await apiClient.put(`/academic/classes/${id}`, claseData);

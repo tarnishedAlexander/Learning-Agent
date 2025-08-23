@@ -5,6 +5,7 @@ import type { Clase } from "../interfaces/claseInterface";
 import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
+import { message } from "antd";
 
 const useClasses = () => {
   const { clases, setClases, addClase } = useClaseStore();
@@ -42,6 +43,22 @@ const useClasses = () => {
     //setStudents(newStudents)
   }
 
+  const updateClass = async (values: Clase) => {
+    try {
+      const id = values.id;
+      const classData = {
+        name: values.name, 
+        semester: values.semester, 
+        teacherId: values.teacherId, 
+        dateBegin: values.dateBegin, 
+        dateEnd: values.dateEnd
+      }
+      claseService.updateClase(id, classData)
+    } catch {
+      console.error(`Error updating class with id ${values.id}`)
+    }
+  }
+
   return {
     clases,
     fetchClases,
@@ -50,7 +67,8 @@ const useClasses = () => {
     objClass,
     curso,
     students,
-    createStudents
+    createStudents,
+    updateClass,
   };
 }
 

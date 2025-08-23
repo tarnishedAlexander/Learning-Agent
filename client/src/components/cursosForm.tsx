@@ -1,4 +1,3 @@
-// cursosForm.tsx
 import { Modal, Form, Input, DatePicker, Button, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
@@ -11,7 +10,7 @@ import type { Clase } from "../interfaces/claseInterface";
 interface CreateClaseModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: Omit<Clase, "id"> & { id?: string }) => void;
+  onSubmit: (values: Clase) => void;
   clase?: Clase;
 }
 
@@ -62,7 +61,7 @@ export const CursosForm = ({
   });
 
   const formik = useFormik({
-    enableReinitialize: true, // <- IMPORTANTE para precargar datos
+    enableReinitialize: true,
     initialValues: {
       name: clase?.name || "",
       semester: clase?.semester || "",
@@ -74,7 +73,7 @@ export const CursosForm = ({
       onSubmit({
         ...values,
         teacherId: userData?.id,
-        id: clase?.id, // <- Si existe, indicamos que es edición
+        id: clase?.id || "" ,
       });
       resetForm();
       onClose();
