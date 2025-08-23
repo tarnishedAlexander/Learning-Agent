@@ -5,14 +5,29 @@ import type { Clase } from "../interfaces/claseInterface";
 import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
+import { meAPI } from "../services/authService";
 
 const useClasses = () => {
   const { clases, setClases, addClase } = useClaseStore();
   const [objClass, setObjClass] = useState<Clase>();
   const [curso, setCurso] = useState('')
   const [students, setStudents] = useState<StudentInfo[]>([])
+  const [userData, setUserData] = useState<any>();
+
+  const fetchUser = async () => {
+    const authData = localStorage.getItem("auth");
+    if (!authData) {
+      console.log("Sin datos Auth guardados en localstorage");
+      return;
+    }
+    const parsedData = JSON.parse(authData);
+    const user = await meAPI(parsedData.accessToken);
+    setUserData(user);
+  };
+
   useEffect(() => {
     fetchClases();
+    fetchUser();
   }, []);
 
   const fetchClases = async () => {
@@ -42,6 +57,31 @@ const useClasses = () => {
     //setStudents(newStudents)
   }
 
+  const updateClass = async (values: Clase) => {
+    try {
+      const id = values.id;
+      const classData = {
+        name: values.name, 
+        semester: values.semester, 
+        teacherId: values.teacherId, 
+        dateBegin: values.dateBegin, 
+        dateEnd: values.dateEnd
+      }
+      claseService.updateClase(id, classData)
+    } catch {
+      console.error(`Error updating class with id ${values.id}`)
+    }
+  }
+
+  const softDeleteClass = async (classId: string) => {
+    try {
+      const userId = userData.id;
+      return await claseService.softDeleteClase(classId, userId);
+    } catch (error) {
+      console.error(`Error deleting class with id ${classId}`)
+    }
+  }
+
   return {
     clases,
     fetchClases,
@@ -50,7 +90,9 @@ const useClasses = () => {
     objClass,
     curso,
     students,
-    createStudents
+    createStudents,
+    updateClass,
+    softDeleteClass,
   };
 }
 

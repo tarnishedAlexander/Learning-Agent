@@ -3,29 +3,91 @@ import useClasses from "../hooks/useClasses";
 import { useEffect, useState } from "react";
 import { Button, Card, Table, Space, message } from "antd";
 import { StudentUpload } from "../components/studentUpload";
+import { CursosForm } from "../components/cursosForm";
 import { SingleStudentForm } from "../components/singleStudentForm";
-import { DownloadOutlined, FolderOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  FolderOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
 import useEnrollment from "../hooks/useEnrollment";
 import PageTemplate from "../components/PageTemplate";
+import type { Clase } from "../interfaces/claseInterface";
+import { SafetyModal } from "../components/safetyModal";
 
 export function StudentsCurso() {
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [safetyOpen, setSafetyOpen] = useState(false);
+
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents, objClass } = useClasses()
+  const { fetchClase, curso, students, createStudents, objClass, updateClass, softDeleteClass } = useClasses();
   const { enrollSingleStudent } = useEnrollment();
   const [formOpen, setFormOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>();
+
   useEffect(() => {
     if (id) {
       fetchClase(id);
     }
 
-    console.log(students)
-  }, [id])
+    console.log(students);
+  }, [id]);
 
   const handleSubmit = (values: createEnrollmentInterface) => {
-    enrollSingleStudent(values)
+    enrollSingleStudent(values);
+  };
+
+  const handleEdit = () => {
+    setModalOpen(true);
+  };
+
+  //TODO - Configurar el contexto para mostrar los message
+  const handleUpdateClase = async (values: Clase) => {
+    if (!values.id) return;
+    try {
+      await updateClass(values)
+      message.success("Se ha actualizado la clase correctamente")
+      setModalOpen(false);
+    } catch {
+      message.error("Ha ocurrido un error actualizando la clase")
+    }
+  };
+
+  const handleDeleteClase = async () => {
+    setSafetyOpen(true);
+  };
+
+  const confirmDeleteClase = async () => {
+    try {
+      if (!id) {
+        handleSoftDeleteError();
+        return
+      }
+      const data = await softDeleteClass(id);
+      console.log(data)
+      if (data && !data.success) {
+        handleSoftDeleteError();
+        return
+      }
+      console.log("Curso eliminado", id)
+      message.success("Curso eliminado correctamente");
+
+      setTimeout(() => {
+        navigate(`/classes`);
+      }, 3000);
+    } catch {
+      handleSoftDeleteError();
+    } finally {
+      setSafetyOpen(false);
+    }
+  };
+
+  const handleSoftDeleteError = () => {
+    console.log("Error al eliminar curso", id)
+    message.error("Ocurrió un error al eliminar el curso. Inténtalo más tarde.");
   }
 
   const columns = [
@@ -101,7 +163,11 @@ export function StudentsCurso() {
     <PageTemplate
       title={`Curso: ${objClass?.name}`}
       subtitle={`Lista de datos del curso ${objClass?.name}`}
-      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases", href: "/classes" }, { label: `${objClass?.name}`, href: `/classes/${objClass?.id}` }]}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Clases", href: "/classes" },
+        { label: `${objClass?.name}`, href: `/classes/${objClass?.id}` },
+      ]}
     >
       <div style={{ padding: "1rem" }}>
         <div
@@ -116,9 +182,34 @@ export function StudentsCurso() {
             type="primary"
             icon={<FolderOutlined />}
             onClick={() => navigate(`/curso/${id}/documents`)}
-            style={{ backgroundColor: "#1A2A80" }}
+            style={{ margin: 4, width: 150 }}
           >
             Documentos
+          </Button>
+
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={handleEdit}
+            style={{ margin: 4, width: 150 }}
+          >
+            Editar Curso
+          </Button>
+
+          <CursosForm
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onSubmit={handleUpdateClase}
+            clase={objClass}
+          />
+
+          <Button
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteClase}
+            style={{ margin: 4, width: 150, backgroundColor: "#bb1717ff" }}
+          >
+            Eliminar Curso
           </Button>
         </div>
 
@@ -162,7 +253,15 @@ export function StudentsCurso() {
               pagination={{ pageSize: 20 }}
               bordered
             />
-            <Button style={{ margin: 4, width: 120 }} type="primary" onClick={() => { setFormOpen(true) }}>Añadir Estudiante</Button>
+            <Button
+              style={{ margin: 4, width: 120 }}
+              type="primary"
+              onClick={() => {
+                setFormOpen(true);
+              }}
+            >
+              Añadir Estudiante
+            </Button>
           </>
         ) : (
           <div
@@ -202,18 +301,30 @@ export function StudentsCurso() {
         )}
         <SingleStudentForm
           open={formOpen}
-          onClose={() => { setFormOpen(false) }}
+          onClose={() => {
+            setFormOpen(false);
+          }}
           onSubmit={(values) => {
             const data: createEnrollmentInterface = {
               ...values,
               classId: id || "",
             };
             console.log("Datos del formulario:", data);
-            handleSubmit(data)
+            handleSubmit(data);
             //createStudents(values);
-          }}>
-        </SingleStudentForm>
+          }}
+        ></SingleStudentForm>
       </div>
+      <SafetyModal
+        open={safetyOpen}
+        onCancel={() => setSafetyOpen(false)}
+        onConfirm={confirmDeleteClase}
+        title="¿Eliminar curso?"
+        message={`¿Estás seguro de que quieres eliminar el curso "${objClass?.name}"? Esta acción no se puede deshacer.`}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        danger
+      />
     </PageTemplate>
   );
 }
