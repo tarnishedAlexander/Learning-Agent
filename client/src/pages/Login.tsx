@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { App, Button, Checkbox, Form, Input } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { App, Button, Checkbox, Form, Input, Typography, Card } from "antd";
+import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 
 export type LoginValues = {
@@ -13,6 +13,8 @@ type Props = {
   onSubmit?: (values: LoginValues) => Promise<void> | void;
 };
 
+const { Title, Text } = Typography;
+
 export default function LoginPage({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
@@ -21,8 +23,11 @@ export default function LoginPage({ onSubmit }: Props) {
   const handleFinish = async (values: LoginValues) => {
     setLoading(true);
     try {
-      if (onSubmit) await onSubmit(values);
-      else await login(values);
+      if (onSubmit) {
+        await onSubmit(values);
+      } else {
+        const response = await login(values);
+      }
       navigate("/", { replace: true });
     } catch (e: unknown) {
       message.error((e as Error)?.message ?? "No se pudo iniciar sesión");
@@ -91,15 +96,43 @@ export default function LoginPage({ onSubmit }: Props) {
               </Link>
             </div>
 
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
+            <Card className="shadow-none border-0 bg-transparent p-0">
+              <Form
+                name="login"
+                layout="vertical"
+                size="large"
+                onFinish={handleFinish}
+                disabled={loading}
+                requiredMark={false}
+                className="[&_.ant-form-item-label>label]:!text-slate-600"
+              >
+                <Form.Item
+                  label="Email"
+                  name="email"
+                  rules={[
+                    { required: true, message: "Ingresa tu email" },
+                    { type: "email", message: "Email inválido" },
+                  ]}
+                >
+                  <Input
+                    autoComplete="email"
+                    placeholder="correo@empresa.com"
+                  />
+                </Form.Item>
 
-              className="mb-4 !h-12 !w-full !text-base !font-semibold !bg-violet-700 hover:!bg-violet-600"
-            >
-              Log in
-            </Button>
+                <Form.Item
+                  label="Password"
+                  name="password"
+                  rules={[
+                    { required: true, message: "Ingresa tu contraseña" },
+                    { min: 6, message: "Mínimo 6 caracteres" },
+                  ]}
+                >
+                  <Input.Password
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                  />
+                </Form.Item>
 
             <p className="mt-4 text-slate-500">
               Don’t have an account?{" "}

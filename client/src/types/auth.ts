@@ -16,7 +16,3 @@ export type LoginResponse = {
   refreshToken?: string | null;
   user: AuthUser;
 };
-
-export type ForgotPasswordPayload = {
-  email: string;
-};

@@ -141,13 +141,48 @@ export function StudentProfile() {
           />
         </div>
       </Layout.Content>
-
       {/* --- MODAL DE CHAT (MÁS ANCHO Y RESPONSIVO) --- */}
             <Modal
         title={null}
         open={isChatOpen}
         onCancel={() => setIsChatOpen(false)}
         footer={null}
+        width="90vw"
+        style={{ top: "40px", maxWidth: "500px" }}
+        closable={false}
+        bodyStyle={{ padding: 0, borderRadius: "20px", background: "transparent" }}
+        className="aws-chat-modal"
+      >
+        <div style={{
+          height: '300px',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '0',
+          background: COLORS.pureWhite,
+          borderRadius: "20px",
+          overflow: "hidden",
+          animation: "scaleIn 0.3s ease-out"
+        }}>
+          <div style={{
+            background: `linear-gradient(135deg, ${COLORS.deepNavy} 0%, ${COLORS.royalPurple} 100%)`,
+            padding: "24px 0",
+            textAlign: "center",
+            width: "calc(100% + 48px)",
+            marginLeft: "-24px",
+            marginRight: "-24px",
+            boxSizing: "border-box",
+            borderTopLeftRadius: "20px",
+            borderTopRightRadius: "20px"
+          }}>
+            <Typography.Title
+              level={4}
+              style={{
+                color: COLORS.pureWhite,
+                margin: 0,
+                fontWeight: 600,
+                fontSize: "20px"
+              }}
+            > 
         width="90vw"
         className="chat-modal"
         closable={false}
@@ -162,6 +197,37 @@ export function StudentProfile() {
               Estoy aquí para ayudarte con tus cursos
             </Typography.Text>
           </div>
+          <div 
+            ref={chatBodyRef}
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '24px',
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px"
+            }}
+          >
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  background: message.sender === 'user' ? COLORS.royalPurple : "#F0F2FF",
+                  color: message.sender === 'user' ? COLORS.pureWhite : COLORS.darkCharcoal,
+                  padding: "14px 20px",
+                  borderRadius: message.sender === 'user' ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+                  marginLeft: message.sender === 'user' ? "auto" : "0",
+                  marginRight: message.sender === 'user' ? "0" : "auto",
+                  maxWidth: "80%",
+                  boxShadow: message.sender === 'user' 
+                    ? "0 4px 12px rgba(58, 56, 160, 0.15)" 
+                    : "0 4px 12px rgba(0, 0, 0, 0.05)",
+                  animation: "fadeInUp 0.3s ease-out",
+                  animationDelay: `${index * 0.05}s`,
+                  opacity: 0,
+                  animationFillMode: "forwards",
+                  wordBreak: "break-word"
+                }}
           <div ref={chatBodyRef} className="chat-body">
             {messages.map((message, index) => (
               <div
@@ -182,6 +248,16 @@ export function StudentProfile() {
               </div>
             )}
           </div>
+          <div style={{ 
+            padding: "16px 24px", 
+            background: COLORS.pureWhite,
+            borderTop: "1px solid rgba(0, 0, 0, 0.05)"
+          }}>
+            <div style={{
+              display: "flex",
+              gap: "12px",
+              alignItems: "center"
+            }}>
           <div className="chat-footer">
             <div className="input-container">
               <Input
@@ -203,10 +279,6 @@ export function StudentProfile() {
           </div>
         </div>
       </Modal>
-    </Layout>
-  );
-}
-
       <style>
         {`
           .subject-hover:hover {
@@ -328,5 +400,5 @@ export function StudentProfile() {
         `}
       </style>
      </Layout> 
-  ); 
-}
+     ); 
+    }
