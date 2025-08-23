@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
-import { CLASSES_REPO, ENROLLMENT_REPO } from './tokens';
+import { CLASSES_REPO, ENROLLMENT_REPO, TEACHER_REPO } from './tokens';
 import { STUDENT_REPO } from './tokens';
 import { USER_REPO } from './tokens';
 import { CreateClassUseCase } from './application/commands/create-clase.usecase';
@@ -19,6 +19,11 @@ import { GetStudentsByClassUseCase } from './application/queries/get-students-by
 import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
 import { GetClassByIdUseCase } from './application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-student.usecase';
+import { EnrollGroupStudentUseCase } from './application/commands/enroll-group-students.usecase';
+import { UpdateClassUseCase } from './application/commands/update-class.usecase';
+import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class.usecase';
+import { GetTeacherInfoByIDUseCase } from './application/queries/get-teacher-info-by-id.usecase';
+import { TeacherPrismaRepository } from './infrastructure/persistence/teacher.prisma.repository';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { IdentityModule } from '../identity/identity.module';
 
@@ -28,6 +33,7 @@ import { IdentityModule } from '../identity/identity.module';
   providers: [
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
     {provide: STUDENT_REPO,  useClass: StudentPrismaRepository}  ,
+    {provide: TEACHER_REPO, useClass: TeacherPrismaRepository},
     {provide: USER_REPO,  useClass: UserPrismaRepository}  ,
     {provide: ENROLLMENT_REPO, useClass: EnrollmentPrismaRepository},
     ListClassesUseCase,
@@ -35,6 +41,7 @@ import { IdentityModule } from '../identity/identity.module';
     GetClassByIdUseCase,
     GetClassesByStudentUseCase,
     GetStudentsByClassUseCase,
+    GetTeacherInfoByIDUseCase,
     CreateClassUseCase,
     CreateStudentUseCase,
     CreateEnrollmentUseCase,
@@ -42,6 +49,9 @@ import { IdentityModule } from '../identity/identity.module';
     CreateStudentProfileUseCase,
     EnrollSingleStudentUseCase,
     JwtAuthGuard,
+    EnrollGroupStudentUseCase,
+    UpdateClassUseCase,
+    SoftDeleteClassUseCase,
   ],
 })
 export class AcademicManagementModule {}

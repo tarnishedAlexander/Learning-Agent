@@ -1,5 +1,5 @@
 import { Layout, Menu, ConfigProvider, theme as antdTheme, Avatar } from "antd";
-import { HomeOutlined, TeamOutlined, LogoutOutlined } from "@ant-design/icons";
+import { HomeOutlined, TeamOutlined, LogoutOutlined, BookOutlined } from "@ant-design/icons";
 import { type PropsWithChildren, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
@@ -7,7 +7,12 @@ import { logout } from "../services/authService";
 const { Sider, Header, Content, Footer } = Layout;
 
 const navItems = [
-  { key: "/", icon: <HomeOutlined />, label: <Link to="/">Clases</Link> },
+  { key: "/", icon: <HomeOutlined />, label: <Link to="/">Dashboard</Link> },
+  { 
+    key: "/classes", 
+    icon: <BookOutlined />, 
+    label: <Link to="/classes">Clases</Link> 
+  },
   {
     key: "/curso/1",
     icon: <TeamOutlined />,
