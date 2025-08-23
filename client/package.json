@@ -17,7 +17,10 @@
     "axios": "^1.11.0",
     "formik": "^2.4.6",
     "json-server": "^1.0.0-beta.3",
+<<<<<<< HEAD
     "lucide-react": "^0.541.0",
+=======
+>>>>>>> efa147b39f76adaca2799d6ba0e65405cdedef53
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
