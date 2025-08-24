@@ -8,6 +8,7 @@ import Login from "../pages/Login";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
+import { CourseDetailPage } from "../pages/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 import AppLayout from "../layouts/AppLayout";
@@ -26,7 +27,8 @@ export const AppRoutes = () => {
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/classes" element={<ClassMenu />} />
-            <Route path="/classes/:id" element={<StudentsCurso />} />
+            <Route path="/classes/:id" element={<CourseDetailPage />} />
+            <Route path="/classes/:id/students" element={<StudentsCurso />} />
             <Route path="/reinforcement" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />

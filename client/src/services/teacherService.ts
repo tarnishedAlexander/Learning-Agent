@@ -1,4 +1,4 @@
-import { apiClient } from "../api/apiClient";
+import apiClient from "../api/apiClient";
 import type { TeacherInfo } from "../interfaces/teacherInterface";
 
 export const teacherService = {
