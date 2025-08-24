@@ -1,17 +1,17 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { 
-  Table, 
-  Button, 
-  Space, 
-  message, 
+import {
+  Table,
+  Button,
+  Space,
+  message,
   Typography,
   Empty,
   Tabs
 } from "antd";
-import { 
-  EditOutlined, 
-  DeleteOutlined, 
+import {
+  EditOutlined,
+  DeleteOutlined,
   FileTextOutlined,
   InboxOutlined,
   UserOutlined,
@@ -19,18 +19,18 @@ import {
   CalendarOutlined,
   TeamOutlined
 } from "@ant-design/icons";
-import useClasses from "../hooks/useClasses";
-import useTeacher from "../hooks/useTeacher";
-import PageTemplate from "../components/PageTemplate";
-import { CursosForm } from "../components/cursosForm";
-import { SafetyModal } from "../components/safetyModal";
-import { SingleStudentForm } from "../components/singleStudentForm";
-import { StudentUpload } from "../components/studentUpload";
-import StudentPreviewModal from "../components/StudentPreviewModal";
-import type { Clase } from "../interfaces/claseInterface";
-import type { TeacherInfo } from "../interfaces/teacherInterface";
-import type { createEnrollmentInterface, EnrollGroupRow } from "../interfaces/enrollmentInterface";
-import useEnrollment from "../hooks/useEnrollment";
+import useClasses from "../../hooks/useClasses";
+import useTeacher from "../../hooks/useTeacher";
+import PageTemplate from "../../components/PageTemplate";
+import { CursosForm } from "../../components/cursosForm";
+import { SafetyModal } from "../../components/safetyModal";
+import { SingleStudentForm } from "../../components/singleStudentForm";
+import { StudentUpload } from "../../components/studentUpload";
+import StudentPreviewModal from "../../components/StudentPreviewModal";
+import type { Clase } from "../../interfaces/claseInterface";
+import type { TeacherInfo } from "../../interfaces/teacherInterface";
+import type { createEnrollmentInterface, EnrollGroupRow } from "../../interfaces/enrollmentInterface";
+import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
@@ -43,22 +43,18 @@ export function CourseDetailPage() {
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
   const { getTeacherInfoById } = useTeacher();
 
-  // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
   const [singleStudentFormOpen, setSingleStudentFormOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
-  // Teacher state
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
 
-  // Student upload states
   const [parsedStudents, setParsedStudents] = useState<Array<Record<string, any> & { nombres: string; apellidos: string; codigo: number }>>([]);
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("archivo.xlsx");
   const [sending, setSending] = useState(false);
 
-  // Loading state
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -103,8 +99,11 @@ export function CourseDetailPage() {
   const handleEditCourse = async (values: Clase) => {
     if (!values.id) return;
     try {
-      await updateClass(values);
-      message.success("Curso actualizado correctamente");
+      const data = await updateClass(values);
+      if (!data.success) {
+        message.error("Error al actualizar el curso");
+        return
+      }
       setEditModalOpen(false);
       if (id) await fetchClase(id);
     } catch {
@@ -192,45 +191,44 @@ export function CourseDetailPage() {
     }
   };
 
-  // Columnas para la tabla de estudiantes
   const studentsColumns = [
-    { 
-      title: "Nombres", 
-      dataIndex: "name", 
+    {
+      title: "Nombres",
+      dataIndex: "name",
       key: "name"
     },
-    { 
-      title: "Apellidos", 
-      dataIndex: "lastname", 
+    {
+      title: "Apellidos",
+      dataIndex: "lastname",
       key: "lastname"
     },
-    { 
-      title: "Código", 
-      dataIndex: "code", 
+    {
+      title: "Código",
+      dataIndex: "code",
       key: "code"
     },
-    { 
-      title: "Asistencia", 
-      dataIndex: "asistencia", 
-      key: "asistencia", 
+    {
+      title: "Asistencia",
+      dataIndex: "asistencia",
+      key: "asistencia",
       render: () => "-"
     },
-    { 
-      title: "1er Parcial", 
-      dataIndex: "1er_parcial", 
-      key: "1er_parcial", 
+    {
+      title: "1er Parcial",
+      dataIndex: "1er_parcial",
+      key: "1er_parcial",
       render: () => "-"
     },
-    { 
-      title: "2do Parcial", 
-      dataIndex: "2do_parcial", 
-      key: "2do_parcial", 
+    {
+      title: "2do Parcial",
+      dataIndex: "2do_parcial",
+      key: "2do_parcial",
       render: () => "-"
     },
-    { 
-      title: "Final", 
-      dataIndex: "final", 
-      key: "final", 
+    {
+      title: "Final",
+      dataIndex: "final",
+      key: "final",
       render: () => "-"
     }
   ];
@@ -285,7 +283,6 @@ export function CourseDetailPage() {
       ]}
     >
       <div style={{ padding: "1rem" }}>
-        {/* Header exactamente como en la imagen */}
         <div style={{ marginBottom: 8, backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
@@ -303,26 +300,25 @@ export function CourseDetailPage() {
                 </Text>
               </div>
             </div>
-            
-            {/* Botones de acción movidos a la derecha */}
+
             <Space>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 icon={<FolderOutlined />}
                 onClick={() => navigate(`/curso/${id}/documents`)}
               >
                 Documentos
               </Button>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 icon={<EditOutlined />}
                 onClick={() => setEditModalOpen(true)}
               >
                 Editar Curso
               </Button>
-              <Button 
+              <Button
                 danger
-                type="primary" 
+                type="primary"
                 icon={<DeleteOutlined />}
                 onClick={handleDeleteCourse}
               >
@@ -332,10 +328,8 @@ export function CourseDetailPage() {
           </div>
         </div>
 
-        {/* Separador visual sutil */}
         <div style={{ height: '1px', backgroundColor: '#e8e8e8', marginBottom: '8px' }}></div>
 
-        {/* Tabs exactamente como en la imagen */}
         <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
           <Tabs defaultActiveKey="general" size="large" style={{ backgroundColor: '#ffffff', paddingLeft: '16px' }}>
             <TabPane
@@ -348,167 +342,164 @@ export function CourseDetailPage() {
               key="general"
             >
               <div style={{ padding: '32px', backgroundColor: '#ffffff' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Nombre del curso:</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.name}</Text>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Nombre del curso:</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.name}</Text>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Gestión (semestre):</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.semester}</Text>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Gestión (semestre):</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.semester}</Text>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha de inicio:</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateBegin).format("DD/MM/YYYY")}</Text>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha de inicio:</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateBegin).format("DD/MM/YYYY")}</Text>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha final:</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateEnd).format("DD/MM/YYYY")}</Text>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha final:</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateEnd).format("DD/MM/YYYY")}</Text>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Docente asignado:</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>
-                      {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : objClass.teacherId ? "Cargando..." : "No asignado"}
-                    </Text>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Docente asignado:</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>
+                        {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : objClass.teacherId ? "Cargando..." : "No asignado"}
+                      </Text>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <Text strong style={{ color: '#000', fontSize: '14px' }}>Horarios:</Text>
-                  <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                    <Text style={{ color: '#000', fontSize: '16px' }}>Por definir</Text>
+                  <div>
+                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Horarios:</Text>
+                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
+                      <Text style={{ color: '#000', fontSize: '16px' }}>Por definir</Text>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </TabPane>
+            </TabPane>
 
-          <TabPane
-            tab={
-              <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                <UserOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
-                <span>Estudiantes</span>
-              </span>
-            }
-            key="students"
-          >
-            <div style={{ backgroundColor: '#ffffff', padding: '32px' }}>
-            {hasStudents ? (
-              <>
-                {/* Botones de calificaciones exactamente como en la imagen */}
-                <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                  <Space size="middle">
-                    <Button type="primary" size="large">1er Parcial</Button>
-                    <Button type="primary" size="large">2do Parcial</Button>
-                    <Button type="primary" size="large">Final</Button>
-                  </Space>
-                </div>
-                
-                {/* Tabla de estudiantes */}
-                <Table
-                  columns={studentsColumns}
-                  dataSource={students}
-                  rowKey={(record) => record.code}
-                  pagination={{ 
-                    position: ['bottomCenter'],
-                    showSizeChanger: false,
-                    pageSize: 10
-                  }}
-                  size="middle"
-                />
-                
-                {/* Botón añadir estudiante exactamente como en la imagen */}
-                <div style={{ marginTop: 24 }}>
-                  <Button 
-                    type="primary"
-                    size="large"
-                    onClick={() => setSingleStudentFormOpen(true)}
-                  >
-                    Añadir Estudiante
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <Empty description="No hay estudiantes inscritos en este curso">
-                  <div style={{ marginTop: '24px' }}>
-                    <StudentUpload
-                      disabled={false}
-                      onStudentsParsed={(parsed, info) => {
-                        setParsedStudents(parsed);
-                        if (info?.fileName) setFileName(info.fileName);
+            <TabPane
+              tab={
+                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <UserOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                  <span>Estudiantes</span>
+                </span>
+              }
+              key="students"
+            >
+              <div style={{ backgroundColor: '#ffffff', padding: '32px' }}>
+                {hasStudents ? (
+                  <>
+                    <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                      <Space size="middle">
+                        <Button type="primary" size="large">1er Parcial</Button>
+                        <Button type="primary" size="large">2do Parcial</Button>
+                        <Button type="primary" size="large">Final</Button>
+                      </Space>
+                    </div>
 
-                        const seen = new Set<string>();
-                        const dupSet = new Set<string>();
-                        for (const s of parsed) {
-                          const k = String(s.codigo || "").trim().toLowerCase();
-                          if (!k) continue;
-                          if (seen.has(k)) dupSet.add(String(s.codigo));
-                          else seen.add(k);
-                        }
-                        setDuplicates(Array.from(dupSet));
-                        setPreviewModalOpen(true);
+                    {/* Tabla de estudiantes */}
+                    <Table
+                      columns={studentsColumns}
+                      dataSource={students}
+                      rowKey={(record) => record.code}
+                      pagination={{
+                        position: ['bottomCenter'],
+                        showSizeChanger: false,
+                        pageSize: 10
                       }}
+                      size="middle"
                     />
+                    <div style={{ marginTop: 24 }}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => setSingleStudentFormOpen(true)}
+                      >
+                        Añadir Estudiante
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    <Empty description="No hay estudiantes inscritos en este curso">
+                      <div style={{ marginTop: '24px' }}>
+                        <StudentUpload
+                          disabled={false}
+                          onStudentsParsed={(parsed, info) => {
+                            setParsedStudents(parsed);
+                            if (info?.fileName) setFileName(info.fileName);
+
+                            const seen = new Set<string>();
+                            const dupSet = new Set<string>();
+                            for (const s of parsed) {
+                              const k = String(s.codigo || "").trim().toLowerCase();
+                              if (!k) continue;
+                              if (seen.has(k)) dupSet.add(String(s.codigo));
+                              else seen.add(k);
+                            }
+                            setDuplicates(Array.from(dupSet));
+                            setPreviewModalOpen(true);
+                          }}
+                        />
+                      </div>
+                    </Empty>
                   </div>
+                )}
+              </div>
+            </TabPane>
+
+            <TabPane
+              tab={
+                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <InboxOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                  <span>Materiales</span>
+                </span>
+              }
+              key="materials"
+            >
+              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+                <Empty description="Funcionalidad de materiales en desarrollo">
+                  <Button
+                    type="primary"
+                    onClick={() => navigate(`/curso/${id}/documents`)}
+                    style={{ marginTop: '16px' }}
+                  >
+                    Ir a Documentos
+                  </Button>
                 </Empty>
               </div>
-            )}
-            </div>
-          </TabPane>
+            </TabPane>
 
-          <TabPane
-            tab={
-              <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                <InboxOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
-                <span>Materiales</span>
-              </span>
-            }
-            key="materials"
-          >
-            <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
-              <Empty description="Funcionalidad de materiales en desarrollo">
-                <Button 
-                  type="primary" 
-                  onClick={() => navigate(`/curso/${id}/documents`)}
-                  style={{ marginTop: '16px' }}
-                >
-                  Ir a Documentos
-                </Button>
-              </Empty>
-            </div>
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
-                <span>Sílabo</span>
-              </span>
-            }
-            key="syllabus"
-          >
-            <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
-              <Empty description="Sílabo no disponible">
-                <Button 
-                  type="primary" 
-                  disabled
-                  style={{ marginTop: '16px' }}
-                >
-                  Subir Sílabo
-                </Button>
-              </Empty>
-            </div>
-          </TabPane>
-        </Tabs>
+            <TabPane
+              tab={
+                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                  <span>Sílabo</span>
+                </span>
+              }
+              key="syllabus"
+            >
+              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+                <Empty description="Sílabo no disponible">
+                  <Button
+                    type="primary"
+                    disabled
+                    style={{ marginTop: '16px' }}
+                  >
+                    Subir Sílabo
+                  </Button>
+                </Empty>
+              </div>
+            </TabPane>
+          </Tabs>
         </div>
 
         {/* Modals */}

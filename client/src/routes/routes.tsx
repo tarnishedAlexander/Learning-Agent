@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { ClassMenu } from "../pages/clasesMenu";
-import { StudentsCurso } from "../pages/estudiantesPerClase";
+import { ClassMenu } from "../pages/academic_management/ClassesMenu";
+import { StudentsByClass } from "../pages/academic_management/StudentsByClass";
 import { StudentProfile } from "../pages/reinforcement";
 import Exam from "../pages/exam";
 import Interview from "../pages/interview";
@@ -9,7 +9,7 @@ import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
-import { CourseDetailPage } from "../pages/CourseDetailPage";
+import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 import AppLayout from "../layouts/AppLayout";
@@ -32,7 +32,7 @@ export const AppRoutes = () => {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
-            <Route path="/classes/:id/students" element={<StudentsCurso />} />
+            <Route path="/classes/:id/students" element={<StudentsByClass />} />
             <Route path="/reinforcement" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />
