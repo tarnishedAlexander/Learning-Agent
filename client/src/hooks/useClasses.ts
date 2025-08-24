@@ -5,15 +5,16 @@ import type { Clase } from "../interfaces/claseInterface";
 import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
-import { meAPI } from "../services/authService";
+import { useUserContext } from "../context/UserContext";
 
 const useClasses = () => {
   const { clases, setClases, addClase } = useClaseStore();
   const [objClass, setObjClass] = useState<Clase>();
   const [curso, setCurso] = useState('')
   const [students, setStudents] = useState<StudentInfo[]>([])
-  const [userData, setUserData] = useState<any>();
+  const { user, fetchUser } = useUserContext();
 
+  /*
   const fetchUser = async () => {
     const authData = localStorage.getItem("auth");
     if (!authData) {
@@ -23,11 +24,13 @@ const useClasses = () => {
     const parsedData = JSON.parse(authData);
     const user = await meAPI(parsedData.accessToken);
     setUserData(user);
-  };
+  };*/
 
   useEffect(() => {
     fetchClases();
-    fetchUser();
+    if (!user || user === null) {
+      fetchUser();
+    }
   }, []);
 
   const fetchClases = async () => {
@@ -75,7 +78,7 @@ const useClasses = () => {
 
   const softDeleteClass = async (classId: string) => {
     try {
-      const userId = userData.id;
+      const userId = user?.id || "";
       return await claseService.softDeleteClase(classId, userId);
     } catch (error) {
       console.error(`Error deleting class with id ${classId}`)

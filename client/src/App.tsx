@@ -6,6 +6,7 @@ import { lightTheme, darkTheme } from "./theme";
 import { AppRoutes } from "./routes/routes";
 import { useThemeStore } from "./store/themeStore";
 import "./App.css";
+import { UserProvider } from './context/UserContext';
 
 function App() {
   const theme = useThemeStore((s) => s.theme);
@@ -31,7 +32,9 @@ function App() {
   return (
     <ConfigProvider theme={currentTheme}>
       <AntApp>
-        <AppRoutes />
+        <UserProvider>
+          <AppRoutes />
+        </UserProvider>
       </AntApp>
     </ConfigProvider>
   );

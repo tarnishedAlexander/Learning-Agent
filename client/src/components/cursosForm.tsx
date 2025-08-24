@@ -1,11 +1,11 @@
 import { Modal, Form, Input, DatePicker, Button, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
-import { meAPI } from "../services/authService";
 import * as Yup from "yup";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import type { Clase } from "../interfaces/claseInterface";
+import { useUserContext } from "../context/UserContext";
 
 interface CreateClaseModalProps {
   open: boolean;
@@ -21,21 +21,12 @@ export const CursosForm = ({
   clase,
 }: CreateClaseModalProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
-  const [userData, setUserData] = useState<any>();
-
-  const fetchUser = async () => {
-    const authData = localStorage.getItem("auth");
-    if (!authData) {
-      console.log("Sin datos Auth guardados en localstorage");
-      return;
-    }
-    const parsedData = JSON.parse(authData);
-    const user = await meAPI(parsedData.accessToken);
-    setUserData(user);
-  };
+  const { user, fetchUser } = useUserContext();
 
   useEffect(() => {
-    fetchUser();
+    if (!user || user === null) {
+      fetchUser();
+    }
   }, [open]);
 
   const validationSchema = Yup.object().shape({
@@ -72,7 +63,7 @@ export const CursosForm = ({
     onSubmit: (values, { resetForm }) => {
       onSubmit({
         ...values,
-        teacherId: userData?.id,
+        teacherId: user?.id || "",
         id: clase?.id || "" ,
       });
       resetForm();
