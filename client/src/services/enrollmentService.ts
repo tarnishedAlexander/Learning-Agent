@@ -1,4 +1,4 @@
-import { apiClient } from "../api/apiClient";
+import apiClient from "../api/apiClient";
 import type { createEnrollmentInterface, EnrollGroupRequest, EnrollGroupResponse, } from "../interfaces/enrollmentInterface";
 
 export const enrollmentService = {

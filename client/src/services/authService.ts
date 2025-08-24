@@ -1,5 +1,5 @@
 import jsonInstance from "../api/jsonIntance";
-import { apiClient } from "../api/apiClient";
+import apiClient from "../api/apiClient";
 import type { LoginPayload, LoginResponse } from "../types/auth";
 import { ApiError } from "../utils/errors";
 import { saveAuth } from "../utils/storage";
