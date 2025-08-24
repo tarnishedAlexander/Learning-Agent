@@ -24,9 +24,11 @@ import { UpdateClassUseCase } from './application/commands/update-class.usecase'
 import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class.usecase';
 import { GetTeacherInfoByIDUseCase } from './application/queries/get-teacher-info-by-id.usecase';
 import { TeacherPrismaRepository } from './infrastructure/persistence/teacher.prisma.repository';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { IdentityModule } from '../identity/identity.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule,IdentityModule],
   controllers: [AcademicManagementController],
   providers: [
     {provide: CLASSES_REPO,  useClass: ClassesPrismaRepository }  ,
@@ -46,6 +48,7 @@ import { TeacherPrismaRepository } from './infrastructure/persistence/teacher.pr
     CreateUserUseCase,
     CreateStudentProfileUseCase,
     EnrollSingleStudentUseCase,
+    JwtAuthGuard,
     EnrollGroupStudentUseCase,
     UpdateClassUseCase,
     SoftDeleteClassUseCase,

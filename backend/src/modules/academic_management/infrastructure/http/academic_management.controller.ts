@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Put} from '@nestjs/common';
 import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
@@ -19,7 +19,9 @@ import { EditClassDTO } from './dtos/edit-class.dto';
 import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-class.usecase';
 import { DeleteClassDTO } from './dtos/delete-class.dto';
 import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)  
 @Controller('academic')
 export class AcademicManagementController {
   constructor(
