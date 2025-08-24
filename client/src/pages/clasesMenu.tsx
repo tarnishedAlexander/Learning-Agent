@@ -3,6 +3,7 @@ import useClasses from "../hooks/useClasses";
 import { Card, Row, Col, Input, Button, Space, Empty } from "antd";
 import { CursosForm } from "../components/cursosForm";
 import type { Clase } from "../interfaces/claseInterface";
+import PageTemplate from "../components/PageTemplate";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -11,28 +12,27 @@ function parseISO(d: string | Date): Date {
 }
 
 export function ClassMenu() {
-  const { clases, addClases } = useClasses(); 
+  const { clases, addClases } = useClasses();
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const goToReinforcement = () => {
-    navigate('/reinforcement');
+    navigate("/reinforcement");
   };
 
-  
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),
     [clases]
   );
 
-  
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
-    return clasesSafe.filter((cl) => (cl.name ?? "").toLowerCase().includes(term));
+    return clasesSafe.filter((cl) =>
+      (cl.name ?? "").toLowerCase().includes(term)
+    );
   }, [clasesSafe, searchTerm]);
 
-  
   const { cursosActuales, cursosPasados } = useMemo(() => {
     const now = new Date();
     const byEndDesc = (a: Clase, b: Clase) =>
@@ -63,11 +63,16 @@ export function ClassMenu() {
             <Card
               hoverable
               onClick={() => goToStudents(clase.id)}
-              style={{ width: "100%", height: 200, textAlign: "center", borderRadius: 20 }}
+              style={{
+                width: "100%",
+                height: 200,
+                textAlign: "center",
+                borderRadius: 20,
+              }}
             >
               <h2>{clase.name}</h2>
-              <p>Inicio: {dayjs(clase.dateBegin).format('DD/MM/YYYY')}</p>
-              <p>Fin: {dayjs(clase.dateEnd).format('DD/MM/YYYY')}</p>
+              <p>Inicio: {dayjs(clase.dateBegin).format("DD/MM/YYYY")}</p>
+              <p>Fin: {dayjs(clase.dateEnd).format("DD/MM/YYYY")}</p>
             </Card>
           </Col>
         ))}
@@ -77,47 +82,74 @@ export function ClassMenu() {
     );
 
   return (
-    <div
-      className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-      style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "24px 24px",
+    <PageTemplate
+      title="Clases"
+      subtitle="Clases del Docente"
+      user={{
+        name: "Nora Watson",
+        role: "Sales Manager",
+        avatarUrl: "https://i.pravatar.cc/128?img=5",
       }}
+      actions={
+        <div className="flex gap-2">
+          <Button>Export</Button>
+          <Button type="primary">Upgrade</Button>
+        </div>
+      }
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
     >
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <img
-          src="/src/assets/upb_logo.png"
-          alt="UPB Logo"
-          style={{ width: 350, height: "auto" }}
-        />
-      </div>
-      <CursosForm
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAddClase}
-      />
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-        <Space>
-          <Input
-            placeholder="Buscar curso"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            allowClear
-            style={{ width: 240 }}
+      <div
+        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "24px 24px",
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img
+            src="/src/assets/upb_logo.png"
+            alt="UPB Logo"
+            style={{ width: 350, height: "auto" }}
           />
-        </Space>
-        <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
-        <Button type="primary" onClick={goToReinforcement}>page4</Button>
+        </div>
+        <CursosForm
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleAddClase}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 24,
+          }}
+        >
+          <Space>
+            <Input
+              placeholder="Buscar curso"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              allowClear
+              style={{ width: 240 }}
+            />
+          </Space>
+          <Button type="primary" onClick={() => setModalOpen(true)}>
+            Añadir
+          </Button>
+          <Button type="primary" onClick={goToReinforcement}>
+            page4
+          </Button>
+        </div>
+
+        <h1>Cursos Actuales</h1>
+        {renderGrid(cursosActuales)}
+
+        <h1 style={{ marginTop: 24 }}>Cursos Pasados</h1>
+        {renderGrid(cursosPasados)}
       </div>
-
-      <h1>Cursos Actuales</h1>
-      {renderGrid(cursosActuales)}
-
-      <h1 style={{ marginTop: 24 }}>Cursos Pasados</h1>
-      {renderGrid(cursosPasados)}
-    </div>
+    </PageTemplate>
   );
 }

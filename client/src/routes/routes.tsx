@@ -5,6 +5,7 @@ import { StudentProfile } from "../pages/reinforcement";
 import Exam from "../pages/exam";
 import Interview from "../pages/interview";
 import Login from "../pages/Login";
+import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
@@ -12,6 +13,7 @@ import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
 import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
+import SettingsPage from "../pages/settings/SettingsPage";
 
 export const AppRoutes = () => {
   return (
@@ -19,13 +21,17 @@ export const AppRoutes = () => {
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
+          {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="clases" element={<ClassMenu />} />
             <Route path="curso/:id" element={<StudentsCurso />} />
-            <Route path="/reinforcement" element={<StudentProfile />} />
+            <Route path="/classes-student" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />
             <Route path="/" element={<Navigate to="/exams/create" replace />} />
