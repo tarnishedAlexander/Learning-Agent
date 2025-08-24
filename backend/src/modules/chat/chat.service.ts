@@ -4,6 +4,7 @@ import { IAIProvider } from './iai.provider';
 import { OllamaAdapter } from './adapters/ollama.adapter';
 import { AiConfigService } from 'src/core/ai/ai.config';
 import { CacheService } from 'src/core/cache/cache.service';
+import { ChatSessionRepository } from './chat-session.repository';
 
 const WINDOW_MS = 60_000;
 const DEFAULT_RATE_LIMIT = Number(process.env.RATE_LIMIT ?? 10);
@@ -16,7 +17,8 @@ export class ChatService {
   constructor(
     private readonly config: AiConfigService,
     private readonly ollamaAdapter: OllamaAdapter,
-    private readonly cacheService: CacheService
+    private readonly cacheService: CacheService,
+    private readonly chatSessionRepository: ChatSessionRepository
   ) {
     this.provider = ollamaAdapter as IAIProvider;
   }
@@ -30,7 +32,13 @@ export class ChatService {
 
     try {
       const answer = await this.provider.ask(prompt, { lang: dto.lang, context: dto.context });
+
       await this.cacheService.set(prompt, answer);
+
+      const sessionKey = `${key}-${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+      await this.chatSessionRepository.create(sessionKey, prompt, answer, expiresAt);
+
       return { answer };
     } catch {
       throw new InternalServerErrorException('Error al obtener respuesta de la IA.');
