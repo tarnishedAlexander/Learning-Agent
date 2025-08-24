@@ -1,4 +1,4 @@
-
+import '@ant-design/v5-patch-for-react-19';
 import { ConfigProvider, App as AntApp } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
