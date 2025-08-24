@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import useClasses from "../hooks/useClasses";
+import useClasses from "../../hooks/useClasses";
 import { Card, Row, Col, Input, Button, Space, Empty } from "antd";
-import { CursosForm } from "../components/cursosForm";
-import type { Clase } from "../interfaces/claseInterface";
-import PageTemplate from "../components/PageTemplate";
+import { CursosForm } from "../../components/cursosForm";
+import type { Clase } from "../../interfaces/claseInterface";
+import PageTemplate from "../../components/PageTemplate";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -106,14 +106,6 @@ export function ClassMenu() {
           padding: "24px 24px",
         }}
       >
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <img
-            src="/src/assets/upb_logo.png"
-            alt="UPB Logo"
-            style={{ width: 350, height: "auto" }}
-          />
-        </div>
         <CursosForm
           open={modalOpen}
           onClose={() => setModalOpen(false)}

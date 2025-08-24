@@ -70,9 +70,15 @@ const useClasses = () => {
         dateBegin: values.dateBegin, 
         dateEnd: values.dateEnd
       }
-      claseService.updateClase(id, classData)
+      await claseService.updateClase(id, classData)
+      return {
+        success: true
+      }
     } catch {
       console.error(`Error updating class with id ${values.id}`)
+      return {
+        success: false
+      }
     }
   }
 

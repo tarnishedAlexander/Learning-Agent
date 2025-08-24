@@ -1,25 +1,25 @@
 import { useParams, useNavigate } from "react-router-dom";
-import useClasses from "../hooks/useClasses";
+import useClasses from "../../hooks/useClasses";
 import { useEffect, useState } from "react";
 import { Button, Card, Table, Space, message } from "antd";
-import { StudentUpload } from "../components/studentUpload";
-import { CursosForm } from "../components/cursosForm";
-import { SingleStudentForm } from "../components/singleStudentForm";
+import { StudentUpload } from "../../components/studentUpload";
+import { CursosForm } from "../../components/cursosForm";
+import { SingleStudentForm } from "../../components/singleStudentForm";
 import {
   DownloadOutlined,
   FolderOutlined,
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
-import useEnrollment from "../hooks/useEnrollment";
-import PageTemplate from "../components/PageTemplate";
-import type { Clase } from "../interfaces/claseInterface";
-import { SafetyModal } from "../components/safetyModal";
-import StudentPreviewModal from "../components/StudentPreviewModal";
-import type { EnrollGroupRow } from "../interfaces/enrollmentInterface";
+import type { createEnrollmentInterface } from "../../interfaces/enrollmentInterface";
+import useEnrollment from "../../hooks/useEnrollment";
+import PageTemplate from "../../components/PageTemplate";
+import type { Clase } from "../../interfaces/claseInterface";
+import { SafetyModal } from "../../components/safetyModal";
+import StudentPreviewModal from "../../components/StudentPreviewModal";
+import type { EnrollGroupRow } from "../../interfaces/enrollmentInterface";
 
-export function StudentsCurso() {
+export function StudentsByClass() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState(false);
