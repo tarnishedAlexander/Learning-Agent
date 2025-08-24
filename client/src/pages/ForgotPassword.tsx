@@ -1,31 +1,28 @@
 import { useState } from "react";
-import { App, Button, Checkbox, Form, Input } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+import { App, Button, Form, Input } from "antd";
+import { Link } from "react-router-dom";
+import { forgotPassword } from "../services/authService";
 
-export type LoginValues = {
+export type ForgotValues = {
   email: string;
-  password: string;
-  remember?: boolean;
 };
 
 type Props = {
-  onSubmit?: (values: LoginValues) => Promise<void> | void;
+  onSubmit?: (values: ForgotValues) => Promise<void> | void;
 };
 
-export default function LoginPage({ onSubmit }: Props) {
+export default function ForgotPasswordPage({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
-  const navigate = useNavigate();
 
-  const handleFinish = async (values: LoginValues) => {
+  const handleFinish = async (values: ForgotValues) => {
     setLoading(true);
     try {
       if (onSubmit) await onSubmit(values);
-      else await login(values);
-      navigate("/", { replace: true });
+      else await forgotPassword(values);
+      message.success("Revisa tu correo para resetear la contraseña");
     } catch (e: unknown) {
-      message.error((e as Error)?.message ?? "No se pudo iniciar sesión");
+      message.error((e as Error)?.message ?? "No se pudo enviar el correo");
     } finally {
       setLoading(false);
     }
@@ -37,15 +34,15 @@ export default function LoginPage({ onSubmit }: Props) {
         <section className="md:col-span-4 flex flex-col items-center justify-center px-5 sm:px-10 md:px-12 lg:px-20 py-10">
           <div className="mb-8 mx-8">
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight">
-              Log in.
+              Forgot password.
             </h1>
             <p className="text-slate-500 mt-2">
-              Log in with your data that you entered during your registration
+              Enter your email and we will send you a reset link
             </p>
           </div>
 
           <Form
-            name="login"
+            name="forgot"
             layout="vertical"
             size="large"
             onFinish={handleFinish}
@@ -68,43 +65,19 @@ export default function LoginPage({ onSubmit }: Props) {
               />
             </Form.Item>
 
-            <Form.Item
-              label="Enter your password"
-              name="password"
-              rules={[
-                { required: true, message: "Ingresa tu contraseña" },
-                { min: 8, message: "Al menos 8 caracteres" },
-              ]}
-            >
-              <Input.Password
-                placeholder="atleast 8 characters"
-                autoComplete="current-password"
-              />
-            </Form.Item>
-
-            <div className="flex items-center justify-between mt-1 mb-4">
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-              <Link to="/forgot" className="text-violet-700 hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
             <Button
               type="primary"
               htmlType="submit"
               loading={loading}
-
               className="mb-4 !h-12 !w-full !text-base !font-semibold !bg-violet-700 hover:!bg-violet-600"
             >
-              Log in
+              Send reset link
             </Button>
 
             <p className="mt-4 text-slate-500">
-              Don’t have an account?{" "}
-              <Link to="/forgot" className="text-violet-700 font-medium">
-                Register
+              Remember your password?{" "}
+              <Link to="/login" className="text-violet-700 font-medium">
+                Log in
               </Link>
             </p>
           </Form>
@@ -117,14 +90,16 @@ export default function LoginPage({ onSubmit }: Props) {
         <section className="md:col-span-8 relative flex items-center justify-center">
           <div className="absolute inset-0 bg-[#F3ECFF]" />
           <div className="relative w-full h-full flex flex-col items-center justify-center px-8 lg:px-16 py-10 text-center">
-            <p className="text-slate-600 text-lg">Nice to see you again</p>
+            <p className="text-slate-600 text-lg">
+              We will help you recover your account
+            </p>
             <h2 className="mt-1 text-5xl font-extrabold text-violet-700 tracking-tight">
-              Welcome back
+              Reset password
             </h2>
 
             <img
-              src="/src/assets/login4.svg"
-              alt="Welcome illustration"
+              src="/src/assets/forgot.svg"
+              alt="Forgot password illustration"
               className="mt-8 w-[80%] max-w-2xl h-auto"
             />
 
@@ -139,3 +114,4 @@ export default function LoginPage({ onSubmit }: Props) {
     </div>
   );
 }
+
