@@ -1,6 +1,11 @@
 import { Layout, Menu, ConfigProvider, Avatar } from "antd";
-import { HomeOutlined, TeamOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
-import { useMemo, useState } from "react";
+import {
+  HomeOutlined,
+  TeamOutlined,
+  LogoutOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { clearAuth } from "../utils/storage";
 import { useThemeStore } from "../store/themeStore";
@@ -35,7 +40,25 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const currentMode = useThemeStore((state) => state.mode);
+  const theme = useThemeStore((state) => state.theme);
+  const [systemTheme, setSystemTheme] = useState(
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const listener = (e: MediaQueryListEvent) =>
+      setSystemTheme(e.matches ? "dark" : "light");
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
+
+  const currentTheme = useMemo(
+    () => (theme === "system" ? systemTheme : theme),
+    [theme, systemTheme]
+  );
 
   const selectedKey = useMemo(() => {
     const match = navItems.find((i) =>
@@ -52,7 +75,7 @@ export default function AppLayout() {
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
-        theme={currentMode}
+        theme={currentTheme}
         trigger={null}
         className="bg-[var(--ant-colorBgLayout)]"
       >
