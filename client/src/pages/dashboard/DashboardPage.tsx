@@ -1,11 +1,12 @@
 import { Button, Card, Row, Col } from "antd";
 import PageTemplate from "../../components/PageTemplate";
+import { formatTodayEs } from "../../utils/date";
 
 export default function DashboardPage() {
   return (
     <PageTemplate
       title="Dashboard"
-      subtitle="14th Aug 2023"
+      subtitle={formatTodayEs()}
       user={{
         name: "Nora Watson",
         role: "Sales Manager",
