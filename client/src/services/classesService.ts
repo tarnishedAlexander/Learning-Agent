@@ -1,4 +1,4 @@
-import apiClient from "../api/apiClient";
+import { apiClient } from "../api/apiClient";
 import type { Clase } from "../interfaces/claseInterface";
 
 export const claseService = {
@@ -32,6 +32,7 @@ export const claseService = {
     }
   },
 
+  //TODO - Falta implementar el endpoint de actualizar clase
   async updateClase(id: string, claseData: Partial<Clase>): Promise<Clase> {
     try {
       const response = await apiClient.put(`/academic/classes/${id}`, claseData);
@@ -42,18 +43,13 @@ export const claseService = {
     }
   },
 
-  async softDeleteClase(id: string, teacherId: string) {
+  //TODO - Falta implementar el endpoint de eliminar clase
+  async deleteClase(id: string): Promise<void> {
     try {
-      const response = await apiClient.put(`/academic/classes/remove/${id}`, {teacherId});
-      return {
-        success: true,
-        data: response.data
-      }
+      await apiClient.delete(`/academic/classes/${id}`);
     } catch (error) {
-      console.error("Failed to soft-delete clase", error);
-      return {
-        success: false
-      }
+      console.error("Failed to delete clase", error);
+      throw error;
     }
   },
 };

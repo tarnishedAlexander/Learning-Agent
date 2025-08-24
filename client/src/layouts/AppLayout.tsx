@@ -6,7 +6,6 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  BookOutlined ,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -17,11 +16,6 @@ const { Sider, Content } = Layout;
 
 const navItems = [
   { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
-  { 
-    key: "/classes", 
-    icon: <BookOutlined />, 
-    label: <Link to="/classes">Clases</Link> 
-  },
   {
     key: "/curso/1",
     icon: <TeamOutlined />,

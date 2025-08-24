@@ -1,4 +1,4 @@
-import type { createEnrollmentInterface, EnrollGroupRequest, EnrollGroupResponse, } from "../interfaces/enrollmentInterface";
+import type { createEnrollmentInterface } from "../interfaces/enrollmentInterface";
 import { enrollmentService } from "../services/enrollmentService";
 
 const useEnrollment = () => {
@@ -8,12 +8,8 @@ const useEnrollment = () => {
         return response;
     }
 
-    const enrollGroupStudents = async (payload: EnrollGroupRequest): Promise<EnrollGroupResponse> => {
-        return enrollmentService.enrollGroupStudents(payload);
-    }
-
     return {
-        enrollSingleStudent, enrollGroupStudents
+        enrollSingleStudent,
     }
 }
 
