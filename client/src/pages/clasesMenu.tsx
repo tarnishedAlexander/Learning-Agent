@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import useClasses from "../../hooks/useClasses";
+import useClasses from "../hooks/useClasses";
 import { Card, Row, Col, Input, Button, Space, Empty } from "antd";
-import { CursosForm } from "../../components/cursosForm";
-import type { Clase } from "../../interfaces/claseInterface";
-import PageTemplate from "../../components/PageTemplate";
+import { CursosForm } from "../components/cursosForm";
+import type { Clase } from "../interfaces/claseInterface";
+import PageTemplate from "../components/PageTemplate";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -12,7 +12,7 @@ function parseISO(d: string | Date): Date {
 }
 
 export function ClassMenu() {
-  const { clases, createClass } = useClasses();
+  const { clases, addClases } = useClasses();
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -50,10 +50,10 @@ export function ClassMenu() {
   }, [filteredClases]);
 
   const handleAddClase = async (values: Omit<Clase, "id">) => {
-    await createClass(values);
+    await addClases(values);
   };
 
-  const goToStudents = (id: string) => navigate(`/classes/${id}`);
+  const goToStudents = (id: string) => navigate(`curso/${id}`);
 
   const renderGrid = (items: Clase[]) =>
     items.length ? (
@@ -96,7 +96,7 @@ export function ClassMenu() {
           <Button type="primary">Upgrade</Button>
         </div>
       }
-      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases", href: "/classes" }]}
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
     >
       <div
         className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
@@ -106,6 +106,14 @@ export function ClassMenu() {
           padding: "24px 24px",
         }}
       >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img
+            src="/src/assets/upb_logo.png"
+            alt="UPB Logo"
+            style={{ width: 350, height: "auto" }}
+          />
+        </div>
         <CursosForm
           open={modalOpen}
           onClose={() => setModalOpen(false)}
@@ -136,7 +144,6 @@ export function ClassMenu() {
           </Button>
         </div>
 
-
         <h1>Cursos Actuales</h1>
         {renderGrid(cursosActuales)}
 
@@ -144,7 +151,5 @@ export function ClassMenu() {
         {renderGrid(cursosPasados)}
       </div>
     </PageTemplate>
-
-
   );
 }

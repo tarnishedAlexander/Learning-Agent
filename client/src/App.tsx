@@ -1,4 +1,4 @@
-import '@ant-design/v5-patch-for-react-19';
+
 import { ConfigProvider, App as AntApp } from "antd";
 import { useEffect, useMemo, useState } from "react";
 
@@ -6,7 +6,6 @@ import { lightTheme, darkTheme } from "./theme";
 import { AppRoutes } from "./routes/routes";
 import { useThemeStore } from "./store/themeStore";
 import "./App.css";
-import { UserProvider } from './context/UserContext';
 
 function App() {
   const theme = useThemeStore((s) => s.theme);
@@ -32,9 +31,7 @@ function App() {
   return (
     <ConfigProvider theme={currentTheme}>
       <AntApp>
-        <UserProvider>
-          <AppRoutes />
-        </UserProvider>
+        <AppRoutes />
       </AntApp>
     </ConfigProvider>
   );
