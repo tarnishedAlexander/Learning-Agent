@@ -29,6 +29,7 @@ import {
   deleteAccount,
   type UserSettings,
 } from "../../services/settingsService";
+import { useThemeStore } from "../../store/themeStore";
 
 const { Title, Text } = Typography;
 
@@ -473,6 +474,7 @@ function PreferencesTab({
 }) {
   const { message } = App.useApp();
   const [form] = Form.useForm();
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   useEffect(() => {
     if (!data) return;
@@ -482,11 +484,13 @@ function PreferencesTab({
       timezone: data.preferences.timezone,
       dateFormat: data.preferences.dateFormat,
     });
-  }, [data, form]);
+    setTheme(data.preferences.theme);
+  }, [data, form, setTheme]);
 
   const onFinish = async (values: any) => {
     try {
       await updatePreferences(values);
+      setTheme(values.theme);
       message.success("Preferences updated");
     } catch (e: any) {
       message.error(e?.message ?? "Could not update preferences");
@@ -515,6 +519,7 @@ function PreferencesTab({
                     { label: "Light", value: "light" },
                     { label: "Dark", value: "dark" },
                   ]}
+                  onChange={setTheme}
                 />
               </Form.Item>
               <Form.Item label="Language" name="language">

@@ -56,7 +56,7 @@ export default function PageTemplate({
           <div className="flex items-center gap-4">
             {actions && <div className="hidden md:block">{actions}</div>}
             {user && (
-              <div className="flex items-center gap-3 bg-white rounded-2xl px-3 py-2 shadow-sm ring-1 ring-slate-100">
+              <div className="flex items-center gap-3 bg-[var(--ant-colorBgContainer)] rounded-2xl px-3 py-2 shadow-sm ring-1 ring-[var(--ant-colorBorder)]">
                 <Avatar size={40} src={user.avatarUrl} />
                 <div className="leading-tight">
                   <div className="font-medium">{user.name}</div>

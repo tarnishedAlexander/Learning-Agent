@@ -1,11 +1,11 @@
-import { Layout, Menu, ConfigProvider, theme as antdTheme, Avatar } from "antd";
+import { Layout, Menu, ConfigProvider, Avatar } from "antd";
 import { HomeOutlined, TeamOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
-import { type PropsWithChildren, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { logout } from "../services/authService";
 import { clearAuth } from "../utils/storage";
+import { useThemeStore } from "../store/themeStore";
 
-const { Sider, Header, Content, Footer } = Layout;
+const { Sider, Content } = Layout;
 
 const navItems = [
   { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
@@ -31,11 +31,11 @@ const navItems = [
   }
 ];
 
-export default function AppLayout({ children }: PropsWithChildren) {
+export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
-  const { token } = antdTheme.useToken();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const currentMode = useThemeStore((state) => state.mode);
 
   const selectedKey = useMemo(() => {
     const match = navItems.find((i) =>
@@ -52,12 +52,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
-        theme="light"
+        theme={currentMode}
         trigger={null}
         className="bg-[var(--ant-colorBgLayout)]"
       >
         <div className="h-full ">
-          <div className="h-full w-full pb-2 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col overflow-hidden">
+          <div className="h-full w-full pb-2 bg-[var(--ant-colorBgContainer)] shadow-sm ring-1 ring-[var(--ant-colorBorder)] flex flex-col overflow-hidden">
             <div className="px-5 pt-5 pb-4">
               <div className="text-xl font-semibold tracking-tight">
                 LEARNING ISC
@@ -109,7 +109,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 clearAuth();
                 navigate("/login", { replace: true });
               }}
-              className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-slate-700 hover:bg-slate-100"
+              className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-[var(--ant-colorText)] hover:bg-[var(--ant-colorBgElevated)]"
             >
               <LogoutOutlined />
               <span className="text-sm">Log Out</span>
