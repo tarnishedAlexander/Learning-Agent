@@ -3,9 +3,9 @@ import useClasses from "../hooks/useClasses";
 import { Card, Row, Col, Input, Button, Space, Empty } from "antd";
 import { CursosForm } from "../components/cursosForm";
 import type { Clase } from "../interfaces/claseInterface";
+import PageTemplate from "../components/PageTemplate";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import PageTemplate from "../components/PageTemplate";
 
 function parseISO(d: string | Date): Date {
   return d instanceof Date ? d : new Date(d);
@@ -17,7 +17,7 @@ export function ClassMenu() {
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const goToReinforcement = () => {
-    navigate('/reinforcement');
+    navigate("/reinforcement");
   };
 
   const clasesSafe = useMemo<Clase[]>(
@@ -28,7 +28,9 @@ export function ClassMenu() {
   const filteredClases = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return clasesSafe;
-    return clasesSafe.filter((cl) => (cl.name ?? "").toLowerCase().includes(term));
+    return clasesSafe.filter((cl) =>
+      (cl.name ?? "").toLowerCase().includes(term)
+    );
   }, [clasesSafe, searchTerm]);
 
   const { cursosActuales, cursosPasados } = useMemo(() => {
@@ -61,11 +63,16 @@ export function ClassMenu() {
             <Card
               hoverable
               onClick={() => goToStudents(clase.id)}
-              style={{ width: "100%", height: 200, textAlign: "center", borderRadius: 20 }}
+              style={{
+                width: "100%",
+                height: 200,
+                textAlign: "center",
+                borderRadius: 20,
+              }}
             >
               <h2>{clase.name}</h2>
-              <p>Inicio: {dayjs(clase.dateBegin).format('DD/MM/YYYY')}</p>
-              <p>Fin: {dayjs(clase.dateEnd).format('DD/MM/YYYY')}</p>
+              <p>Inicio: {dayjs(clase.dateBegin).format("DD/MM/YYYY")}</p>
+              <p>Fin: {dayjs(clase.dateEnd).format("DD/MM/YYYY")}</p>
             </Card>
           </Col>
         ))}
@@ -77,7 +84,18 @@ export function ClassMenu() {
   return (
     <PageTemplate
       title="Clases"
-      subtitle="Clases y cursos a las que está asociado"
+      subtitle="Clases del Docente"
+      user={{
+        name: "Nora Watson",
+        role: "Sales Manager",
+        avatarUrl: "https://i.pravatar.cc/128?img=5",
+      }}
+      actions={
+        <div className="flex gap-2">
+          <Button>Export</Button>
+          <Button type="primary">Upgrade</Button>
+        </div>
+      }
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases", href: "/classes" }]}
     >
       <div
@@ -102,7 +120,13 @@ export function ClassMenu() {
           onSubmit={handleAddClase}
         />
 
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: 24,
+          }}
+        >
           <Space>
             <Input
               placeholder="Buscar curso"
@@ -112,9 +136,14 @@ export function ClassMenu() {
               style={{ width: 240 }}
             />
           </Space>
-          <Button type="primary" onClick={() => setModalOpen(true)}>Añadir</Button>
-          <Button type="primary" onClick={goToReinforcement}>page4</Button>
+          <Button type="primary" onClick={() => setModalOpen(true)}>
+            Añadir
+          </Button>
+          <Button type="primary" onClick={goToReinforcement}>
+            page4
+          </Button>
         </div>
+
 
         <h1>Cursos Actuales</h1>
         {renderGrid(cursosActuales)}
