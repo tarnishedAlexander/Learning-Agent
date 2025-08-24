@@ -16,6 +16,8 @@ import useEnrollment from "../hooks/useEnrollment";
 import PageTemplate from "../components/PageTemplate";
 import type { Clase } from "../interfaces/claseInterface";
 import { SafetyModal } from "../components/safetyModal";
+import StudentPreviewModal from "../components/StudentPreviewModal";
+import type { EnrollGroupRow } from "../interfaces/enrollmentInterface";
 
 export function StudentsCurso() {
   const navigate = useNavigate();
@@ -23,58 +25,66 @@ export function StudentsCurso() {
   const [safetyOpen, setSafetyOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, curso, students, createStudents, objClass, updateClass, softDeleteClass } = useClasses();
-  const { enrollSingleStudent } = useEnrollment();
+  const { fetchClase, students, objClass, updateClass, softDeleteClass } = useClasses();
+  const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
+
   const [formOpen, setFormOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [fileName, setFileName] = useState<string>("archivo.xlsx");
+  const [dups, setDups] = useState<string[]>([]);
+  const [parsed, setParsed] = useState<Array<Record<string, any> & { nombres: string; apellidos: string; codigo: number }>>([]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      fetchClase(id);
-    }
-
-    console.log(students);
+    let active = true;
+    (async () => {
+      if (!id) { setReady(true); return; }
+      setReady(false);
+      await fetchClase(id);
+      if (active) setReady(true);
+    })();
+    return () => { active = false; };
   }, [id]);
 
-  const handleSubmit = (values: createEnrollmentInterface) => {
-    enrollSingleStudent(values);
+  const handleSubmit = async (values: createEnrollmentInterface) => {
+    try {
+      await enrollSingleStudent(values);
+      message.success("Estudiante inscrito");
+      if (id) fetchClase(id);
+    } catch {
+      message.error("No se pudo inscribir al estudiante");
+    }
   };
 
-  const handleEdit = () => {
-    setModalOpen(true);
-  };
+  const handleEdit = () => setModalOpen(true);
 
-  //TODO - Configurar el contexto para mostrar los message
   const handleUpdateClase = async (values: Clase) => {
     if (!values.id) return;
     try {
-      await updateClass(values)
-      message.success("Se ha actualizado la clase correctamente")
+      await updateClass(values);
+      message.success("Se ha actualizado la clase correctamente");
       setModalOpen(false);
     } catch {
-      message.error("Ha ocurrido un error actualizando la clase")
+      message.error("Ha ocurrido un error actualizando la clase");
     }
   };
 
-  const handleDeleteClase = async () => {
-    setSafetyOpen(true);
-  };
+  const handleDeleteClase = async () => setSafetyOpen(true);
 
   const confirmDeleteClase = async () => {
     try {
       if (!id) {
         handleSoftDeleteError();
-        return
+        return;
       }
       const data = await softDeleteClass(id);
-      console.log(data)
       if (data && !data.success) {
         handleSoftDeleteError();
-        return
+        return;
       }
-      console.log("Curso eliminado", id)
       message.success("Curso eliminado correctamente");
-
       setTimeout(() => {
         navigate(`/classes`);
       }, 3000);
@@ -85,53 +95,68 @@ export function StudentsCurso() {
     }
   };
 
+  const handleConfirmSend = async () => {
+    if (!id) return;
+
+    const seen = new Set<string>();
+    const filtered = parsed.filter((r) => {
+      const k = String(r.codigo || "").trim().toLowerCase();
+      if (!k) return false;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+
+    const payloadRows: EnrollGroupRow[] = filtered.map((r) => ({
+      studentName: r.nombres,
+      studentLastname: r.apellidos,
+      studentCode: String(r.codigo),
+      email: r.correo || undefined,
+      career: r.career || undefined,
+      campus: r.campus || undefined,
+      admissionYear: r.admissionYear || undefined,
+      residence: r.residence || undefined,
+    }));
+
+    setSending(true);
+    try {
+      const res = await enrollGroupStudents({
+        classId: id,
+        studentRows: payloadRows,
+      });
+
+      message.success(
+        `Procesado: ${res.totalRows} · Éxito: ${res.successRows} · Ya inscritos: ${res.existingRows} · Errores: ${res.errorRows}`
+      );
+
+      setPreviewOpen(false);
+      setParsed([]);
+      setDups([]);
+      fetchClase(id);
+    } catch (e: any) {
+      message.error(e?.message || "No se pudo inscribir el grupo.");
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleSoftDeleteError = () => {
-    console.log("Error al eliminar curso", id)
     message.error("Ocurrió un error al eliminar el curso. Inténtalo más tarde.");
-  }
+  };
 
   const columns = [
-    {
-      title: "Nombres",
-      dataIndex: "name",
-      key: "nombres",
-    },
-    {
-      title: "Apellidos",
-      dataIndex: "lastname",
-      key: "apellidos",
-    },
-    {
-      title: "Código",
-      dataIndex: "code",
-      key: "codigo",
-    },
-    {
-      title: "Asistencia",
-      dataIndex: "asistencia",
-      key: "asistencia",
-    },
-    {
-      title: "1er Parcial",
-      dataIndex: "1er_parcial",
-      key: "1er_parcial",
-    },
-    {
-      title: "2do Parcial",
-      dataIndex: "2do_parcial",
-      key: "2do_parcial",
-    },
-    {
-      title: "Final",
-      dataIndex: "final",
-      key: "final",
-    },
+    { title: "Nombres", dataIndex: "name", key: "nombres" },
+    { title: "Apellidos", dataIndex: "lastname", key: "apellidos" },
+    { title: "Código", dataIndex: "code", key: "codigo" },
+    { title: "Asistencia", dataIndex: "asistencia", key: "asistencia" },
+    { title: "1er Parcial", dataIndex: "1er_parcial", key: "1er_parcial" },
+    { title: "2do Parcial", dataIndex: "2do_parcial", key: "2do_parcial" },
+    { title: "Final", dataIndex: "final", key: "final" },
     {
       title: "Acciones",
       key: "acciones",
-      //      render: (_: unknown, record: StudentWithKey) => {
       render: (_: unknown, record: any) => {
-        const isLoading = downloadingId === record.codigo;
+        const isLoading = downloadingId === record.code;
         return (
           <Button
             type="default"
@@ -139,10 +164,9 @@ export function StudentsCurso() {
             loading={isLoading}
             onClick={async () => {
               try {
-                setDownloadingId(record.codigo);
+                setDownloadingId(record.code);
                 const key =
-                  record.documentKey ?? `documents/${record.codigo}.pdf`;
-                //await downloadFileByKey(key);
+                  record.documentKey ?? `documents/${record.code}.pdf`;
                 message.success("Descarga iniciada");
               } catch (e: unknown) {
                 const err = e as Error;
@@ -158,6 +182,8 @@ export function StudentsCurso() {
       },
     },
   ];
+
+  const hasStudents = Array.isArray(students) && students.length > 0;
 
   return (
     <PageTemplate
@@ -213,7 +239,7 @@ export function StudentsCurso() {
           </Button>
         </div>
 
-        {students ? (
+        {!ready ? null : hasStudents ? (
           <>
             <div
               style={{
@@ -223,25 +249,13 @@ export function StudentsCurso() {
               }}
             >
               <Space>
-                <Button
-                  style={{ margin: 4, width: 120 }}
-                  type="primary"
-                  onClick={() => { }}
-                >
+                <Button style={{ margin: 4, width: 120 }} type="primary" onClick={() => {}}>
                   1er Parcial
                 </Button>
-                <Button
-                  style={{ margin: 4, width: 120 }}
-                  type="primary"
-                  onClick={() => { }}
-                >
+                <Button style={{ margin: 4, width: 120 }} type="primary" onClick={() => {}}>
                   2do Parcial
                 </Button>
-                <Button
-                  style={{ margin: 4, width: 120 }}
-                  type="primary"
-                  onClick={() => { }}
-                >
+                <Button style={{ margin: 4, width: 120 }} type="primary" onClick={() => {}}>
                   Final
                 </Button>
               </Space>
@@ -284,36 +298,52 @@ export function StudentsCurso() {
             >
               <h2>No hay estudiantes asignados a este curso.</h2>
               <StudentUpload
-                disabled={!!students}
-                onStudentsParsed={(parsedStudents) => {
-                  console.log("Estudiantes leídos:", parsedStudents);
-                  /*if (id) {
-                    createStudents({
-                      classId: id,
-                      students: parsedStudents,
-                    });
-                  }*/
-                  //TODO manejar la subida de estudiantes
+                disabled={hasStudents}
+                onStudentsParsed={(parsedStudents, info) => {
+                  setParsed(parsedStudents);
+                  if (info?.fileName) setFileName(info.fileName);
+
+                  const seen = new Set<string>();
+                  const dupSet = new Set<string>();
+                  for (const s of parsedStudents) {
+                    const k = String(s.codigo || "").trim().toLowerCase();
+                    if (!k) continue;
+                    if (seen.has(k)) dupSet.add(String(s.codigo));
+                    else seen.add(k);
+                  }
+                  setDups(Array.from(dupSet));
+
+                  setPreviewOpen(true);
                 }}
               />
             </Card>
           </div>
         )}
+
         <SingleStudentForm
           open={formOpen}
           onClose={() => {
             setFormOpen(false);
           }}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
+            if (!id) return;
             const data: createEnrollmentInterface = {
               ...values,
-              classId: id || "",
+              classId: id,
             };
-            console.log("Datos del formulario:", data);
-            handleSubmit(data);
-            //createStudents(values);
+            await handleSubmit(data);
           }}
-        ></SingleStudentForm>
+        />
+
+        <StudentPreviewModal
+          open={previewOpen}
+          data={parsed}
+          duplicates={dups}
+          meta={{ fileName, totalRows: parsed.length }}
+          loading={sending}
+          onCancel={() => setPreviewOpen(false)}
+          onConfirm={handleConfirmSend}
+        />
       </div>
       <SafetyModal
         open={safetyOpen}
