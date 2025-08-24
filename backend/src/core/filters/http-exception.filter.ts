@@ -18,6 +18,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getResponse()
         : 'Internal server error';
+
+    // Logging estructurado
     this.logger.error({
       path: request.url,
       method: request.method,
