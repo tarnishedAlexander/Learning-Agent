@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, HttpException, HttpStatus } from '@nestjs/common';
 import { AskDto } from './dto/ask.dto';
 import { IAIProvider } from './iai.provider';
-import { GeminiAdapter } from './adapters/gemini.adapter';
+import { OllamaAdapter } from './adapters/ollama.adapter';
 import { AiConfigService } from 'src/core/ai/ai.config';
 
 const WINDOW_MS = 60_000;
@@ -12,8 +12,8 @@ export class ChatService {
   private readonly requests = new Map<string, number[]>();
   private readonly provider: IAIProvider;
 
-  constructor(private readonly config: AiConfigService, geminiAdapter: GeminiAdapter) {
-    this.provider = geminiAdapter as IAIProvider;
+  constructor(private readonly config: AiConfigService, private readonly ollamaAdapter: OllamaAdapter) {
+    this.provider = ollamaAdapter as IAIProvider;
   }
 
   async ask(dto: AskDto, key = 'anon'): Promise<{ answer: string }> {
@@ -41,5 +41,4 @@ export class ChatService {
     arr.push(now);
     this.requests.set(key, arr);
   }
-
 }
