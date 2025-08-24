@@ -40,7 +40,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
   }, [pathname]);
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="h-screen">
       <Sider
         width={260}
         collapsedWidth={96}
@@ -113,14 +113,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
         </div>
       </Sider>
 
-      <Layout className="flex flex-col">
-        <Content className="flex-1 p-4 md:p-6 bg-[var(--ant-colorBgLayout)]">
+      <Layout className="flex flex-col min-h-0">
+        <Content className="flex-1 min-h-0 overflow-hidden pt-4 md:p-6 bg-[var(--ant-colorBgLayout)]">
           <Outlet />
         </Content>
-
-        <Footer className="text-center text-slate-400">
-          © {new Date().getFullYear()} ISC
-        </Footer>
       </Layout>
     </Layout>
   );
