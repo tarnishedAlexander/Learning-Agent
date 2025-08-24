@@ -5,6 +5,7 @@ import { StudentProfile } from "../pages/reinforcement";
 import Exam from "../pages/exam";
 import Interview from "../pages/interview";
 import Login from "../pages/Login";
+import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
@@ -19,6 +20,7 @@ export const AppRoutes = () => {
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
           {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
