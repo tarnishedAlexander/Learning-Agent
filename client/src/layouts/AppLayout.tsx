@@ -1,5 +1,5 @@
 import { Layout, Menu, ConfigProvider, theme as antdTheme, Avatar } from "antd";
-import { HomeOutlined, TeamOutlined, LogoutOutlined } from "@ant-design/icons";
+import { HomeOutlined, TeamOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 import { type PropsWithChildren, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
@@ -24,6 +24,11 @@ const navItems = [
     icon: <TeamOutlined />,
     label: <Link to="/classes-student">Clases Estudiante</Link>,
   },
+  {
+    key: "/settings",
+    icon: <SettingOutlined />,
+    label: <Link to="/settings">Settings</Link>,
+  }
 ];
 
 export default function AppLayout({ children }: PropsWithChildren) {
