@@ -19,13 +19,15 @@ export const AppRoutes = () => {
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
+          {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="clases" element={<ClassMenu />} />
             <Route path="curso/:id" element={<StudentsCurso />} />
-            <Route path="/reinforcement" element={<StudentProfile />} />
+            <Route path="/classes-student" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />
             <Route path="/" element={<Navigate to="/exams/create" replace />} />

@@ -3,6 +3,7 @@ import { HomeOutlined, TeamOutlined, LogoutOutlined } from "@ant-design/icons";
 import { type PropsWithChildren, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
+import { clearAuth } from "../utils/storage";
 
 const { Sider, Header, Content, Footer } = Layout;
 
@@ -12,6 +13,16 @@ const navItems = [
     key: "/curso/1",
     icon: <TeamOutlined />,
     label: <Link to="/curso/1">Estudiantes</Link>,
+  },
+  {
+    key: "/clases",
+    icon: <TeamOutlined />,
+    label: <Link to="/clases">Clases</Link>,
+  },
+    {
+    key: "/classes-student",
+    icon: <TeamOutlined />,
+    label: <Link to="/classes-student">Clases Estudiante</Link>,
   },
 ];
 
@@ -41,7 +52,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         className="bg-[var(--ant-colorBgLayout)]"
       >
         <div className="h-full ">
-          <div className="h-full w-full bg-white shadow-sm ring-1 ring-slate-100 flex flex-col overflow-hidden">
+          <div className="h-full w-full pb-2 bg-white shadow-sm ring-1 ring-slate-100 flex flex-col overflow-hidden">
             <div className="px-5 pt-5 pb-4">
               <div className="text-xl font-semibold tracking-tight">
                 LEARNING ISC
@@ -76,7 +87,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
               />
             </ConfigProvider>
 
-            <div className="px-5 pt-6 pb-2 mt-auto">
+            <div className="px-5 pt-6 pb-2 mt-auto mb-2">
               <div className="flex flex-col items-center text-center">
                 <Avatar
                   size={64}
@@ -90,10 +101,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
             <button
               onClick={() => {
-                logout(true);
+                clearAuth();
                 navigate("/login", { replace: true });
               }}
-              className="m-4 mb-5 flex items-center gap-3 h-10 px-3 rounded-xl text-slate-700 hover:bg-slate-100"
+              className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-slate-700 hover:bg-slate-100"
             >
               <LogoutOutlined />
               <span className="text-sm">Log Out</span>
