@@ -5,9 +5,18 @@ import type {
   ForgotPasswordPayload,
 } from "../types/auth";
 import { ApiError } from "../utils/errors";
-import { saveAuth } from "../utils/storage";
+import { saveAuth, readAuth, clearAuth } from "../utils/storage";
 
-export const logout = () => {};
+export const logout = async () => {
+  const { refreshToken } = readAuth();
+  try {
+    await jsonInstance.post("/auth/logout", { refreshToken });
+  } catch (error) {
+    throw new ApiError("Error al cerrar sesión", 400, error);
+  } finally {
+    clearAuth();
+  }
+};
 
 export const login = async (payload: LoginPayload) => {
   try {
