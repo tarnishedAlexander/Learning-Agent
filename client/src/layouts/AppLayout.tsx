@@ -4,10 +4,12 @@ import {
   TeamOutlined,
   LogoutOutlined,
   SettingOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { clearAuth } from "../utils/storage";
+import { logout } from "../services/authService";
 import { useThemeStore } from "../store/themeStore";
 
 const { Sider, Content } = Layout;
@@ -40,7 +42,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const theme = useThemeStore((state) => state.theme);
+  const { theme, setTheme } = useThemeStore();
   const [systemTheme, setSystemTheme] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
@@ -117,19 +119,28 @@ export default function AppLayout() {
 
             <div className="px-5 pt-6 pb-2 mt-auto mb-2">
               <div className="flex flex-col items-center text-center">
-                <Avatar
-                  size={64}
-                  src="https://i.pravatar.cc/128?img=5"
-                  className="ring-2 ring-white shadow"
-                />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                    className="p-1 rounded-full hover:bg-[var(--ant-colorBgElevated)]"
+                    aria-label="Toggle theme"
+                  >
+                    {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+                  </button>
+                  <Avatar
+                    size={64}
+                    src="https://i.pravatar.cc/128?img=5"
+                    className="ring-2 ring-white shadow"
+                  />
+                </div>
                 <div className="mt-3 font-semibold">Nora Watson</div>
                 <div className="text-xs text-slate-500">Sales Manager</div>
               </div>
             </div>
 
             <button
-              onClick={() => {
-                clearAuth();
+              onClick={async () => {
+                await logout();
                 navigate("/login", { replace: true });
               }}
               className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-[var(--ant-colorText)] hover:bg-[var(--ant-colorBgElevated)]"
