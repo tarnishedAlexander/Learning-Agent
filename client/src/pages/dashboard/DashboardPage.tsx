@@ -1,12 +1,14 @@
 import { Button, Card, Row, Col } from "antd";
 import PageTemplate from "../../components/PageTemplate";
 import { formatTodayEs } from "../../utils/date";
+import StudentHome from "./StudentHome";
+import ProfessorHome from "./ProfessorHome";
 
 export default function DashboardPage() {
   return (
     <PageTemplate
       title="Dashboard"
-      subtitle={formatTodayEs()}
+      subtitle={'Welcome back — focus on what moves the needle. ' + formatTodayEs()}
       user={{
         name: "Nora Watson",
         role: "Sales Manager",
@@ -20,26 +22,7 @@ export default function DashboardPage() {
       }
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
     >
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
-          <Card title="Total Earning">242.65K</Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card title="Average Earning">17.347K</Card>
-        </Col>
-        <Col xs={24} md={8}>
-          <Card title="Conversion Rate">74.86%</Card>
-        </Col>
-        <Col span={24}>
-          <Card title="Regular Sell">…tu gráfico…</Card>
-        </Col>
-        <Col xs={24} md={12}>
-          <Card title="Top Store">…tabla…</Card>
-        </Col>
-        <Col xs={24} md={12}>
-          <Card title="Team Member">…lista…</Card>
-        </Col>
-      </Row>
+      <ProfessorHome />
     </PageTemplate>
   );
 }

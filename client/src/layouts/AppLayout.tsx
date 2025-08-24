@@ -8,7 +8,7 @@ import { clearAuth } from "../utils/storage";
 const { Sider, Header, Content, Footer } = Layout;
 
 const navItems = [
-  { key: "/", icon: <HomeOutlined />, label: <Link to="/">Clases</Link> },
+  { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
   {
     key: "/curso/1",
     icon: <TeamOutlined />,
