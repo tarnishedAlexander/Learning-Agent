@@ -1,0 +1,1 @@
+export const PROMPT_TEMPLATE_PORT = Symbol('PROMPT_TEMPLATE_PORT');
