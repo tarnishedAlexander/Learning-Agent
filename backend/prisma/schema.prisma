@@ -80,7 +80,6 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
-  @@index([permissionId])
 }
 
 /**
@@ -109,7 +108,6 @@ model StudentProfile {
   code          String  @unique
   career        String? // Sistemas, Arquitectura....
   admissionYear Int?
-
   // relation 1:N
   enrollment    Enrollment[]
 
@@ -319,6 +317,7 @@ model Exam {
   createdAt      DateTime @default(now())
   @@index([subject])
 }
+
 /* ===========================
    Academic Management (classes and enrollment)
    =========================== */

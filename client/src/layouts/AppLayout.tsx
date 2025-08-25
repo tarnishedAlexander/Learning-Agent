@@ -6,7 +6,8 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  BookOutlined,
+  BookOutlined ,
+  FileAddOutlined,
   CloudUploadOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -32,6 +33,11 @@ const navItems = [
     key: "/curso/1",
     icon: <TeamOutlined />,
     label: <Link to="/curso/1">Estudiantes</Link>,
+  },
+  {
+    key: "/exams/create",
+    icon: <FileAddOutlined />,
+    label: <Link to="/exams/create">Crear Examen</Link>,
   },
   {
     key: "/clases",
