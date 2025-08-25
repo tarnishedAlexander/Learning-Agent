@@ -16,6 +16,7 @@ export const lightTheme: ThemeConfig = {
     colorSuccess: "#16a34a",
     colorWarning: "#f59e0b",
     colorError:   "#ef4444",
+    fontFamily: "Inter, sans-serif",
     borderRadius: 12,
     wireframe: false,
 

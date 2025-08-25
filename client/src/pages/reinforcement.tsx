@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { Card, Divider, Typography, Avatar, Layout, FloatButton, Modal, Input, Button } from "antd";
 import { UserOutlined, MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { getResponse } from "../api/api";
+import { getResponse } from "../api/api.ts";
 import "./reinforcement.css";
-
-
-const MIN_CHARACTERS = 3;
+const MIN_CHARACTERS = 1;
 
 export function StudentProfile() {
   const [activeSubject, setActiveSubject] = useState("Matemáticas");
@@ -48,7 +46,6 @@ export function StudentProfile() {
   };
 
   const handleSendMessage = async () => {
-    // Comprueba si el input tiene al menos el número mínimo de caracteres
     if (inputValue.trim().length >= MIN_CHARACTERS) {
       const newMessage = { sender: "user", text: inputValue.trim() };
       setMessages(prev => [...prev, newMessage]);
