@@ -4,16 +4,20 @@ import {
   Delete,
   Post,
   Param,
+  // Query,
   HttpException,
   HttpStatus,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
 import { DeleteDocumentUseCase } from '../../application/commands/delete-document.usecase';
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
+import { ProcessDocumentTextUseCase } from '../../application/commands/process-document-text.usecase';
+import { ProcessDocumentChunksUseCase } from '../../application/commands/process-document-chunks.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -23,7 +27,7 @@ import {
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
-import type { UploadDocumentResponseDto } from './dtos/upload-document.dto';
+import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
 @Controller('api/documents')
@@ -33,6 +37,8 @@ export class DocumentsController {
     private readonly deleteDocumentUseCase: DeleteDocumentUseCase,
     private readonly uploadDocumentUseCase: UploadDocumentUseCase,
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
+    private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
+    private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
   ) {}
 
   @Get()
@@ -167,9 +173,17 @@ export class DocumentsController {
         throw new BadRequestException('No se ha proporcionado ningún archivo');
       }
 
-      const document = await this.uploadDocumentUseCase.execute(file);
+      // TODO: En producción, obtener el uploadedBy del token de autenticación
+      // Por ahora, usamos un ID de usuario hardcodeado para testing
+      const uploadedBy = 'user-123'; // Temporal para testing
+
+      const document = await this.uploadDocumentUseCase.execute(
+        file,
+        uploadedBy,
+      );
 
       return {
+        id: document.id, // Devolver el ID del documento para usarlo en otros endpoints
         fileName: document.fileName,
         originalName: document.originalName,
         mimeType: document.mimeType,
@@ -231,6 +245,184 @@ export class DocumentsController {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al generar URL de descarga',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post(':documentId/process-text')
+  async processDocumentText(
+    @Param('documentId') documentId: string,
+  ): Promise<{ message: string; success: boolean }> {
+    try {
+      const success = await this.processDocumentTextUseCase.execute(documentId);
+
+      if (success) {
+        return {
+          success: true,
+          message: 'Texto extraído exitosamente del documento',
+        };
+      } else {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: 'No se pudo procesar el documento',
+            error: 'Processing Failed',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in processDocumentText:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al procesar documento',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Procesa chunks de un documento específico
+   */
+  @Post(':documentId/process-chunks')
+  async processDocumentChunks(
+    @Param('documentId') documentId: string,
+    @Body()
+    body: {
+      chunkingConfig?: {
+        maxChunkSize?: number;
+        overlap?: number;
+        respectParagraphs?: boolean;
+        respectSentences?: boolean;
+        minChunkSize?: number;
+      };
+      replaceExisting?: boolean;
+      chunkType?: string;
+    } = {},
+  ) {
+    try {
+      if (!documentId) {
+        throw new BadRequestException('ID de documento requerido');
+      }
+
+      const result = await this.processDocumentChunksUseCase.execute({
+        documentId,
+        chunkingConfig: body.chunkingConfig,
+        replaceExisting: body.replaceExisting,
+        chunkType: body.chunkType,
+      });
+
+      if (result.status === 'success') {
+        return {
+          success: true,
+          message: 'Chunks procesados exitosamente',
+          data: {
+            totalChunks: result.savedChunks.length,
+            processingTimeMs: result.processingTimeMs,
+            statistics: result.chunkingResult.statistics,
+          },
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Error procesando chunks',
+          errors: result.errors,
+        };
+      }
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in processDocumentChunks:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al procesar chunks',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Obtiene los chunks de un documento
+   */
+  @Get(':documentId/chunks')
+  async getDocumentChunks(
+    @Param('documentId') documentId: string,
+    // @Query('limit') limit?: number,
+    // @Query('offset') offset?: number,
+  ) {
+    try {
+      if (!documentId) {
+        throw new BadRequestException('ID de documento requerido');
+      }
+
+      // Usar el servicio de chunking para obtener chunks con estadísticas
+      const result =
+        await this.processDocumentChunksUseCase[
+          'chunkingService'
+        ].getDocumentChunks(documentId);
+
+      return {
+        success: true,
+        message: 'Chunks recuperados exitosamente',
+        data: {
+          chunks: result.chunks.map((chunk) => ({
+            id: chunk.id,
+            content:
+              chunk.content.substring(0, 200) +
+              (chunk.content.length > 200 ? '...' : ''), // Preview
+            chunkIndex: chunk.chunkIndex,
+            type: chunk.type, // Usar 'type' no 'chunkType'
+            contentLength: chunk.content.length,
+            metadata: chunk.metadata,
+            createdAt: chunk.createdAt,
+          })),
+          total: result.total,
+          statistics: result.statistics,
+        },
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Unexpected error in getDocumentChunks:', errorMessage);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al obtener chunks',
           error: 'Internal Server Error',
           details: errorMessage,
         },
