@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { CreateExamDto } from './dtos/create-exam.dto';
 import { GenerateQuestionsDto } from './dtos/generate-questions.dto';
 import {
@@ -12,6 +12,14 @@ import {
 import type { GenerateExamInput } from './dtos/exam.types';
 import { GenerateExamUseCase } from '../../application/commands/generate-exam.usecase';
 
+function sumDistribution(d?: { multiple_choice: number; true_false: number; open_analysis: number; open_exercise: number; }) {
+  if (!d) return 0;
+  return (d.multiple_choice ?? 0)
+       + (d.true_false ?? 0)
+       + (d.open_analysis ?? 0)
+       + (d.open_exercise ?? 0);
+}
+
 @Controller('exams')
 export class ExamsController {
   constructor(
@@ -23,6 +31,10 @@ export class ExamsController {
   @Post()
   @HttpCode(200)
   async create(@Body() dto: CreateExamDto) {
+    const sum = sumDistribution(dto.distribution);
+    if (dto.totalQuestions <= 0) throw new BadRequestException('totalQuestions debe ser > 0.');
+    if (sum !== dto.totalQuestions) throw new BadRequestException('La suma de distribution debe ser igual a totalQuestions.');
+
     const createCmd = new CreateExamCommand(
       dto.subject,
       dto.difficulty,
@@ -40,12 +52,16 @@ export class ExamsController {
   @Post('questions')
   @HttpCode(200)
   async generate(@Body() dto: GenerateQuestionsDto) {
+    const sum = sumDistribution(dto.distribution);
+    if (dto.totalQuestions <= 0) throw new BadRequestException('totalQuestions debe ser > 0.');
+    if (sum !== dto.totalQuestions) throw new BadRequestException('La suma de distribution debe ser igual a totalQuestions.');
+
     const genCmd = new GenerateQuestionsCommand(
       dto.subject,
       dto.difficulty,
       dto.totalQuestions,
       dto.reference ?? null,
-      dto.preferredType ?? 'mixed',
+      dto.preferredType ?? 'mixed', 
       dto.distribution ?? undefined,
     );
 
@@ -58,10 +74,7 @@ export class ExamsController {
       open_exercise: flat.filter((q: any) => q.type === 'open_exercise'),
     };
 
-    return {
-      ok: true,
-      data: { /* exam, */ questions: grouped /* questionsFlat: flat */ },
-    };
+    return { ok: true, data: { questions: grouped } };
   }
 
   @Post('generate-exam')
