@@ -1,68 +1,53 @@
-// src/hooks/useDocuments.ts
-import { useState, useEffect, useCallback } from "react";
-import type { Document } from "../interfaces/documentInterface";
-import { documentService } from "../services/documents.service";
+import { useState, useEffect, useCallback } from 'react';
+import type { Document } from '../interfaces/documentInterface';
+import { documentService } from '../services/documentService';
 
 export const useDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDocuments = useCallback(async (): Promise<void> => {
+  const loadDocuments = useCallback(async (): Promise<void> => { // Prevents unnecessary re-renders
     setLoading(true);
     setError(null);
     try {
-      const response = await documentService.getDocuments();
-      setDocuments(response.data.documents);
-    } catch (err: any) {
-      setError(err.message ?? "Error loading documents");
+      const docs = await documentService.getDocuments();
+      setDocuments(docs);
+    } catch (error) {
+      setError('Error loading documents');
+      throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const uploadDocument = useCallback(async (file: File): Promise<Document> => {
+  const uploadDocument = useCallback(async (document: File): Promise<Document> => {
     setLoading(true);
     setError(null);
     try {
-      const resp = await documentService.uploadDocument(file);
-      setDocuments((prev) => [...prev, resp.data]);
-      return resp.data;
-    } catch (err: any) {
-      setError(err.message ?? "Error uploading file");
-      throw err;
+      const newFile = await documentService.uploadDocument(document);
+      setDocuments((prevDocs) => [...prevDocs, newFile]);
+      return newFile;
+    } catch (error) {
+      setError('Error uploading file');
+      throw error;
     } finally {
       setLoading(false);
     }
   }, []);
-
-  const downloadDocument = useCallback(async (doc: Document): Promise<void> => {
+  
+  const downloadDocument = useCallback(async (document: Document): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      await documentService.downloadAndSaveDocument(doc.fileName, doc.originalName);
-    } catch (err: any) {
-      setError(err.message ?? "Error downloading file");
-      throw err;
+      await documentService.downloadPdf(document.downloadUrl, document.originalName);
+    } catch (error) {
+      setError('Error downloading file');
+      throw error;
     } finally {
       setLoading(false);
     }
   }, []);
-
-  const deleteDocument = useCallback(async (fileName: string): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      await documentService.deleteDocument(fileName);
-      // refrescar lista (simple)
-      await loadDocuments();
-    } catch (err: any) {
-      setError(err.message ?? "Error deleting file");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [loadDocuments]);
 
   useEffect(() => {
     loadDocuments();
@@ -70,11 +55,10 @@ export const useDocuments = () => {
 
   return {
     documents,
-    loading,
-    error,
-    loadDocuments,
     uploadDocument,
     downloadDocument,
-    deleteDocument,
+    loadDocuments,
+    loading,
+    error,
   };
 };

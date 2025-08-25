@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
@@ -25,6 +24,9 @@ export class S3StorageAdapter implements DocumentStoragePort {
   private readonly bucketName: string;
   private readonly endpoint: string;
 
+
+
+  
   constructor() {
     this.s3Client = new S3Client({
       region: minioConfig.region,
@@ -68,18 +70,22 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       const url = `${this.endpoint}/${this.bucketName}/${fileName}`;
 
-      // Crear entidad Document
-      const document = Document.create(
+      // Crear entidad Document (versión simple para compatibilidad)
+      const document = new Document(
+        '', // id - será asignado por el caso de uso
         fileName,
         req.originalName,
         req.mimeType,
         req.size,
         url,
+        fileName, // s3Key
+        '', // fileHash - será asignado por el caso de uso
+        '', // uploadedBy - será asignado por el caso de uso
       );
 
       return document;
-    } catch (error: any) {
-      throw new Error(`Error uploading document to MinIO: ${error.message}`);
+    } catch {
+      throw new Error('Error uploading document to MinIO');
     }
   }
 
@@ -101,8 +107,8 @@ export class S3StorageAdapter implements DocumentStoragePort {
       });
 
       return signedUrl;
-    } catch (error: any) {
-      throw new Error(`Error generating download URL: ${error.message}`);
+    } catch {
+      throw new Error('Error generating download URL');
     }
   }
 
@@ -157,16 +163,14 @@ export class S3StorageAdapter implements DocumentStoragePort {
               metadata.LastModified || new Date(),
             ),
           );
-        } catch (error: any) {
-          console.error(
-            `Error fetching metadata for ${object.Key}: ${error.message}`,
-          );
+        } catch {
+          console.error(`Error fetching metadata for ${object.Key}`);
         }
       }
 
       return documents;
-    } catch (error: any) {
-      throw new Error(`Error listing documents from MinIO: ${error.message}`);
+    } catch {
+      throw new Error('Error listing documents from MinIO');
     }
   }
 
@@ -242,11 +246,8 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       await this.s3Client.send(headCommand);
       return true;
-    } catch (error: any) {
-      if (error.name === 'NoSuchKey' || error.name === 'NotFound') {
-        return false;
-      }
-      throw error;
+    } catch {
+      return false;
     }
   }
 
@@ -264,11 +265,8 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       await this.s3Client.send(headCommand);
       return true;
-    } catch (error: any) {
-      if (error.$metadata?.httpStatusCode === 404) {
-        return false;
-      }
-      throw new Error(`Error checking if document exists: ${error.message}`);
+    } catch {
+      return false;
     }
   }
 
@@ -296,8 +294,8 @@ export class S3StorageAdapter implements DocumentStoragePort {
       });
 
       await this.s3Client.send(deleteCommand);
-    } catch (error: any) {
-      throw new Error(`Error performing soft delete: ${error.message}`);
+    } catch {
+      throw new Error('Error performing soft delete');
     }
   }
 
@@ -314,8 +312,40 @@ export class S3StorageAdapter implements DocumentStoragePort {
       });
 
       await this.s3Client.send(deleteCommand);
-    } catch (error: any) {
-      throw new Error(`Error deleting file from MinIO: ${error.message}`);
+    } catch {
+      throw new Error('Error deleting file from MinIO');
+    }
+  }
+
+  /**
+   * Descarga el contenido de un archivo como Buffer
+   * @param fileName Nombre del archivo o clave S3
+   * @returns Buffer con el contenido del archivo
+   */
+  async downloadFileBuffer(fileName: string): Promise<Buffer> {
+    try {
+      const getObjectCommand = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+      });
+
+      const response = await this.s3Client.send(getObjectCommand);
+
+      if (!response.Body) {
+        throw new Error('File content is empty');
+      }
+
+      // Convertir stream a buffer
+      const chunks: Buffer[] = [];
+      const stream = response.Body as any;
+
+      return new Promise((resolve, reject) => {
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+    } catch (error) {
+      throw new Error(`Error downloading file from MinIO: ${error.message}`);
     }
   }
 }
