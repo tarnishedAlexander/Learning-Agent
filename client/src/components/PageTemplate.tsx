@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 import { Avatar, Breadcrumb, Divider, Typography } from "antd";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { useThemeStore } from "../store/themeStore";
 
 const { Title, Text } = Typography;
 
@@ -25,6 +27,10 @@ export default function PageTemplate({
   actions,
   children,
 }: Props) {
+  const { theme, setTheme } = useThemeStore();
+
+  const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
+
   return (
     // Contenedor de página: sin scroll global
     <div className="h-screen overflow-hidden flex flex-col">
@@ -57,6 +63,13 @@ export default function PageTemplate({
             {actions && <div className="hidden md:block">{actions}</div>}
             {user && (
               <div className="flex items-center gap-3 bg-[var(--ant-colorBgContainer)] rounded-2xl px-3 py-2 shadow-sm ring-1 ring-[var(--ant-colorBorder)]">
+                <button
+                  onClick={toggleTheme}
+                  className="p-1 rounded-full hover:bg-[var(--ant-colorBgTextHover)]"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+                </button>
                 <Avatar size={40} src={user.avatarUrl} />
                 <div className="leading-tight">
                   <div className="font-medium">{user.name}</div>
