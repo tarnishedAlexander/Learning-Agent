@@ -20,10 +20,7 @@ type Props = {
   children: ReactNode;
 };
 export default function PageTemplate({
-  title,
-  subtitle,
   user,
-  breadcrumbs,
   actions,
   children,
 }: Props) {
