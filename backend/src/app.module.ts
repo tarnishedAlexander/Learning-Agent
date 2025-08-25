@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { IdentityModule } from './modules/identity/identity.module';
-import { DocumentModule } from './modules/repository/document.module';
+import { DocumentsModule } from './modules/repository_documents/documents.module';
 import { AcademicManagementModule } from './modules/academic_management/academic_management.module';
 import { ExamsModule } from './modules/exams/exams.module';
 import { AiConfigService } from './core/ai/ai.config';
@@ -16,7 +16,7 @@ import { AiConfigService } from './core/ai/ai.config';
     ConfigModule.forRoot({ isGlobal: true }),
     AcademicManagementModule,
     ExamsModule,
-    DocumentModule,
+    DocumentsModule,
   ],
   controllers: [],
   providers: [AiConfigService],
