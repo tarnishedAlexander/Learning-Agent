@@ -22,6 +22,8 @@ export interface ProcessDocumentChunksCommand {
     minChunkSize?: number;
   };
 
+
+  
   /** Si debe reemplazar chunks existentes */
   replaceExisting?: boolean;
 

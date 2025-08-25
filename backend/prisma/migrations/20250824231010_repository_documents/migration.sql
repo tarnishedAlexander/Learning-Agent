@@ -49,6 +49,7 @@ CREATE TABLE "public"."document_chunks" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
+
     CONSTRAINT "document_chunks_pkey" PRIMARY KEY ("id")
 );
 

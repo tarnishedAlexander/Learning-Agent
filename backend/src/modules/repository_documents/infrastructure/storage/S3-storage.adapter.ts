@@ -24,6 +24,9 @@ export class S3StorageAdapter implements DocumentStoragePort {
   private readonly bucketName: string;
   private readonly endpoint: string;
 
+
+
+  
   constructor() {
     this.s3Client = new S3Client({
       region: minioConfig.region,

@@ -36,6 +36,8 @@ export class PdfTextExtractionAdapter implements TextExtractionPort {
         `Texto extraído exitosamente. Páginas: ${pdfData.numpages}, Caracteres: ${cleanedText.length}`,
       );
 
+
+      
       return new ExtractedText(
         cleanedText,
         pdfData.numpages,

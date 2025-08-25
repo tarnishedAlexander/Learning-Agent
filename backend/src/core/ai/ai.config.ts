@@ -18,6 +18,8 @@ export class AiConfigService {
   readonly openaiMaxRetries = Number(process.env.OPENAI_MAX_RETRIES ?? 3);
   readonly openaiTimeout = Number(process.env.OPENAI_TIMEOUT ?? 60000);
 
+  
+
   ensure() {
     if (!this.apiKey) {
       throw new Error(
