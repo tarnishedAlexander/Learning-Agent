@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { Upload, Button, message, Progress, Typography, notification } from "antd";
-import { CloudUploadOutlined, FileAddOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined } from "@ant-design/icons";
+import { Upload, Button, message, Progress, Typography, notification, Steps, Alert, Collapse, Space, Tag } from "antd";
+import { 
+  CloudUploadOutlined, 
+  FileAddOutlined, 
+  PlusOutlined, 
+  CheckCircleOutlined, 
+  FileTextOutlined,
+  LoadingOutlined,
+  ExclamationCircleOutlined
+} from "@ant-design/icons";
 import type { RcFile } from "rc-upload/lib/interface";
 import { useDocuments } from "../hooks/useDocuments";
 
 const { Dragger } = Upload;
-const { Text } = Typography;
+const { Text, Title } = Typography;
+const { Step } = Steps;
+const { Panel } = Collapse;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -13,12 +23,29 @@ interface UploaderProps {
   onUploadSuccess?: () => void;
 }
 
+interface ProcessingStep {
+  key: string;
+  title: string;
+  description: string;
+  status: 'wait' | 'process' | 'finish' | 'error';
+  timeMs?: number;
+}
+
 const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
-  const { uploadDocument } = useDocuments();
+  const { processDocumentComplete } = useDocuments();
   const [uploading, setUploading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [currentStep, setCurrentStep] = useState<string>('');
+  const [processingSteps, setProcessingSteps] = useState<ProcessingStep[]>([
+    { key: 'upload', title: 'Subir Archivo', description: 'Subiendo documento al servidor', status: 'wait' },
+    { key: 'text', title: 'Extraer Texto', description: 'Extrayendo texto del PDF', status: 'wait' },
+    { key: 'chunks', title: 'Dividir en Chunks', description: 'Segmentando el documento', status: 'wait' },
+    { key: 'embeddings', title: 'Generar Embeddings', description: 'Creando vectores semánticos', status: 'wait' },
+  ]);
+  const [processingResult, setProcessingResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const validateFile = (file: File): string | null => {
     // Verificar tipo de archivo
@@ -43,79 +70,81 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
     }
 
     setSelectedFile(file);
-    handleUpload(file);
+    setError(null);
+    handleCompleteProcessing(file);
     return false; // Prevenir la subida automática
   };
 
-  const handleUpload = async (file: File) => {
+  const handleCompleteProcessing = async (file: File) => {
     try {
       setUploading(true);
       setProgress(0);
+      setError(null);
 
-      // Simular progreso de subida
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
+      const result = await processDocumentComplete(file, (step, progress, message) => {
+        setCurrentStep(message);
+        setProgress(progress);
+        
+        // Actualizar el estado de los pasos
+        setProcessingSteps(prev => prev.map(s => {
+          if (s.key === step) {
+            return { ...s, status: progress === 100 ? 'finish' : 'process' };
+          } else if (prev.findIndex(ps => ps.key === step) > prev.findIndex(ps => ps.key === s.key)) {
+            return { ...s, status: 'wait' };
+          } else {
+            return { ...s, status: 'finish' };
           }
-          return prev + 10;
-        });
-      }, 200);
+        }));
+      });
 
-      const uploadedDocument = await uploadDocument(file);
-
-      clearInterval(progressInterval);
-      setProgress(100);
+      setProcessingResult(result);
+      setUploadSuccess(true);
+      
+      if (onUploadSuccess) {
+        onUploadSuccess();
+      }
+      
+      notification.success({
+        message: "¡Procesamiento completado!",
+        description: `Documento procesado: ${result.chunksCreated} chunks creados, ${result.embeddingsGenerated} embeddings generados`,
+        icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+        placement: "topRight",
+        duration: 8,
+      });
 
       setTimeout(() => {
-        // Mostrar estado de éxito
-        setUploadSuccess(true);
-        setProgress(100);
-        
-        // Llamar callback para forzar actualización si está disponible
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-        
-        // Mostrar notificación de éxito
-        notification.success({
-          message: "¡Documento subido exitosamente!",
-          description: `"${uploadedDocument.originalName}" se agregó al repositorio y la tabla se actualizó`,
-          icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
-          placement: "topRight",
-          duration: 5,
-          style: {
-            backgroundColor: "#f6ffed",
-            border: "1px solid #b7eb8f"
-          }
-        });
-
-        // Resetear estado después de mostrar el éxito
-        setTimeout(() => {
-          setSelectedFile(null);
-          setProgress(0);
-          setUploading(false);
-          setUploadSuccess(false);
-        }, 2000);
-      }, 500);
+        resetUploader();
+      }, 5000);
 
     } catch (error) {
       setUploading(false);
       setProgress(0);
-      const errorMessage = error instanceof Error ? error.message : "Error al subir el documento";
+      const errorMessage = error instanceof Error ? error.message : "Error en el procesamiento completo";
+      setError(errorMessage);
+      
+      // Marcar el paso actual como error
+      setProcessingSteps(prev => prev.map(s => 
+        s.status === 'process' ? { ...s, status: 'error' } : s
+      ));
       
       notification.error({
-        message: "Error al subir documento",
+        message: "Error en el procesamiento",
         description: errorMessage,
         placement: "topRight",
-        duration: 5,
-        style: {
-          backgroundColor: "#fff2f0",
-          border: "1px solid #ffccc7"
-        }
+        duration: 8,
       });
     }
+  };
+
+  const resetUploader = () => {
+    setSelectedFile(null);
+    setProgress(0);
+    setUploading(false);
+    setUploadSuccess(false);
+    setCurrentStep('');
+    setProcessingResult(null);
+    setError(null);
+    setProcessingSteps(prev => prev.map(s => ({ ...s, status: 'wait' as const })));
   };
 
   const handleManualSelect = () => {
@@ -131,10 +160,87 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
           return;
         }
         setSelectedFile(file);
-        handleUpload(file);
+        setError(null);
+        handleCompleteProcessing(file);
       }
     };
     input.click();
+  };
+
+  const formatTime = (ms: number) => {
+    return ms > 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+  };
+
+  const renderProcessingSteps = () => {
+    if (!uploading && !uploadSuccess) return null;
+
+    return (
+      <div style={{ marginTop: "24px" }}>
+        <Title level={5} style={{ color: "#1A2A80", marginBottom: "16px" }}>
+          Progreso del Procesamiento
+        </Title>
+        <Steps 
+          direction="vertical" 
+          size="small"
+          current={processingSteps.findIndex(s => s.status === 'process')}
+        >
+          {processingSteps.map((step, index) => (
+            <Step
+              key={step.key}
+              title={step.title}
+              description={step.description}
+              status={step.status}
+              icon={
+                step.status === 'process' ? <LoadingOutlined /> :
+                step.status === 'error' ? <ExclamationCircleOutlined /> :
+                step.status === 'finish' ? <CheckCircleOutlined /> : undefined
+              }
+            />
+          ))}
+        </Steps>
+        
+        {currentStep && (
+          <Alert
+            message={currentStep}
+            type="info"
+            showIcon
+            style={{ marginTop: "16px" }}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const renderResults = () => {
+    if (!processingResult) return null;
+
+    return (
+      <Collapse style={{ marginTop: "16px" }}>
+        <Panel header="Detalles del Procesamiento" key="1">
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <div>
+              <Text strong>Estadísticas:</Text>
+              <div style={{ marginLeft: "16px", marginTop: "8px" }}>
+                <Tag color="blue">Chunks: {processingResult.chunksCreated}</Tag>
+                <Tag color="green">Embeddings: {processingResult.embeddingsGenerated}</Tag>
+                <Tag color="purple">
+                  Tiempo total: {formatTime(processingResult.processingStats.totalTimeMs)}
+                </Tag>
+              </div>
+            </div>
+            
+            <div>
+              <Text strong>Tiempos por etapa:</Text>
+              <div style={{ marginLeft: "16px", marginTop: "8px" }}>
+                <div>• Extracción de texto: {formatTime(processingResult.processingStats.textExtractionTimeMs)}</div>
+                <div>• Chunking: {formatTime(processingResult.processingStats.chunkingTimeMs)}</div>
+                <div>• Embeddings: {formatTime(processingResult.processingStats.embeddingTimeMs)}</div>
+              </div>
+            </div>
+          </Space>
+        </Panel>
+      </Collapse>
+    );
   };
 
   return (
@@ -171,7 +277,7 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
               fontSize: "14px",
               margin: "0"
             }}>
-              Solo se permiten archivos PDF. Tamaño máximo: 10MB
+              Procesamiento completo: extracción de texto + chunks + embeddings. Tamaño máximo: 10MB
             </p>
           </Dragger>
 
@@ -214,18 +320,21 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
             display: "block",
             marginBottom: "8px"
           }}>
-            ¡Documento subido exitosamente!
+            ¡Procesamiento completado!
           </Text>
 
           {selectedFile && (
             <Text style={{ 
               color: "#666", 
               fontSize: "14px",
-              display: "block"
+              display: "block",
+              marginBottom: "16px"
             }}>
-              "{selectedFile.name}" se agregó al repositorio
+              "{selectedFile.name}" está listo para búsquedas semánticas
             </Text>
           )}
+
+          {renderResults()}
         </div>
       ) : (
         <div style={{ 
@@ -258,15 +367,32 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
             display: "block",
             marginBottom: "16px"
           }}>
-            Subiendo documento...
+            Procesando documento...
           </Text>
 
           <Progress
             percent={progress}
             strokeColor="#3B38A0"
             trailColor="#E6E6E6"
-            style={{ maxWidth: "300px", margin: "0 auto" }}
+            style={{ maxWidth: "300px", margin: "0 auto 24px auto" }}
           />
+
+          {renderProcessingSteps()}
+
+          {error && (
+            <Alert
+              message="Error en el procesamiento"
+              description={error}
+              type="error"
+              showIcon
+              style={{ marginTop: "16px", textAlign: "left" }}
+              action={
+                <Button size="small" onClick={resetUploader}>
+                  Reintentar
+                </Button>
+              }
+            />
+          )}
         </div>
       )}
     </div>

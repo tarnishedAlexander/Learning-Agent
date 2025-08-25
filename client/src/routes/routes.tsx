@@ -26,7 +26,7 @@ export const AppRoutes = () => {
           {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
-        <Route element={<PrivateRoute />}>
+        {/* <Route element={<PrivateRoute />}> */}
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
@@ -42,7 +42,7 @@ export const AppRoutes = () => {
             <Route path="/upload-pdf" element={<UploadPdfPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
           </Route>
-        </Route>
+        {/* </Route> */}
       </Routes>
     </BrowserRouter>
   );

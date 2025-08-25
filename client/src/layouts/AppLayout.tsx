@@ -6,7 +6,8 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  BookOutlined ,
+  BookOutlined,
+  CloudUploadOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -21,6 +22,11 @@ const navItems = [
     key: "/classes", 
     icon: <BookOutlined />, 
     label: <Link to="/classes">Clases</Link> 
+  },
+  {
+    key: "/upload-pdf",
+    icon: <CloudUploadOutlined />,
+    label: <Link to="/upload-pdf">Documentos</Link>,
   },
   {
     key: "/curso/1",

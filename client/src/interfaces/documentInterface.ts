@@ -1,4 +1,5 @@
 export interface Document {
+  id?: string; // Hacer opcional para compatibilidad con código existente
   fileName: string;
   originalName: string;
   mimeType: string;

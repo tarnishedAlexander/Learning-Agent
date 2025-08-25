@@ -124,6 +124,27 @@ export const useDocuments = () => {
     }
   }, []);
 
+  const processDocumentComplete = useCallback(async (
+    file: File,
+    onProgress?: (step: string, progress: number, message: string) => void
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await documentsApi.processDocumentComplete(file, onProgress);
+      // Actualizar la lista de documentos después del procesamiento completo
+      setDocuments((prevDocs) => [...prevDocs, result.document]);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error in complete document processing';
+      setError(errorMessage);
+      console.error('Error in complete document processing:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
@@ -144,5 +165,6 @@ export const useDocuments = () => {
     processDocumentText,
     processDocumentChunks,
     getDocumentChunks,
+    processDocumentComplete,
   };
 };

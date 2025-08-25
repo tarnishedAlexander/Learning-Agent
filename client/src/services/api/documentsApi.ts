@@ -1,5 +1,4 @@
-// API service para documentos - Backend hexagonal
-import { apiClient } from "../../api/apiClient";
+import apiClient from "../../api/apiClient";
 import type { Document } from "../../interfaces/documentInterface";
 
 export interface DocumentListResponseBackend {
@@ -17,7 +16,7 @@ export interface DocumentListResponseBackend {
 }
 
 export interface UploadResponseBackend {
-  id: string;
+  id: string; // Esta es la diferencia clave - necesitamos el ID
   fileName: string;
   originalName: string;
   mimeType: string;
@@ -93,6 +92,7 @@ export const documentsApi = {
 
       // Mapear respuesta del backend a nuestra interfaz Document
       return {
+        id: response.data.id, // Incluir el ID para uso posterior
         fileName: response.data.fileName,
         originalName: response.data.originalName,
         mimeType: response.data.mimeType,
@@ -115,6 +115,7 @@ export const documentsApi = {
       
       // Mapear respuesta del backend
       const documents: Document[] = response.data.documents.map(doc => ({
+        id: doc.fileName, // Usar fileName como ID temporal si no está disponible
         fileName: doc.fileName,
         originalName: doc.originalName,
         mimeType: doc.mimeType,
@@ -279,6 +280,142 @@ export const documentsApi = {
     } catch (error) {
       console.error('Error getting document chunks:', error);
       throw new Error('Error al obtener los chunks del documento');
+    }
+  },
+
+  /**
+   * Generar embeddings para un documento
+   */
+  async generateDocumentEmbeddings(
+    documentId: string,
+    options?: {
+      embeddingConfig?: {
+        model?: string;
+        dimensions?: number;
+        additionalConfig?: Record<string, unknown>;
+      };
+      replaceExisting?: boolean;
+      batchSize?: number;
+      chunkFilters?: {
+        chunkTypes?: string[];
+        chunkIndices?: number[];
+        minContentLength?: number;
+      };
+    }
+  ): Promise<{
+    success: boolean;
+    result?: {
+      documentId: string;
+      totalChunksProcessed: number;
+      chunksSkipped: number;
+      chunksWithErrors: number;
+      totalProcessingTimeMs: number;
+      estimatedCost?: {
+        totalTokens: number;
+        totalCost: number;
+      };
+    };
+    metadata?: {
+      processingTimeMs: number;
+      timestamp: string;
+    };
+  }> {
+    try {
+      const response = await apiClient.post(
+        `/api/repository-documents/embeddings/generate/${documentId}`,
+        options || {}
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error generating document embeddings:', error);
+      throw new Error('Error al generar embeddings del documento');
+    }
+  },
+
+  /**
+   * Procesar documento completo (upload + extract text + chunks + embeddings)
+   * Este método ejecuta toda la secuencia de procesamiento
+   */
+  async processDocumentComplete(
+    file: File,
+    onProgress?: (step: string, progress: number, message: string) => void
+  ): Promise<{
+    document: Document;
+    textProcessed: boolean;
+    chunksCreated: number;
+    embeddingsGenerated: number;
+    processingStats: {
+      totalTimeMs: number;
+      textExtractionTimeMs: number;
+      chunkingTimeMs: number;
+      embeddingTimeMs: number;
+    };
+  }> {
+    const startTime = Date.now();
+    let textExtractionTime = 0;
+    let chunkingTime = 0;
+    let embeddingTime = 0;
+
+    try {
+      // Paso 1: Upload del documento
+      onProgress?.('upload', 25, 'Subiendo documento...');
+      const uploadResponse = await this.uploadDocument(file);
+      
+      // Extraer el ID del documento de la respuesta del upload
+      const documentId = uploadResponse.id || uploadResponse.fileName;
+      
+      // Paso 2: Procesar texto
+      onProgress?.('text', 50, 'Extrayendo texto del documento...');
+      const textStart = Date.now();
+      const textResult = await this.processDocumentText(documentId);
+      textExtractionTime = Date.now() - textStart;
+      
+      if (!textResult.success) {
+        throw new Error('Error en la extracción de texto');
+      }
+
+      // Paso 3: Procesar chunks
+      onProgress?.('chunks', 75, 'Dividiendo documento en chunks...');
+      const chunksStart = Date.now();
+      const chunksResult = await this.processDocumentChunks(documentId);
+      chunkingTime = Date.now() - chunksStart;
+      
+      if (!chunksResult.success) {
+        throw new Error('Error en el procesamiento de chunks');
+      }
+
+      // Paso 4: Generar embeddings
+      onProgress?.('embeddings', 90, 'Generando embeddings vectoriales...');
+      const embeddingStart = Date.now();
+      const embeddingsResult = await this.generateDocumentEmbeddings(documentId);
+      embeddingTime = Date.now() - embeddingStart;
+      
+      if (!embeddingsResult.success) {
+        throw new Error('Error en la generación de embeddings');
+      }
+
+      onProgress?.('complete', 100, '¡Procesamiento completado exitosamente!');
+
+      const totalTime = Date.now() - startTime;
+
+      return {
+        document: uploadResponse,
+        textProcessed: textResult.success,
+        chunksCreated: chunksResult.data?.totalChunks || 0,
+        embeddingsGenerated: embeddingsResult.result?.totalChunksProcessed || 0,
+        processingStats: {
+          totalTimeMs: totalTime,
+          textExtractionTimeMs: textExtractionTime,
+          chunkingTimeMs: chunkingTime,
+          embeddingTimeMs: embeddingTime,
+        },
+      };
+    } catch (error) {
+      console.error('Error in complete document processing:', error);
+      throw new Error(
+        error instanceof Error ? error.message : 'Error en el procesamiento completo del documento'
+      );
     }
   },
 };
