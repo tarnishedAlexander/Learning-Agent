@@ -1,9 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
-import * as Redis from 'ioredis';
+import Redis from 'ioredis';
 import crypto from 'crypto';
 
 @Injectable()
 export class CacheService {
+
   constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis.Redis) {}
 
   private hashKey(key: string): string {
@@ -20,3 +21,4 @@ export class CacheService {
     await this.redis.set(key, answer, 'EX', ttlSeconds);
   }
 }
+

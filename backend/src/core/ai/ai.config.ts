@@ -9,8 +9,6 @@ export class AiConfigService {
   readonly maxOutputTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 512);
   readonly temperature = Number(process.env.AI_TEMPERATURE ?? 0.2);
   readonly apiUrl = process.env.AI_API_URL ?? process.env.OLLAMA_URL ?? '';
-
-  // Configuración para OpenAI (embeddings)
   readonly openaiApiKey = process.env.OPENAI_API_KEY ?? '';
   readonly openaiEmbeddingModel =
     process.env.OPENAI_EMBEDDING_MODEL ?? 'text-embedding-3-small';
