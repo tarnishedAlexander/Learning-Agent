@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
-import Redis from 'ioredis';
+import * as Redis from 'ioredis';
 import crypto from 'crypto';
 
 @Injectable()
 export class CacheService {
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
+  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis.Redis) {}
 
-  private hashKey(key: string) {
+  private hashKey(key: string): string {
     return crypto.createHash('sha256').update(key).digest('hex');
   }
 
@@ -15,7 +15,7 @@ export class CacheService {
     return this.redis.get(key);
   }
 
-  async set(question: string, answer: string, ttlSeconds = 86400) {
+  async set(question: string, answer: string, ttlSeconds = 86400): Promise<void> {
     const key = this.hashKey(question);
     await this.redis.set(key, answer, 'EX', ttlSeconds);
   }
