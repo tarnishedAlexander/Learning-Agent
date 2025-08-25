@@ -21,7 +21,7 @@ export class ExtractedText {
   }
 
   /**
-   * Obtiene la longitud del texto extraido
+   * Obtiene la longitud del texto extraído
    */
   getContentLength(): number {
     return this.content.length;
