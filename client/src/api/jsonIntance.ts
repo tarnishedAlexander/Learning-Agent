@@ -9,4 +9,14 @@ const jsonInstance = axios.create({
   }
 });
 
+jsonInstance.interceptors.request.use((config) => {
+  const token = readAuth().accessToken;
+  if (token && !config.url?.includes("/auth/login")) {
+    if (config.headers) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 export default jsonInstance;
