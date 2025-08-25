@@ -7,6 +7,8 @@
   - Added the required column `uploadedBy` to the `Document` table without a default value. This is not possible if the table is not empty.
 
 */
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
 -- CreateEnum
 CREATE TYPE "public"."DocumentStatus" AS ENUM ('UPLOADED', 'PROCESSING', 'PROCESSED', 'ERROR', 'DELETED');
 
@@ -31,7 +33,7 @@ ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
 ADD COLUMN     "uploadedBy" TEXT NOT NULL;
 
 -- CreateTable
-CREATE TABLE "public"."DocumentChunk" (
+CREATE TABLE "public"."document_chunks" (
     "id" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -39,13 +41,15 @@ CREATE TABLE "public"."DocumentChunk" (
     "startPosition" INTEGER NOT NULL,
     "endPosition" INTEGER NOT NULL,
     "pageNumber" INTEGER,
-    "chunkType" "public"."ChunkType" NOT NULL DEFAULT 'TEXT',
+    "type" TEXT NOT NULL DEFAULT 'text',
+    "wordCount" INTEGER NOT NULL DEFAULT 0,
+    "charCount" INTEGER NOT NULL DEFAULT 0,
     "embedding" public.vector(1536),
     "metadata" JSONB,
-    "tokenCount" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "DocumentChunk_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "document_chunks_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -88,10 +92,16 @@ CREATE TABLE "public"."ProcessingJob" (
 );
 
 -- CreateIndex
-CREATE INDEX "DocumentChunk_documentId_idx" ON "public"."DocumentChunk"("documentId");
+CREATE INDEX "document_chunks_documentId_idx" ON "public"."document_chunks"("documentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DocumentChunk_documentId_chunkIndex_key" ON "public"."DocumentChunk"("documentId", "chunkIndex");
+CREATE INDEX "document_chunks_type_idx" ON "public"."document_chunks"("type");
+
+-- CreateIndex
+CREATE INDEX "document_chunks_wordCount_idx" ON "public"."document_chunks"("wordCount");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "document_chunks_documentId_chunkIndex_key" ON "public"."document_chunks"("documentId", "chunkIndex");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "DocumentCategory_name_key" ON "public"."DocumentCategory"("name");
@@ -124,7 +134,7 @@ CREATE INDEX "Document_contentType_idx" ON "public"."Document"("contentType");
 ALTER TABLE "public"."Document" ADD CONSTRAINT "Document_uploadedBy_fkey" FOREIGN KEY ("uploadedBy") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."DocumentChunk" ADD CONSTRAINT "DocumentChunk_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "public"."Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."document_chunks" ADD CONSTRAINT "document_chunks_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "public"."Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."DocumentCategoryMapping" ADD CONSTRAINT "DocumentCategoryMapping_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "public"."Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;

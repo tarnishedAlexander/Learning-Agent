@@ -182,21 +182,28 @@ model DocumentChunk {
   startPosition   Int                        // Posición de inicio en el texto original
   endPosition     Int                        // Posición de fin en el texto original
   pageNumber      Int?                       // Página de origen (si aplica)
-  chunkType       ChunkType @default(TEXT)   // Tipo de chunk
+  type            String    @default("text") // Tipo de chunk (text, heading, list, etc.)
   
-  // pgvector
+  // Metadata estadística
+  wordCount       Int       @default(0)      // Número de palabras
+  charCount       Int       @default(0)      // Número de caracteres
+  
+  // pgvector para embeddings
   embedding       Unsupported("public.vector(1536)")? // OpenAI embeddings (1536 dimensiones)
   
   // Metadata adicional del chunk
   metadata        Json?                      // Información contextual adicional
-  tokenCount      Int?                       // Número de tokens
   
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   
   @@unique([documentId, chunkIndex])
   @@index([documentId])
-  // ÍNDICE VECTORIAL para búsqueda semántica eficiente
-  @@map("DocumentChunk")
+  @@index([type])
+  @@index([wordCount])
+  // Índice HNSW para búsqueda vectorial eficiente
+  // CREATE INDEX CONCURRENTLY document_chunks_embedding_hnsw_idx ON "DocumentChunk" USING hnsw (embedding vector_cosine_ops);
+  @@map("document_chunks")
 }
 
 model DocumentCategory {

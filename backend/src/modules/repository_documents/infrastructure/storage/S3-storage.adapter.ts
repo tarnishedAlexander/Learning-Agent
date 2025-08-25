@@ -67,13 +67,17 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       const url = `${this.endpoint}/${this.bucketName}/${fileName}`;
 
-      // Crear entidad Document
-      const document = Document.create(
+      // Crear entidad Document (versión simple para compatibilidad)
+      const document = new Document(
+        '', // id - será asignado por el caso de uso
         fileName,
         req.originalName,
         req.mimeType,
         req.size,
         url,
+        fileName, // s3Key
+        '', // fileHash - será asignado por el caso de uso
+        '', // uploadedBy - será asignado por el caso de uso
       );
 
       return document;
@@ -307,6 +311,38 @@ export class S3StorageAdapter implements DocumentStoragePort {
       await this.s3Client.send(deleteCommand);
     } catch {
       throw new Error('Error deleting file from MinIO');
+    }
+  }
+
+  /**
+   * Descarga el contenido de un archivo como Buffer
+   * @param fileName Nombre del archivo o clave S3
+   * @returns Buffer con el contenido del archivo
+   */
+  async downloadFileBuffer(fileName: string): Promise<Buffer> {
+    try {
+      const getObjectCommand = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileName,
+      });
+
+      const response = await this.s3Client.send(getObjectCommand);
+
+      if (!response.Body) {
+        throw new Error('File content is empty');
+      }
+
+      // Convertir stream a buffer
+      const chunks: Buffer[] = [];
+      const stream = response.Body as any;
+
+      return new Promise((resolve, reject) => {
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+    } catch (error) {
+      throw new Error(`Error downloading file from MinIO: ${error.message}`);
     }
   }
 }
