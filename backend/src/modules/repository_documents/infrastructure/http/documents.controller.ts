@@ -23,7 +23,7 @@ import {
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
-import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
+import type { UploadDocumentResponseDto } from './dtos/upload-document.dto';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
 @Controller('api/documents')
