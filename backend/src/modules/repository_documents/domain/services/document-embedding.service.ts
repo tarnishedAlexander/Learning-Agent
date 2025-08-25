@@ -25,7 +25,6 @@ export interface DocumentEmbeddingOptions {
   /** Procesar en lotes de este tamaño */
   batchSize?: number;
 
-  /** Filtros para chunks específicos */
   chunkFilters?: {
     /** Tipos de chunks a procesar */
     chunkTypes?: string[];
