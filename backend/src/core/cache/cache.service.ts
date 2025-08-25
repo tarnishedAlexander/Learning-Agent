@@ -4,8 +4,7 @@ import crypto from 'crypto';
 
 @Injectable()
 export class CacheService {
-
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis.Redis) {}
+  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
 
   private hashKey(key: string): string {
     return crypto.createHash('sha256').update(key).digest('hex');
@@ -21,4 +20,3 @@ export class CacheService {
     await this.redis.set(key, answer, 'EX', ttlSeconds);
   }
 }
-
