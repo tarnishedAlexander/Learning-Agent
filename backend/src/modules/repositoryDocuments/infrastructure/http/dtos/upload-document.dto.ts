@@ -39,9 +39,6 @@ export class UploadDocumentRequestDto {
 
 export class UploadDocumentResponseDto {
   @IsString()
-  id: string; // ID del documento en la base de datos
-
-  @IsString()
   fileName: string;
 
   @IsString()
@@ -60,7 +57,6 @@ export class UploadDocumentResponseDto {
   uploadedAt: Date;
 
   constructor(
-    id: string,
     fileName: string,
     originalName: string,
     mimeType: string,
@@ -68,7 +64,6 @@ export class UploadDocumentResponseDto {
     downloadUrl: string,
     uploadedAt: Date,
   ) {
-    this.id = id;
     this.fileName = fileName;
     this.originalName = originalName;
     this.mimeType = mimeType;
