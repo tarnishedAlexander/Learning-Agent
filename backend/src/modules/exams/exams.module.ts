@@ -7,9 +7,12 @@ import { CreateExamCommandHandler } from './application/commands/create-exam.com
 import { GenerateQuestionsCommandHandler } from './application/commands/generate-questions.command';
 import { AIQuestionGenerator } from './infrastructure/ai/ai-question.generator';
 import { AiConfigService } from '../../core/ai/ai.config';
+import { LlmModule } from '../llm/llm.module';
+import { PromptTemplateModule } from '../prompt-template/prompt-template.module';
+import { GenerateExamUseCase } from './application/commands/generate-exam.usecase';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, LlmModule, PromptTemplateModule],
   controllers: [ExamsController],
   providers: [
     // persistencia
@@ -17,6 +20,7 @@ import { AiConfigService } from '../../core/ai/ai.config';
     // adaptador IA
     { provide: EXAM_AI_GENERATOR, useClass: AIQuestionGenerator },
     AiConfigService,
+    GenerateExamUseCase,
     CreateExamCommandHandler,
     GenerateQuestionsCommandHandler,
   ],

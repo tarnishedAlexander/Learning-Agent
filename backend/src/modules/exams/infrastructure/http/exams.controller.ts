@@ -1,8 +1,16 @@
 import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { CreateExamDto } from './dtos/create-exam.dto';
 import { GenerateQuestionsDto } from './dtos/generate-questions.dto';
-import { CreateExamCommand, CreateExamCommandHandler } from '../../application/commands/create-exam.command';
-import { GenerateQuestionsCommand, GenerateQuestionsCommandHandler } from '../../application/commands/generate-questions.command';
+import {
+  CreateExamCommand,
+  CreateExamCommandHandler,
+} from '../../application/commands/create-exam.command';
+import {
+  GenerateQuestionsCommand,
+  GenerateQuestionsCommandHandler,
+} from '../../application/commands/generate-questions.command';
+import type { GenerateExamInput } from './dtos/exam.types';
+import { GenerateExamUseCase } from '../../application/commands/generate-exam.usecase';
 
 function sumDistribution(d?: { multiple_choice: number; true_false: number; open_analysis: number; open_exercise: number; }) {
   if (!d) return 0;
@@ -17,6 +25,7 @@ export class ExamsController {
   constructor(
     private readonly createExamHandler: CreateExamCommandHandler,
     private readonly generateQuestionsHandler: GenerateQuestionsCommandHandler,
+    private readonly generateExamHandler: GenerateExamUseCase,
   ) {}
 
   @Post()
@@ -59,11 +68,16 @@ export class ExamsController {
 
     const grouped = {
       multiple_choice: flat.filter((q: any) => q.type === 'multiple_choice'),
-      true_false:      flat.filter((q: any) => q.type === 'true_false'),
-      open_analysis:   flat.filter((q: any) => q.type === 'open_analysis'),
-      open_exercise:   flat.filter((q: any) => q.type === 'open_exercise'),
+      true_false: flat.filter((q: any) => q.type === 'true_false'),
+      open_analysis: flat.filter((q: any) => q.type === 'open_analysis'),
+      open_exercise: flat.filter((q: any) => q.type === 'open_exercise'),
     };
 
     return { ok: true, data: { questions: grouped } };
+  }
+    
+  @Post('generate-exam')
+  async generateExam(@Body() dto: GenerateExamInput) {
+    return await this.generateExamHandler.execute(dto);
   }
 }
