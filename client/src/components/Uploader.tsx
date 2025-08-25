@@ -1,266 +1,274 @@
 import React, { useState } from "react";
-import { Row, Col, Button, Modal, Upload, Select, Card } from "antd";
-import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import { Upload, Button, message, Progress, Typography, notification } from "antd";
+import { CloudUploadOutlined, FileAddOutlined, PlusOutlined, CheckCircleOutlined, FileTextOutlined } from "@ant-design/icons";
 import type { RcFile } from "rc-upload/lib/interface";
-import { useDocuments } from "../hooks/useDocuments"; 
+import { useDocuments } from "../hooks/useDocuments";
 
 const { Dragger } = Upload;
-const { Option } = Select;
+const { Text } = Typography;
 
-type UseDocumentsReturn = {
-  documents?: unknown[];
-  addDocument?: (file: File, type: string) => Promise<unknown>;
-  loadDocuments?: () => Promise<unknown>;
-};
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-const MAX_BYTES = 10 * 1024 * 1024; 
+interface UploaderProps {
+  onUploadSuccess?: () => void;
+}
 
-const Uploader: React.FC = () => {
-  const docsHook = useDocuments() as UseDocumentsReturn;
-
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [pickedFile, setPickedFile] = useState<File | null>(null);
-  const [pickedType, setPickedType] = useState<string>("tipo1");
+const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
+  const { uploadDocument } = useDocuments();
   const [uploading, setUploading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const [successModal, setSuccessModal] = useState<boolean>(false);
-  const [errorModal, setErrorModal] = useState<{ open: boolean; msg: string }>({
-    open: false,
-    msg: "",
-  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
 
   const validateFile = (file: File): string | null => {
-    const isPdf =
-      file.type === "application/pdf" ||
-      file.name.toLowerCase().endsWith(".pdf");
-    if (!isPdf) return "No se pueden subir archivos que no sean PDFs.";
-    if (file.size > MAX_BYTES)
-      return "No se pueden subir archivos mayores a 10 MB.";
+    // Verificar tipo de archivo
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      return "Solo se permiten archivos PDF";
+    }
+
+    // Verificar tamaño
+    if (file.size > MAX_FILE_SIZE) {
+      return `El archivo es demasiado grande. Máximo permitido: ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(1)} MB`;
+    }
+
     return null;
   };
 
-  const handleConfirmUpload = async () => {
-    if (!pickedFile) {
-      setErrorModal({ open: true, msg: "Debes seleccionar un archivo primero." });
-      return;
-    }
-    const v = validateFile(pickedFile);
-    if (v) {
-      setErrorModal({ open: true, msg: v });
-      return;
+  const handleFileSelect = (file: RcFile): boolean => {
+    const validationError = validateFile(file);
+    if (validationError) {
+      message.error(validationError);
+      return false;
     }
 
+    setSelectedFile(file);
+    handleUpload(file);
+    return false; // Prevenir la subida automática
+  };
+
+  const handleUpload = async (file: File) => {
     try {
       setUploading(true);
-      setProgress(10);
+      setProgress(0);
 
-      if (typeof docsHook?.addDocument === "function") {
-        await docsHook.addDocument(pickedFile, pickedType);
-      } else {
-        await new Promise((res) => setTimeout(res, 1500)); 
-      }
+      // Simular progreso de subida
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
 
+      const uploadedDocument = await uploadDocument(file);
+
+      clearInterval(progressInterval);
       setProgress(100);
+
       setTimeout(() => {
-        setUploading(false);
-        setIsModalOpen(false);
-        setPickedFile(null);
-        setProgress(0);
-        setSuccessModal(true); 
-      }, 800);
-    } catch {
-      setErrorModal({
-        open: true,
-        msg: "Error al subir el archivo. Intenta nuevamente.",
+        // Mostrar estado de éxito
+        setUploadSuccess(true);
+        setProgress(100);
+        
+        // Llamar callback para forzar actualización si está disponible
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+        
+        // Mostrar notificación de éxito
+        notification.success({
+          message: "¡Documento subido exitosamente!",
+          description: `"${uploadedDocument.originalName}" se agregó al repositorio y la tabla se actualizó`,
+          icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+          placement: "topRight",
+          duration: 5,
+          style: {
+            backgroundColor: "#f6ffed",
+            border: "1px solid #b7eb8f"
+          }
+        });
+
+        // Resetear estado después de mostrar el éxito
+        setTimeout(() => {
+          setSelectedFile(null);
+          setProgress(0);
+          setUploading(false);
+          setUploadSuccess(false);
+        }, 2000);
+      }, 500);
+
+    } catch (error) {
+      setUploading(false);
+      setProgress(0);
+      const errorMessage = error instanceof Error ? error.message : "Error al subir el documento";
+      
+      notification.error({
+        message: "Error al subir documento",
+        description: errorMessage,
+        placement: "topRight",
+        duration: 5,
+        style: {
+          backgroundColor: "#fff2f0",
+          border: "1px solid #ffccc7"
+        }
       });
     }
   };
 
-  const beforeUpload = (file: RcFile) => {
-    const v = validateFile(file as File);
-    if (v) {
-      setErrorModal({ open: true, msg: v });
-      return Upload.LIST_IGNORE;
-    }
-    setPickedFile(file as File);
-    return false;
+  const handleManualSelect = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,application/pdf";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const validationError = validateFile(file);
+        if (validationError) {
+          message.error(validationError);
+          return;
+        }
+        setSelectedFile(file);
+        handleUpload(file);
+      }
+    };
+    input.click();
   };
 
   return (
-    <div>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={18}>
-          <Card
-            bordered
-            style={{
-              minHeight: 260,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div style={{ textAlign: "center", color: "rgba(0,0,0,0.35)" }}>
-              <h3 style={{ margin: 0 }}>tabla fabian</h3>
-              <p style={{ marginTop: 8 }}>
-                Aquí se mostrará la tabla de archivos (placeholder)
-              </p>
-            </div>
-          </Card>
-        </Col>
-
-        <Col
-          xs={24}
-          md={6}
-          style={{ display: "flex", justifyContent: "flex-end", alignItems: "start" }}
-        >
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsModalOpen(true)}
-            style={{ width: "100%", maxWidth: 220 }}
-          >
-            Agregar
-          </Button>
-        </Col>
-      </Row>
-
-      <Modal
-        title="Agregar archivo"
-        open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          setPickedFile(null);
-          setProgress(0);
-        }}
-        onOk={handleConfirmUpload}
-        okText="Confirmar"
-        cancelText="Cancelar"
-        centered
-        confirmLoading={uploading}
-      >
-        <div style={{ marginBottom: 12 }}>
+    <div style={{ width: "100%" }}>
+      {!uploading && !uploadSuccess ? (
+        <>
           <Dragger
+            name="file"
             multiple={false}
             accept=".pdf,application/pdf"
-            beforeUpload={beforeUpload}
+            beforeUpload={handleFileSelect}
             showUploadList={false}
-            style={{ padding: 12 }}
-          >
-            <p style={{ margin: 0 }}>
-              Arrastra tu PDF aquí o haz clic para seleccionar.
-            </p>
-            <p style={{ marginTop: 8, color: "rgba(0,0,0,0.45)" }}>
-              Solo PDF; máximo 10 MB.
-            </p>
-          </Dragger>
-        </div>
-
-        <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
-          <Button
-            icon={<UploadOutlined />}
-            onClick={() => {
-              const input = document.createElement("input");
-              input.type = "file";
-              input.accept = ".pdf,application/pdf";
-              input.onchange = (e) => {
-                const f = (e.target as HTMLInputElement).files?.[0];
-                if (!f) return;
-                const v = validateFile(f);
-                if (v) {
-                  setErrorModal({ open: true, msg: v });
-                  return;
-                }
-                setPickedFile(f);
-              };
-              input.click();
+            style={{
+              border: "2px dashed #7A85C1",
+              borderRadius: "8px",
+              backgroundColor: "#F8F9FB",
+              padding: "40px 20px",
+              cursor: "pointer"
             }}
           >
-            Seleccionar archivo
-          </Button>
+            <p className="ant-upload-drag-icon">
+              <CloudUploadOutlined style={{ fontSize: "48px", color: "#3B38A0" }} />
+            </p>
+            <p className="ant-upload-text" style={{ 
+              color: "#1A2A80", 
+              fontSize: "16px", 
+              fontWeight: "500",
+              margin: "16px 0 8px 0"
+            }}>
+              Haz clic o arrastra el archivo PDF aquí
+            </p>
+            <p className="ant-upload-hint" style={{ 
+              color: "#7A85C1",
+              fontSize: "14px",
+              margin: "0"
+            }}>
+              Solo se permiten archivos PDF. Tamaño máximo: 10MB
+            </p>
+          </Dragger>
 
-          <Select
-            value={pickedType}
-            onChange={(v) => setPickedType(v)}
-            style={{ minWidth: 140 }}
-          >
-            <Option value="tipo1">tipo1</Option>
-            <Option value="tipo2">tipo2</Option>
-            <Option value="tipo3">tipo3</Option>
-            <Option value="tipo4">tipo4</Option>
-          </Select>
-        </div>
-
-        <div>
-          <div style={{ minHeight: 36 }}>
-            {pickedFile ? (
-              <div>
-                <strong>{pickedFile.name}</strong>
-                <div style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
-                  {(pickedFile.size / 1024 / 1024).toFixed(2)} MB
-                </div>
-              </div>
-            ) : (
-              <div style={{ color: "rgba(0,0,0,0.45)" }}>
-                No hay archivo seleccionado
-              </div>
-            )}
+          <div style={{ textAlign: "center", marginTop: "16px" }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleManualSelect}
+              style={{
+                backgroundColor: "#3B38A0",
+                borderColor: "#3B38A0",
+                borderRadius: "6px",
+                fontWeight: "500"
+              }}
+              size="large"
+            >
+              Seleccionar Archivo
+            </Button>
           </div>
+        </>
+      ) : uploadSuccess ? (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "40px 20px",
+          backgroundColor: "#f6ffed",
+          borderRadius: "8px",
+          border: "2px solid #52c41a"
+        }}>
+          <CheckCircleOutlined style={{ 
+            fontSize: "64px", 
+            color: "#52c41a", 
+            marginBottom: "16px",
+            display: "block"
+          }} />
+          
+          <Text style={{ 
+            color: "#389e0d", 
+            fontSize: "18px", 
+            fontWeight: "600",
+            display: "block",
+            marginBottom: "8px"
+          }}>
+            ¡Documento subido exitosamente!
+          </Text>
 
-          {uploading && (
-            <div style={{ marginTop: 12 }}>
-              <div
-                style={{
-                  height: 8,
-                  background: "#f0f0f0",
-                  borderRadius: 8,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${progress}%`,
-                    height: "100%",
-                    background: "#1890ff",
-                    transition: "width 400ms",
-                  }}
-                />
-              </div>
-            </div>
+          {selectedFile && (
+            <Text style={{ 
+              color: "#666", 
+              fontSize: "14px",
+              display: "block"
+            }}>
+              "{selectedFile.name}" se agregó al repositorio
+            </Text>
           )}
         </div>
-      </Modal>
+      ) : (
+        <div style={{ 
+          textAlign: "center", 
+          padding: "40px 20px",
+          backgroundColor: "#F8F9FB",
+          borderRadius: "8px",
+          border: "2px solid #7A85C1"
+        }}>
+          <FileAddOutlined style={{ fontSize: "48px", color: "#3B38A0", marginBottom: "16px" }} />
+          
+          {selectedFile && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                <FileTextOutlined style={{ color: "#1A2A80", marginRight: "8px", fontSize: "16px" }} />
+                <Text strong style={{ color: "#1A2A80" }}>
+                  {selectedFile.name}
+                </Text>
+              </div>
+              <Text type="secondary" style={{ fontSize: "12px", marginLeft: "24px" }}>
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+              </Text>
+            </div>
+          )}
 
-      <Modal
-        open={successModal}
-        onCancel={() => setSuccessModal(false)}
-        footer={[
-          <Button key="ok" type="primary" onClick={() => setSuccessModal(false)}>
-            Aceptar
-          </Button>,
-        ]}
-        centered
-      >
-        <h3>✅ Carga exitosa</h3>
-        <p>El archivo se ha subido correctamente.</p>
-      </Modal>
+          <Text style={{ 
+            color: "#1A2A80", 
+            fontSize: "16px", 
+            fontWeight: "500",
+            display: "block",
+            marginBottom: "16px"
+          }}>
+            Subiendo documento...
+          </Text>
 
-      <Modal
-        open={errorModal.open}
-        onCancel={() => setErrorModal({ open: false, msg: "" })}
-        footer={[
-          <Button
-            key="ok"
-            type="primary"
-            onClick={() => setErrorModal({ open: false, msg: "" })}
-          >
-            Aceptar
-          </Button>,
-        ]}
-        centered
-      >
-        <h3>⚠️ Error al subir</h3>
-        <p>{errorModal.msg}</p>
-      </Modal>
+          <Progress
+            percent={progress}
+            strokeColor="#3B38A0"
+            trailColor="#E6E6E6"
+            style={{ maxWidth: "300px", margin: "0 auto" }}
+          />
+        </div>
+      )}
     </div>
   );
 };

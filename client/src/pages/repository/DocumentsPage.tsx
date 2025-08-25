@@ -1,57 +1,53 @@
-import { useCallback } from "react";
-import { Space, Upload, Button, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { DocumentTable } from "../../components/documents/DocumentTable";
-import { useDocuments } from "../../hooks/useDocuments";
-import type { Document } from "../../interfaces/documentInterface";
+import { Navigate } from "react-router-dom";
+import { Card, Space, Button } from "antd";
+import { UploadOutlined, ArrowLeftOutlined, FileTextOutlined } from "@ant-design/icons";
 
 export function DocumentsPage() {
-  const { documents, loading, uploadDocument, downloadDocument, deleteDocument } = useDocuments();
+  // Redirigir automáticamente a la página de upload que ahora contiene el tablero
+  return <Navigate to="/upload-pdf" replace />;
+}
 
-  const handleBeforeUpload = useCallback(async (file: File) => {
-    try {
-      await uploadDocument(file);
-      message.success("Archivo subido correctamente");
-    } catch (err: any) {
-      message.error(err?.message ?? "Error al subir archivo");
-    }
-    return false;
-  }, [uploadDocument]);
-
-  const handleDownload = useCallback(async (doc: Document) => {
-    try {
-      await downloadDocument(doc);
-    } catch (err: any) {
-      message.error(err?.message ?? "Error al descargar");
-    }
-  }, [downloadDocument]);
-
-  const handleDelete = useCallback(async (fileName: string) => {
-    try {
-      await deleteDocument(fileName);
-      message.success("Documento eliminado");
-    } catch (err: any) {
-      message.error(err?.message ?? "Error al eliminar");
-    }
-  }, [deleteDocument]);
-
+// Componente alternativo si quieres mantener esta página con un mensaje
+export function DocumentsPageWithMessage() {
   return (
-    <div style={{ padding: "24px" }}>
-      <Space direction="vertical" style={{ width: "100%" }}>
-        <h1 style={{ color: "#1A2A80" }}>Documentos del Curso</h1>
-
-        <div style={{ display: "flex", gap: 12 }}>
-          <Upload showUploadList={false} beforeUpload={(file) => handleBeforeUpload(file as File)}>
-            <Button icon={<UploadOutlined />}>Subir archivo</Button>
-          </Upload>
-        </div>
-
-        <DocumentTable
-          documents={documents}
-          loading={loading}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-        />
+    <div style={{ padding: "24px", textAlign: "center" }}>
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
+        <Card style={{ maxWidth: 600, margin: "0 auto" }}>
+          <Space direction="vertical" style={{ width: "100%" }} size="large">
+            <div>
+              <h1 style={{ color: "#1A2A80", marginBottom: 8, display: "flex", alignItems: "center" }}>
+                <FileTextOutlined style={{ marginRight: "12px" }} />
+                Gestión de Documentos
+              </h1>
+              <p style={{ color: "#666", fontSize: "16px" }}>
+                La funcionalidad de documentos se ha movido a la página de subida de PDFs
+                para una mejor experiencia de usuario.
+              </p>
+            </div>
+            
+            <Button 
+              type="primary" 
+              size="large"
+              icon={<UploadOutlined />}
+              href="/upload-pdf"
+              style={{ 
+                backgroundColor: "#1A2A80",
+                borderColor: "#1A2A80"
+              }}
+            >
+              Ir a Subir PDFs y Ver Documentos
+            </Button>
+            
+            <Button 
+              type="default" 
+              icon={<ArrowLeftOutlined />}
+              href="/"
+              style={{ marginTop: "10px" }}
+            >
+              Volver al Inicio
+            </Button>
+          </Space>
+        </Card>
       </Space>
     </div>
   );

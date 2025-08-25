@@ -2,9 +2,6 @@ export interface Document {
   fileName: string;
   originalName: string;
   mimeType: string;
-  fileName: string;
-  originalName: string;
-  mimeType: string;
   size: number;
   downloadUrl: string;
   uploadedAt: string;
@@ -20,12 +17,5 @@ export interface DocumentListResponse {
 
 export interface UploadResponse {
   success: boolean;
-  data: {
-    fileName: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    downloadUrl: string;
-    uploadedAt: string;
-  };
+  data: Document;
 }

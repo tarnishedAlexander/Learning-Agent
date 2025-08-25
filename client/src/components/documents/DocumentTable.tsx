@@ -1,5 +1,5 @@
 import { Table, Button, Space } from 'antd';
-import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DownloadOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import type { Document } from '../../interfaces/documentInterface';
 
 interface DocumentTableProps {
@@ -7,9 +7,10 @@ interface DocumentTableProps {
   loading: boolean;
   onDelete?: (fileName: string) => Promise<void>;
   onDownload?: (doc: Document) => Promise<void>;
+  onPreview?: (doc: Document) => void;
 }
 
-export const DocumentTable = ({ documents, loading, onDelete, onDownload }: DocumentTableProps) => {
+export const DocumentTable = ({ documents, loading, onDelete, onDownload, onPreview }: DocumentTableProps) => {
   const columns = [
     {
       title: 'Nombre del archivo',
@@ -38,13 +39,27 @@ export const DocumentTable = ({ documents, loading, onDelete, onDownload }: Docu
     {
       title: 'Acciones',
       key: 'actions',
-      render: (_: any, record: Document) => (
+      render: (_: unknown, record: Document) => (
         <Space>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => onPreview?.(record)}
+            style={{ 
+              color: '#1A2A80',
+              fontWeight: '500'
+            }}
+          >
+            Previsualizar
+          </Button>
           <Button
             type="link"
             icon={<DownloadOutlined />}
             onClick={() => onDownload?.(record)}
-            style={{ color: '#3B38A0' }}
+            style={{ 
+              color: '#3B38A0',
+              fontWeight: '500'
+            }}
           >
             Descargar
           </Button>
@@ -53,6 +68,10 @@ export const DocumentTable = ({ documents, loading, onDelete, onDownload }: Docu
             danger
             icon={<DeleteOutlined />}
             onClick={() => onDelete?.(record.fileName)}
+            style={{
+              color: '#B22B0E8',
+              fontWeight: '500'
+            }}
           >
             Eliminar
           </Button>
@@ -67,12 +86,23 @@ export const DocumentTable = ({ documents, loading, onDelete, onDownload }: Docu
       dataSource={documents}
       loading={loading}
       rowKey="fileName"
-      pagination={{ pageSize: 10 }}
+      pagination={{ 
+        pageSize: 10,
+        showQuickJumper: true,
+        showTotal: (total, range) => 
+          `${range[0]}-${range[1]} de ${total} documentos`,
+        style: { marginTop: '16px' }
+      }}
       style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
       }}
+      className="academic-table"
+      locale={{
+        emptyText: 'No hay documentos en el repositorio'
+      }}
+      scroll={{ x: 800 }}
+      size="middle"
     />
   );
 };

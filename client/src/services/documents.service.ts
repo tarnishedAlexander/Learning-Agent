@@ -2,6 +2,19 @@
 import { api } from "./api/instance";
 import type { Document, DocumentListResponse, UploadResponse } from "../interfaces/documentInterface";
 
+// Tipos para el mock server
+interface MockDocument {
+  id?: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  dataUrl?: string;
+  downloadUrl?: string;
+  uploadedAt?: string;
+  createdAt?: string;
+}
+
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "http://localhost:3000") as string;
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK === "true");
 
@@ -17,7 +30,7 @@ export const documentService = {
       // mock: json-server devuelve un array plano
       const res = await fetch(`${API_BASE}/documents`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const raw = (await res.json()) as any[]; // cada elemento puede tener dataUrl, createdAt, id, etc.
+      const raw = (await res.json()) as MockDocument[];
 
       // mapear al shape Document
       const documents: Document[] = raw.map((d) => ({
@@ -116,9 +129,10 @@ export const documentService = {
       // mock: buscar por fileName
       const q = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
       if (!q.ok) throw new Error(`HTTP error! status: ${q.status}`);
-      const items = (await q.json()) as any[];
+      const items = (await q.json()) as MockDocument[];
       const doc = items[0];
       if (!doc) throw new Error("Documento no encontrado en mock server");
+      if (!doc.dataUrl) throw new Error("El documento no tiene una URL de datos válida");
 
       // dataUrl -> blob
       const blobResp = await fetch(doc.dataUrl);
@@ -138,7 +152,7 @@ export const documentService = {
       }
       const res = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const items = (await res.json()) as any[];
+      const items = (await res.json()) as MockDocument[];
       const d = items[0];
       if (!d) throw new Error("Documento no encontrado");
       return {
@@ -146,8 +160,8 @@ export const documentService = {
         originalName: d.originalName,
         mimeType: d.mimeType,
         size: d.size,
-        downloadUrl: d.dataUrl ?? d.downloadUrl,
-        uploadedAt: d.uploadedAt ?? d.createdAt,
+        downloadUrl: d.dataUrl ?? d.downloadUrl ?? `${API_BASE}/files/${d.fileName}`,
+        uploadedAt: d.uploadedAt ?? d.createdAt ?? new Date().toISOString(),
       };
     } catch (error) {
       console.error("Error al obtener documento por nombre:", error);
@@ -165,7 +179,7 @@ export const documentService = {
 
       const q = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
       if (!q.ok) throw new Error(`HTTP error! status: ${q.status}`);
-      const items = (await q.json()) as any[];
+      const items = (await q.json()) as MockDocument[];
       const doc = items[0];
       if (!doc) throw new Error("Documento no encontrado en mock server");
 
