@@ -34,7 +34,6 @@ export class ExamsController {
     const sum = sumDistribution(dto.distribution);
     if (dto.totalQuestions <= 0) throw new BadRequestException('totalQuestions debe ser > 0.');
     if (sum !== dto.totalQuestions) throw new BadRequestException('La suma de distribution debe ser igual a totalQuestions.');
-
     const createCmd = new CreateExamCommand(
       dto.subject,
       dto.difficulty,
@@ -44,7 +43,6 @@ export class ExamsController {
       dto.reference ?? null,
       dto.distribution ?? undefined,
     );
-
     const exam = await this.createExamHandler.execute(createCmd);
     return { ok: true, data: exam };
   }
@@ -52,21 +50,18 @@ export class ExamsController {
   @Post('questions')
   @HttpCode(200)
   async generate(@Body() dto: GenerateQuestionsDto) {
-    const sum = sumDistribution(dto.distribution);
+    const sum = sumDistribution(dto.distribution as any);
     if (dto.totalQuestions <= 0) throw new BadRequestException('totalQuestions debe ser > 0.');
     if (sum !== dto.totalQuestions) throw new BadRequestException('La suma de distribution debe ser igual a totalQuestions.');
-
     const genCmd = new GenerateQuestionsCommand(
       dto.subject,
       dto.difficulty,
       dto.totalQuestions,
       dto.reference ?? null,
-      dto.preferredType ?? 'mixed', 
       dto.distribution ?? undefined,
     );
 
     const flat = await this.generateQuestionsHandler.execute(genCmd);
-
     const grouped = {
       multiple_choice: flat.filter((q: any) => q.type === 'multiple_choice'),
       true_false: flat.filter((q: any) => q.type === 'true_false'),
@@ -82,3 +77,4 @@ export class ExamsController {
     return await this.generateExamHandler.execute(dto);
   }
 }
+
