@@ -9,15 +9,5 @@ export interface ClassesRepositoryPort {
         dateBegin: Date,
         dateEnd: Date
     ): Promise<Classes>;
-    updateInfo(
-        id: string,
-        name: string, 
-        semester: string, 
-        dateBegin: Date,
-        dateEnd: Date
-    ): Promise<Classes>;
-    softDelete(
-        id: string
-    ): Promise<Classes>;
     list(): Promise<Classes[]>;
 }

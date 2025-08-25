@@ -6,6 +6,7 @@ import { IdentityModule } from './modules/identity/identity.module';
 import { DocumentsModule } from './modules/repository_documents/documents.module';
 import { AcademicManagementModule } from './modules/academic_management/academic_management.module';
 import { ExamsModule } from './modules/exams/exams.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { AiConfigService } from './core/ai/ai.config';
 
 @Module({
@@ -17,8 +18,10 @@ import { AiConfigService } from './core/ai/ai.config';
     AcademicManagementModule,
     ExamsModule,
     DocumentsModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [AiConfigService],
 })
 export class AppModule {}
+

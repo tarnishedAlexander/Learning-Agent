@@ -2,7 +2,6 @@ import { type ReactNode } from "react";
 import { Avatar, Breadcrumb, Divider, Typography } from "antd";
 import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { useThemeStore } from "../store/themeStore";
-
 const { Title, Text } = Typography;
 
 type UserInfo = {
@@ -19,30 +18,27 @@ type Props = {
   actions?: ReactNode;
   children: ReactNode;
 };
+
 export default function PageTemplate({
   title,
   subtitle,
   user,
-  breadcrumbs,
+  breadcrumbs = [],
   actions,
   children,
 }: Props) {
   const { theme, setTheme } = useThemeStore();
-
   const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
-
   return (
-    // Contenedor de página: sin scroll global
     <div className="h-screen overflow-hidden flex flex-col">
-      {/* HEADER (no crece, no se colapsa) */}
       <header className="shrink-0 space-y-4 px-4 md:px-0">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            {breadcrumbs && breadcrumbs.length > 0 && (
+            {breadcrumbs.length > 0 && (
               <Breadcrumb
                 className="mb-1"
                 items={breadcrumbs.map((b) => ({
-                  title: b.href ? <a href={b.href as string}>{b.label}</a> : b.label,
+                  title: b.href ? <a href={String(b.href)}>{b.label}</a> : b.label,
                 }))}
               />
             )}
@@ -58,7 +54,6 @@ export default function PageTemplate({
               </Text>
             )}
           </div>
-
           <div className="flex items-center gap-4">
             {actions && <div className="hidden md:block">{actions}</div>}
             {user && (
@@ -79,10 +74,9 @@ export default function PageTemplate({
             )}
           </div>
         </div>
-
         <Divider className="!my-2" />
       </header>
- 
+
       <main className="flex-1 min-h-0 overflow-y-auto px-0 md:px-0">
         <div className="px-0 md:px-0">{children}</div>
       </main>
