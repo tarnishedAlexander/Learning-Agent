@@ -6,6 +6,12 @@ import { Role } from '../../domain/entities/role.entity';
 @Injectable()
 export class RolePrismaRepository implements RoleRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
+  async listForUser(userId: string): Promise<Role[]> {
+    const roles = await this.prisma.role.findMany({
+      where: { users: { some: { userId: userId } } },
+    });
+    return roles.map((r) => new Role(r.id, r.name, r.description));
+  }
   async findById(id: string) {
     const r = await this.prisma.role.findUnique({ where: { id } });
     return r ? new Role(r.id, r.name, r.description) : null;

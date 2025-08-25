@@ -1,0 +1,107 @@
+import { Body, Controller, Get, Param, Post, UseGuards, Put} from '@nestjs/common';
+import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
+import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
+import { CreateClassDto } from './dtos/create-classes.dto';
+import { ListClassesUseCase } from '../../application/queries/list-classes.usecase';
+import { ListStudentsUseCase } from '../../application/queries/list-student.usecase';
+import { CreateStudentProfileUseCase } from '../../application/commands/create-student-profile.usecase';
+import { CreateEnrollmentUseCase } from '../../application/commands/create-enrollment.usecase';
+import { CreateEnrollmentDto } from './dtos/create-enrollment.dto';
+import { GetClassesByStudentUseCase } from '../../application/queries/get-classes-by-student.usecase';
+import { GetStudentsByClassUseCase } from '../../application/queries/get-students-by-class.usecase';
+import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
+import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
+import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
+import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-group-students.usecase';
+import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
+import { UpdateClassUseCase } from '../../application/commands/update-class.usecase';
+import { EditClassDTO } from './dtos/edit-class.dto';
+import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-class.usecase';
+import { DeleteClassDTO } from './dtos/delete-class.dto';
+import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+
+@UseGuards(JwtAuthGuard)  
+@Controller('academic')
+export class AcademicManagementController {
+  constructor(
+    private readonly listClasses: ListClassesUseCase,
+    private readonly listStudents: ListStudentsUseCase,
+    private readonly getClassById: GetClassByIdUseCase,
+    private readonly getClassesByStudent: GetClassesByStudentUseCase,
+    private readonly getStudentsByClass: GetStudentsByClassUseCase,
+    private readonly getTeacherInfoById: GetTeacherInfoByIDUseCase,
+    private readonly createClasses: CreateClassUseCase,
+    private readonly createProfileStudent: CreateStudentProfileUseCase,
+    private readonly createEnrollment: CreateEnrollmentUseCase,
+    private readonly enrollSingle: EnrollSingleStudentUseCase,
+    private readonly enrollGroup: EnrollGroupStudentUseCase,
+    private readonly updateClass: UpdateClassUseCase,
+    private readonly softDeleteClass: SoftDeleteClassUseCase,
+  ) { }
+  @Get('classes')
+  listClassesEndPoint() {
+    return this.listClasses.execute();
+  }
+  @Get('students')
+  listStudentEndPoint() {
+    return this.listStudents.execute();
+  }
+  @Get('classes/:id')
+  getClassByIdEndpoint(@Param('id') id: string) {
+    return this.getClassById.execute(id);
+  }
+  @Get('classes/by-student/:studentId')
+  getClassesByStudentEndpoint(@Param('studentId') studentId: string) {
+    return this.getClassesByStudent.execute(studentId);
+  }
+  @Get('students/by-class/:classId')
+  getStudentsByClassEndpoint(@Param('classId') classId: string) {
+    return this.getStudentsByClass.execute(classId);
+  }
+  @Get('teacher/:id')
+  getTeacherInfoByID(@Param('id') id: string) {
+    return this.getTeacherInfoById.execute(id);
+  }
+
+  @Post('classes')
+  createClassEndpoint(@Body() dto: CreateClassDto) {
+    return this.createClasses.execute(dto);
+  }
+  @Post('students')
+  createStudentEndpoint(@Body() dto: CreateStudentProfileDto) {
+    return this.createProfileStudent.execute(dto);
+  }
+  @Post('enrollments')
+  createEnrollmentEndpoint(@Body() dto: CreateEnrollmentDto) {
+    return this.createEnrollment.execute(dto);
+  }
+  @Post('enrollments/single-student')
+  enrollSingleStudentEndpoint(@Body() dto: EnrollSingleStudentDto) {
+    return this.enrollSingle.execute(dto);
+  }
+  @Post('enrollments/group-students')
+  enrollGroupStudentEndpoint(@Body() dto: EnrollGroupStudentDTO) {
+    return this.enrollGroup.execute(dto);
+  }
+
+  @Put('classes/:id')
+  updateClassEndpoint(@Param('id') id: string, @Body() dto: EditClassDTO) {
+    const input = {
+      teacherId: dto.teacherId,
+      classId: id,
+      name: dto.name,
+      semester: dto.semester,
+      dateBegin: dto.dateBegin,
+      dateEnd: dto.dateEnd
+    }
+    return this.updateClass.execute(input);
+  }
+  @Put('classes/remove/:id')
+  softDeleteEndpoint(@Param('id') id: string, @Body() dto: DeleteClassDTO) {
+    return this.softDeleteClass.execute({
+      teacherId: dto.teacherId,
+      classId: id
+    })
+  }
+}
