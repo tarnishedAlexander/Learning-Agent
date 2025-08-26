@@ -1,7 +1,22 @@
 export interface Document {
-  id: string;
-  name: string;
-  uploadDate: string;
+  id?: string; // Hacer opcional para compatibilidad con código existente
+  fileName: string;
+  originalName: string;
+  mimeType: string;
   size: number;
-  url: string;
+  downloadUrl: string;
+  uploadedAt: string;
+}
+
+export interface DocumentListResponse {
+  success: boolean;
+  data: {
+    documents: Document[];
+    totalCount: number;
+  };
+}
+
+export interface UploadResponse {
+  success: boolean;
+  data: Document;
 }

@@ -163,8 +163,109 @@ small.error {
   font-size: 0.9rem;
 }
 
+.subject-hover:hover {
+  background: #3B38A033 !important;
+  transform: translateX(4px) !important;
+}
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(58, 56, 160, 0.2) !important;
+}
+.card-hover {
+  transition: all 0.4s ease;
+}
+.card-hover:hover .card-glow {
+  opacity: 0.8;
+}
+.card-hover:hover .card-line {
+  height: 5px;
+  background: linear-gradient(90deg, #7A85C1 0%, #3B38A0 100%);
+}
+.float-button-animation {
+  animation: float 3s ease-in-out infinite;
+}
+.avatar-hover:hover {
+  transform: scale(1.05);
+}
+.input-hover:hover {
+  box-shadow: 0 0 0 2px #B2B0E8;
+}
+.button-hover:hover button {
+  transform: scale(1.1);
+}
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #1A2A80;
+  border-radius: 50%;
+  margin: 0 2px;
+  opacity: 0.6;
+  animation: pulse 1.5s infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+@keyframes pulse {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.2; transform: scale(0.8); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: 90vw !important;
+    margin: 0 auto;
+  }
+  .ant-modal-content {
+    padding: 0 !important;
+  }
+}
+.chat-modal .ant-modal-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
 @media (max-width: 900px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
 }
+
+.ai-results { 
+  padding: 16px; 
+  background: #fff; 
+  border: 1px solid var(--card-border); 
+  border-radius: 12px; 
+  max-height: 60vh; 
+  overflow: auto;
+}
+.ai-title { margin: 12px 0 4px; }
+.ai-list { margin: 0 0 16px 20px; }
+.ai-options { margin: 6px 0 12px 20px; list-style: disc; }

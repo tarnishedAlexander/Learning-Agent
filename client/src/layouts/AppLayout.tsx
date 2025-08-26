@@ -6,6 +6,9 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
+  BookOutlined ,
+  FileAddOutlined,
+  CloudUploadOutlined,
 } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -16,10 +19,25 @@ const { Sider, Content } = Layout;
 
 const navItems = [
   { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
+  { 
+    key: "/classes", 
+    icon: <BookOutlined />, 
+    label: <Link to="/classes">Clases</Link> 
+  },
+  {
+    key: "/upload-pdf",
+    icon: <CloudUploadOutlined />,
+    label: <Link to="/upload-pdf">Documentos</Link>,
+  },
   {
     key: "/curso/1",
     icon: <TeamOutlined />,
     label: <Link to="/curso/1">Estudiantes</Link>,
+  },
+  {
+    key: "/exams/create",
+    icon: <FileAddOutlined />,
+    label: <Link to="/exams/create">Crear Examen</Link>,
   },
   {
     key: "/clases",
