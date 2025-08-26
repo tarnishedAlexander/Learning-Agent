@@ -78,14 +78,8 @@ export function StudentProfile() {
 
   return (
     <Layout className="layout">
-      <Layout.Sider width={280} className="sider">
-        <Divider className="sider-divider" />
-      </Layout.Sider>
       <Layout.Content className="content">
         <div className="content-container">
-          <Typography.Title level={1} className="content-title">
-            {activeSubject}
-          </Typography.Title>
           <div className="courses-grid">
             {studentData.courses.map((course) => (
               <Link to={`/${course.id}`} key={course.id} className="card-link">
