@@ -57,8 +57,30 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
         );
     }
 
+    async updateInfo(id: string, name: string, semester: string, dateBegin: Date, dateEnd: Date): Promise<Classes> {
+        const data: { name?: string; semester?: string; dateBegin?: Date; dateEnd?: Date } = {};
+        if (name) data.name=name;
+        if (semester) data.semester=semester;
+        if (dateBegin) data.dateBegin=dateBegin;
+        if (dateEnd) data.dateEnd=dateEnd;
+
+        return this.prisma.classes.update({
+            where: {id},
+            data
+        })
+    }
+
+    async softDelete(id: string): Promise<Classes> {
+        return this.prisma.classes.update({
+            where: {id},
+            data: {
+                isActive:false
+            }
+        })
+    }
+
     async list(): Promise<Classes[]> {
-        const rows = await this.prisma.classes.findMany({ orderBy: { name: 'asc' } });
+        const rows = await this.prisma.classes.findMany({ where: {isActive: true}, orderBy: { name: 'asc' } });
         return rows.map((c) => new Classes(
             c.id,
             c.name,

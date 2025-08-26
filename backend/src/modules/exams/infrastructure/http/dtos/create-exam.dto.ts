@@ -1,17 +1,17 @@
-import {IsIn, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, MaxLength, ValidateNested, IsObject,} from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, MaxLength, ValidateNested, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class DistributionDto {
-  @IsInt() @IsPositive({ message: 'multiple_choice debe ser > 0.' })
+  @IsInt() @Min(0, { message: 'multiple_choice debe ser ≥ 0.' })
   multiple_choice!: number;
 
-  @IsInt() @IsPositive({ message: 'true_false debe ser > 0.' })
+  @IsInt() @Min(0, { message: 'true_false debe ser ≥ 0.' })
   true_false!: number;
 
-  @IsInt() @IsPositive({ message: 'open_analysis debe ser > 0.' })
+  @IsInt() @Min(0, { message: 'open_analysis debe ser ≥ 0.' })
   open_analysis!: number;
 
-  @IsInt() @IsPositive({ message: 'open_exercise debe ser > 0.' })
+  @IsInt() @Min(0, { message: 'open_exercise debe ser ≥ 0.' })
   open_exercise!: number;
 }
 
@@ -23,7 +23,7 @@ export class CreateExamDto {
 
   @IsString()
   @IsIn(['fácil', 'medio', 'difícil'], { message: 'Dificultad inválida.' })
-  difficulty!: string;
+  difficulty!: 'fácil' | 'medio' | 'difícil';
 
   @IsOptional()
   @IsString()
@@ -42,7 +42,6 @@ export class CreateExamDto {
   @IsPositive({ message: 'Tiempo (minutos) debe ser > 0.' })
   timeMinutes!: number;
 
-  @IsObject()
   @ValidateNested()
   @Type(() => DistributionDto)
   distribution!: DistributionDto;
