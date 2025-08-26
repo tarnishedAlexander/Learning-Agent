@@ -1,40 +1,33 @@
-import { Injectable, OnModuleDestroy, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
+const logger = new Logger('PrismaService');
+
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleDestroy, OnModuleInit {
-  private readonly logger = new Logger(PrismaService.name);
+export class PrismaService extends PrismaClient implements OnModuleDestroy {
   private connected = false;
 
   constructor() {
-    super({
-      log: [
-        { level: 'query', emit: 'event' },
-        { level: 'error', emit: 'event' },
-      ],
-    });
-
-    (this as any).$on('query', (event: any) => {
-      this.logger.log(`Query: ${event.query} Params: ${event.params} Duration: ${event.duration}ms`);
-    });
-
-    (this as any).$on('error', (event: any) => {
-      this.logger.error(`${event.level}: ${event.message}`);
-    });
+    super();
   }
 
   async onModuleInit(): Promise<void> {
-    if (process.env.PRISMA_DISABLE === 'true') return;
+    const disabled = process.env.PRISMA_DISABLE === 'true';
+    if (disabled) {
+      logger.log('Prisma auto-connect disabled by PRISMA_DISABLE=true');
+      return;
+    }
+
     try {
       await this.$connect();
       this.connected = true;
-      this.logger.log('Prisma connected to database.');
+      logger.log('Prisma connected to database.');
     } catch (error) {
-      this.logger.error('Prisma connection failed: ' + (error as Error).message);
+      logger.error('Prisma connection failed: ' + (error as Error).message);
     }
   }
 
-  async onModuleDestroy(): Promise<void> {
+  async onModuleDestroy() {
     if (this.connected) await this.$disconnect();
   }
 }
