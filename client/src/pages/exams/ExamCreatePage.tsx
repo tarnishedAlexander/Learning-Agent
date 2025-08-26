@@ -1,124 +1,18 @@
-// import { useRef, useState } from 'react';
-// import '../../components/exams/ExamForm.css';
-// import '../../components/shared/Toast.css';
-// import { ExamForm } from '../../components/exams/ExamForm.tsx';
-// import { Toast, useToast } from '../../components/shared/Toast';
-// import { readJSON } from '../../services/storage/localStorage';
-
-// export default function ExamsCreatePage() {
-//   const { toasts, pushToast, removeToast } = useToast();
-//   const formRef = useRef<{ getSnapshot: () => any } | null>(null);
-
-//   const [aiOpen, setAiOpen] = useState(false);
-//   const [aiHtml, setAiHtml] = useState<string>('');
-
-//   const handleAIPropose = () => {
-//     const snap = formRef.current?.getSnapshot();
-//     const draft = readJSON('exam:draft');
-//     const data = snap?.values?.subject ? snap.values : draft;
-
-//     if (!data) { pushToast('Completa y guarda el formulario primero.','warn'); return; }
-
-//     const diff = data.difficulty;
-//     const tq = Number(data.totalQuestions || 10);
-//     const sample =
-//       diff === 'fácil' ? 'pregunta recall sencilla' :
-//       diff === 'medio' ? 'pregunta de comprensión' :
-//                          'pregunta de aplicación/análisis';
-
-//     const list = Array.from({ length: tq })
-//       .map((_, i) => `<li><strong>P${i+1}:</strong> ${sample} sobre <em>${data.subject}</em>.</li>`)
-//       .join('');
-
-//     setAiHtml(`
-//       <div class="ai-box">
-//         <h3>Propuesta inicial (${tq} preguntas · ${diff})</h3>
-//         <ol>${list}</ol>
-//         <p class="hint">* Demo. La integración real con IA se conectará en Services.</p>
-//       </div>
-//     `);
-//     pushToast('Propuesta IA generada (demo).', 'success');
-//   };
-
-//   return (
-//     <div>
-//       <header className="toolbar">
-//         <h1>Exámenes</h1>
-//         <div className="actions">
-//           <button className="btn btn-secondary" data-action="add">Añadir</button>
-//           <button className="btn btn-primary" data-action="ai" onClick={()=>setAiOpen(true)}>
-//              Generar examen IA uwu
-//           </button>
-//         </div>
-//       </header>
-
-//       <main>
-//         <section className="card">
-//           <h2>Crear nuevo examen</h2>
-//           <ExamForm ref={formRef} onToast={pushToast}/>
-//         </section>
-
-//         {aiOpen && (
-//           <section className="card">
-//             <h2>Generador IA (Sprint 2)</h2>
-//             <p>🚧 En construcción 🚧 <br />
-//             El DevTeam estará estresado por esto en el Sprint 2. </p>
-//             <div style={{ display:'flex', gap:8, margin:'12px 0' }}>
-//               <button className="btn btn-primary" onClick={handleAIPropose}> Generar</button>
-//               <button className="btn btn-secondary" onClick={()=>{setAiOpen(false); setAiHtml('')}}>Cerrar</button>
-//             </div>
-//             <div className="ai-results" dangerouslySetInnerHTML={{ __html: aiHtml }} />
-//           </section>
-//         )}
-//       </main>
-
-//       {toasts.map(t => (
-//         <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
-//       ))}
-//     </div>
-//   );
-// }
-
 import { useRef, useState } from 'react';
 import '../../components/exams/ExamForm.css';
 import '../../components/shared/Toast.css';
 import { ExamForm } from '../../components/exams/ExamForm.tsx';
 import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
-<<<<<<< HEAD
 import { generateQuestions } from '../../services/exams.service';
-=======
-import { generateQuestions, type GeneratedQuestion } from '../../services/exams.service';
-import AiResults from './AiResults';
-
-const layoutStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 16,
-  alignItems: 'center',
-  padding: '24px 16px',
-  
-};
->>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
+import PageTemplate from '../../components/PageTemplate';
 
 export default function ExamsCreatePage() {
-  
   const { toasts, pushToast, removeToast } = useToast();
   const formRef = useRef<{ getSnapshot: () => any } | null>(null);
 
   const [aiOpen, setAiOpen] = useState(false);
-<<<<<<< HEAD
   const [aiHtml, setAiHtml] = useState<string>('');
-=======
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [aiQuestions, setAiQuestions] = useState<GeneratedQuestion[]>([]);
-  const [aiMeta, setAiMeta] = useState<{ subject: string; difficulty: string; reference?: string }>({
-    subject: 'Tema general',
-    difficulty: 'medico',
-    reference: '',
-  });
->>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 
   const escapeHtml = (s: string) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c]);
@@ -161,14 +55,14 @@ export default function ExamsCreatePage() {
       const qs = res.data?.questions || {};
       const renderList = (title: string, arr: any[] = []) =>
         `<h4 class="ai-title">${escapeHtml(title)} <small>(${arr.length})</small></h4>
-       <ol class="ai-list">
-         ${arr.map((q: any) =>
-          `<li>
-              ${escapeHtml(q.text || '')}
-              ${q.options?.length ? `<ul class="ai-options">${q.options.map((o: string) => `<li>${escapeHtml(o)}</li>`).join('')}</ul>` : ''}
-            </li>`
-        ).join('')}
-       </ol>`;
+         <ol class="ai-list">
+           ${arr.map((q: any) =>
+            `<li>
+                ${escapeHtml(q.text || '')}
+                ${q.options?.length ? `<ul class="ai-options">${q.options.map((o: string) => `<li>${escapeHtml(o)}</li>`).join('')}</ul>` : ''}
+              </li>`
+          ).join('')}
+         </ol>`;
 
       const html = [
         renderList('Opción múltiple', qs.multiple_choice),
@@ -185,68 +79,67 @@ export default function ExamsCreatePage() {
   };
 
   return (
-<<<<<<< HEAD
-    <div>
-      <header className="toolbar">
-        <h1>Exámenes</h1>
-        <div className="actions">
+    <PageTemplate
+      title="Exámenes"
+      subtitle="Creador de exámenes"
+      user={{
+        name: 'Nora Watson',
+        role: 'Sales Manager',
+        avatarUrl: 'https://i.pravatar.cc/128?img=5',
+      }}
+      actions={
+        <div className="flex gap-2">
           <button className="btn btn-secondary" data-action="add">Añadir</button>
-          <button className="btn btn-primary" data-action="ai" onClick={() => setAiOpen(true)}>
+          <button
+            className="btn btn-primary"
+            data-action="ai"
+            onClick={() => setAiOpen(true)}
+          >
             Generar examen IA uwu
           </button>
         </div>
-      </header>
-
-      <main>
+      }
+      alwaysShowActions={true}
+      breadcrumbs={[
+        { label: 'Home', href: '/' },
+        { label: 'Exámenes', href: '/exam' },
+        { label: 'Crear', href: '/exams/create' },
+      ]}
+    >
+      <div
+        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px' }}
+      >
         <section className="card">
           <h2>Crear nuevo examen</h2>
           <ExamForm ref={formRef} onToast={pushToast} />
-=======
-    <div style={layoutStyle}>
-      <section className="card" style={{ width: '100%', maxWidth: 1000,}}>
-        <ExamForm
-          ref={formRef as any}
-          onToast={pushToast}
-          onGenerateAI={handleAIPropose}
-        />
-      </section>
-      
-      {aiOpen && (
-        <section className="card" style={{ width: '100%', maxWidth: 1000 }}>
-          <AiResults
-            subject={aiMeta.subject}
-            difficulty={aiMeta.difficulty}
-            createdAt={new Date().toLocaleDateString()}
-            questions={aiQuestions}
-            loading={aiLoading}
-            error={aiError}
-            onChange={onChangeQuestion}
-            onRegenerateAll={onRegenerateAll}
-            onRegenerateOne={onRegenerateOne}
-            onAddManual={onAddManual}
-            onSave={onSave}
-          />
->>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
         </section>
 
         {aiOpen && (
           <section className="card">
             <h2>Generador IA (Sprint 2)</h2>
-            <p>🚧 En construcción 🚧 <br />
-              El DevTeam estará estresado por esto en el Sprint 2. </p>
+            <p>
+              🚧 En construcción 🚧 <br />
+              El DevTeam estará estresado por esto en el Sprint 2.
+            </p>
             <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
-              <button className="btn btn-primary" onClick={handleAIPropose}> Generar</button>
+              <button className="btn btn-primary" onClick={handleAIPropose}>Generar</button>
               <button className="btn btn-outline" onClick={() => setAiOpen(true)}>👀 Previsualizar IA</button>
-              <button className="btn btn-secondary" onClick={() => { setAiOpen(false); setAiHtml('') }}>Cerrar</button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => { setAiOpen(false); setAiHtml(''); }}
+              >
+                Cerrar
+              </button>
             </div>
             <div className="ai-results" dangerouslySetInnerHTML={{ __html: aiHtml }} />
           </section>
         )}
-      </main>
 
-      {toasts.map(t => (
-        <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
-      ))}
-    </div>
+        {toasts.map(t => (
+          <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
+        ))}
+      </div>
+    </PageTemplate>
   );
 }
