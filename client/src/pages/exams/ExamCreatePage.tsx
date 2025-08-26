@@ -87,6 +87,7 @@ import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
 import { generateQuestions } from '../../services/exams.service';
 import PageTemplate from '../../components/PageTemplate';
+import './ExamCreatePage.css';
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
@@ -188,14 +189,14 @@ export default function ExamsCreatePage() {
       ]}
     >
       <div
-        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
         style={{
           maxWidth: 1200,
           margin: "0 auto",
           padding: "24px 24px",
         }}
       >
-        <section className="card">
+  <section className="card">
           <h2>Crear nuevo examen</h2>
           <ExamForm ref={formRef} onToast={pushToast} />
         </section>
