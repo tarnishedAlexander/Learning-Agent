@@ -6,7 +6,7 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  BookOutlined,
+  BookOutlined ,
   FileAddOutlined,
   CloudUploadOutlined,
 } from "@ant-design/icons";
@@ -19,7 +19,11 @@ const { Sider, Content } = Layout;
 
 const navItems = [
   { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
-  { key: "/classes", icon: <BookOutlined />, label: <Link to="/classes">Clases</Link> },
+  { 
+    key: "/classes", 
+    icon: <BookOutlined />, 
+    label: <Link to="/classes">Clases</Link> 
+  },
   {
     key: "/upload-pdf",
     icon: <CloudUploadOutlined />,
@@ -40,7 +44,7 @@ const navItems = [
     icon: <TeamOutlined />,
     label: <Link to="/clases">Clases</Link>,
   },
-  {
+    {
     key: "/classes-student",
     icon: <TeamOutlined />,
     label: <Link to="/classes-student">Clases Estudiante</Link>,

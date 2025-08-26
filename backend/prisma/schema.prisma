@@ -350,11 +350,3 @@ model Enrollment {
 
   @@id([studentId, classId])
 }
-model ChatSession {
-  id         String   @id @default(uuid())
-  sessionKey String   @unique
-  prompt     String   @db.Text
-  answer     String   @db.Text
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
-}
