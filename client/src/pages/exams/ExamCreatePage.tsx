@@ -86,6 +86,7 @@ import { ExamForm } from '../../components/exams/ExamForm.tsx';
 import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
 import { generateQuestions } from '../../services/exams.service';
+import PageTemplate from '../../components/PageTemplate';
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
@@ -159,18 +160,41 @@ export default function ExamsCreatePage() {
   };
 
   return (
-    <div>
-      <header className="toolbar">
-        <h1>Exámenes</h1>
-        <div className="actions">
+    <PageTemplate
+      title="Exámenes"
+      subtitle="Creador de exámenes"
+      user={{
+        name: "Nora Watson",
+        role: "Sales Manager",
+        avatarUrl: "https://i.pravatar.cc/128?img=5",
+      }}
+      actions={
+        <div className="flex gap-2">
           <button className="btn btn-secondary" data-action="add">Añadir</button>
-          <button className="btn btn-primary" data-action="ai" onClick={() => setAiOpen(true)}>
+          <button
+            className="btn btn-primary"
+            data-action="ai"
+            onClick={() => setAiOpen(true)}
+          >
             Generar examen IA uwu
           </button>
         </div>
-      </header>
-
-      <main>
+      }
+      alwaysShowActions={true}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Exámenes", href: "/exam" },
+        { label: "Crear", href: "/exams/create" },
+      ]}
+    >
+      <div
+        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "24px 24px",
+        }}
+      >
         <section className="card">
           <h2>Crear nuevo examen</h2>
           <ExamForm ref={formRef} onToast={pushToast} />
@@ -189,11 +213,11 @@ export default function ExamsCreatePage() {
             <div className="ai-results" dangerouslySetInnerHTML={{ __html: aiHtml }} />
           </section>
         )}
-      </main>
 
-      {toasts.map(t => (
-        <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
-      ))}
-    </div>
+        {toasts.map(t => (
+          <Toast key={t.id} {...t} onClose={() => removeToast(t.id)} />
+        ))}
+      </div>
+    </PageTemplate>
   );
 }
