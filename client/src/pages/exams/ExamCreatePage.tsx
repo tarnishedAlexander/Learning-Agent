@@ -85,14 +85,40 @@ import '../../components/shared/Toast.css';
 import { ExamForm } from '../../components/exams/ExamForm.tsx';
 import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
+<<<<<<< HEAD
 import { generateQuestions } from '../../services/exams.service';
+=======
+import { generateQuestions, type GeneratedQuestion } from '../../services/exams.service';
+import AiResults from './AiResults';
+
+const layoutStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  alignItems: 'center',
+  padding: '24px 16px',
+  
+};
+>>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 
 export default function ExamsCreatePage() {
+  
   const { toasts, pushToast, removeToast } = useToast();
   const formRef = useRef<{ getSnapshot: () => any } | null>(null);
 
   const [aiOpen, setAiOpen] = useState(false);
+<<<<<<< HEAD
   const [aiHtml, setAiHtml] = useState<string>('');
+=======
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiQuestions, setAiQuestions] = useState<GeneratedQuestion[]>([]);
+  const [aiMeta, setAiMeta] = useState<{ subject: string; difficulty: string; reference?: string }>({
+    subject: 'Tema general',
+    difficulty: 'medico',
+    reference: '',
+  });
+>>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 
   const escapeHtml = (s: string) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } as any)[c]);
@@ -159,6 +185,7 @@ export default function ExamsCreatePage() {
   };
 
   return (
+<<<<<<< HEAD
     <div>
       <header className="toolbar">
         <h1>Exámenes</h1>
@@ -174,6 +201,32 @@ export default function ExamsCreatePage() {
         <section className="card">
           <h2>Crear nuevo examen</h2>
           <ExamForm ref={formRef} onToast={pushToast} />
+=======
+    <div style={layoutStyle}>
+      <section className="card" style={{ width: '100%', maxWidth: 1000,}}>
+        <ExamForm
+          ref={formRef as any}
+          onToast={pushToast}
+          onGenerateAI={handleAIPropose}
+        />
+      </section>
+      
+      {aiOpen && (
+        <section className="card" style={{ width: '100%', maxWidth: 1000 }}>
+          <AiResults
+            subject={aiMeta.subject}
+            difficulty={aiMeta.difficulty}
+            createdAt={new Date().toLocaleDateString()}
+            questions={aiQuestions}
+            loading={aiLoading}
+            error={aiError}
+            onChange={onChangeQuestion}
+            onRegenerateAll={onRegenerateAll}
+            onRegenerateOne={onRegenerateOne}
+            onAddManual={onAddManual}
+            onSave={onSave}
+          />
+>>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
         </section>
 
         {aiOpen && (
