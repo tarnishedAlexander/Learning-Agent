@@ -15,9 +15,6 @@ export function StudentProfile() {
   const chatBodyRef = useRef<HTMLDivElement>(null);
 
   const studentData = {
-    name: "Juan Pérez",
-    role: "Estudiante",
-    subjects: ["Matemáticas", "Física", "Programación", "Historia"],
     courses: [
       {
         id: "exam",
@@ -82,34 +79,7 @@ export function StudentProfile() {
   return (
     <Layout className="layout">
       <Layout.Sider width={280} className="sider">
-        <div className="sider-header">
-          <Avatar
-            size={86}
-            icon={<UserOutlined />}
-            className="avatar avatar-hover"
-          />
-          <Typography.Title level={3} className="sider-title">
-            {studentData.name}
-          </Typography.Title>
-          <Typography.Text className="sider-role">
-            {studentData.role}
-          </Typography.Text>
-        </div>
         <Divider className="sider-divider" />
-        <Typography.Title level={4} className="sider-subjects-title">
-          Mis Materias
-        </Typography.Title>
-        <div className="subjects-list">
-          {studentData.subjects.map((subject) => (
-            <div
-              key={subject}
-              className={`subject-item ${activeSubject === subject ? "active" : ""} subject-hover`}
-              onClick={() => setActiveSubject(subject)}
-            >
-              {subject}
-            </div>
-          ))}
-        </div>
       </Layout.Sider>
       <Layout.Content className="content">
         <div className="content-container">
