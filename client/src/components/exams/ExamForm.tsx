@@ -2,7 +2,8 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'r
 import { useExamForm } from '../../hooks/useExamForm.ts';
 import { createExam } from '../../services/exams.service';
 
-type Props = { onToast: (msg: string, type?: 'success'|'warn'|'error') => void; };
+import type { ToastKind } from '../shared/Toast';
+type Props = { onToast: (msg: string, type?: ToastKind) => void; };
 
 export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function ExamForm({ onToast }, ref) {
   const { setValue, validate, getSnapshot, values: hookValues, getTotalQuestions } = useExamForm();
@@ -30,7 +31,30 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
 
   useImperativeHandle(ref, () => ({ getSnapshot }), [getSnapshot]);
 
-  useEffect(() => { touchAndValidate(); }, []);
+  useEffect(() => { touchAndValidate();
+    return () => {
+      setValues({
+        subject: '',
+        difficulty: '',
+        attempts: '',
+        multipleChoice: '',
+        trueFalse: '',
+        analysis: '',
+        openEnded: '',
+        timeMinutes: '',
+        reference: '',
+      });
+      setValue('subject', '');
+      setValue('difficulty', '');
+      setValue('attempts', '');
+      setValue('multipleChoice', '');
+      setValue('trueFalse', '');
+      setValue('analysis', '');
+      setValue('openEnded', '');
+      setValue('timeMinutes', '');
+      setValue('reference', '');
+    };
+  }, []);
 
   const onChange = (name: string, value: string) => {
     const v = name === 'subject' ? value.replace(/\s+/g,' ').trimStart() : value;
@@ -73,7 +97,7 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
       setValue('subject', '');
       setValue('difficulty', '');
       setValue('attempts', '');
-      onToast('Datos generales limpiados.');
+  onToast('Datos generales limpiados.', 'info');
     } else if (step === 1) {
       setValues(prev => ({
         ...prev,
@@ -86,7 +110,7 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
       setValue('trueFalse', '');
       setValue('analysis', '');
       setValue('openEnded', '');
-      onToast('Cantidad de preguntas limpiada.');
+  onToast('Cantidad de preguntas limpiada.', 'info');
     } else if (step === 2) {
       setValues(prev => ({
         ...prev,
@@ -95,7 +119,7 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
       }));
       setValue('timeMinutes', '');
       setValue('reference', '');
-      onToast('Tiempo y referencia limpiados.');
+  onToast('Tiempo y referencia limpiados.', 'info');
     }
     touchAndValidate();
   };
@@ -115,7 +139,7 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
     try {
       const snap = getSnapshot();
       const res = await createExam(snap.values);
-      if (res?.ok) onToast('Examen creado correctamente.','success');
+  if (res?.ok) onToast('Examen creado correctamente.','info');
       else onToast(res?.error || 'Error desconocido.','error');
     } catch {
       onToast('No fue posible conectar con el servidor.','error');
@@ -253,7 +277,18 @@ export const ExamForm = forwardRef<{ getSnapshot: () => any }, Props>(function E
         >
           {step === 2 ? (sending ? 'Enviando…' : 'Generar') : 'Siguiente'}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={onResetStep}>Limpiar</button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onResetStep}
+          disabled={
+            (step === 0 && !values.subject && !values.difficulty && !values.attempts) ||
+            (step === 1 && !values.multipleChoice && !values.trueFalse && !values.analysis && !values.openEnded) ||
+            (step === 2 && !values.timeMinutes && !values.reference)
+          }
+        >
+          Limpiar
+        </button>
       </div>
     </form>
   );
