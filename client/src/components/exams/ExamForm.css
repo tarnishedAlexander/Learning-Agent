@@ -58,12 +58,6 @@ small.error {
   font-weight: 600;
 }
 
-<<<<<<< HEAD
-.actions-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-=======
 .card {
   display: flex;
   flex-direction: column;
@@ -92,7 +86,7 @@ section.card {
   height: auto;   
   overflow: visible; 
   padding: 20px; 
-  
+} 
 
 .form-grid {
   display: grid;
@@ -100,7 +94,6 @@ section.card {
   gap: 30px;
   width: 100%;
   align-items: start;
-}
 }
 
 .actions-row {
@@ -114,7 +107,6 @@ section.card {
   z-index: 2;
   justify-content: flex-end;
   overflow-y: auto
->>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 }
 
 .badge {
@@ -256,14 +248,11 @@ section.card {
   opacity: 0.6;
   animation: pulse 1.5s infinite;
 }
-<<<<<<< HEAD
-=======
 .page-shell {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr; 
 }
->>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
