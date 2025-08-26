@@ -6,6 +6,7 @@ import { Toast, useToast } from '../../components/shared/Toast';
 import { readJSON } from '../../services/storage/localStorage';
 import { generateQuestions } from '../../services/exams.service';
 import PageTemplate from '../../components/PageTemplate';
+import './ExamCreatePage.css';
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
@@ -83,9 +84,9 @@ export default function ExamsCreatePage() {
       title="Exámenes"
       subtitle="Creador de exámenes"
       user={{
-        name: 'Nora Watson',
-        role: 'Sales Manager',
-        avatarUrl: 'https://i.pravatar.cc/128?img=5',
+        name: "Nora Watson",
+        role: "Sales Manager",
+        avatarUrl: "https://i.pravatar.cc/128?img=5",
       }}
       actions={
         <div className="flex gap-2">
@@ -101,16 +102,20 @@ export default function ExamsCreatePage() {
       }
       alwaysShowActions={true}
       breadcrumbs={[
-        { label: 'Home', href: '/' },
-        { label: 'Exámenes', href: '/exam' },
-        { label: 'Crear', href: '/exams/create' },
+        { label: "Home", href: "/" },
+        { label: "Exámenes", href: "/exam" },
+        { label: "Crear", href: "/exams/create" },
       ]}
     >
       <div
-        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-        style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px' }}
+        className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "24px 24px",
+        }}
       >
-        <section className="card">
+  <section className="card">
           <h2>Crear nuevo examen</h2>
           <ExamForm ref={formRef} onToast={pushToast} />
         </section>
