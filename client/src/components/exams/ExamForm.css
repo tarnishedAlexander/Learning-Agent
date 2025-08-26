@@ -58,10 +58,63 @@ small.error {
   font-weight: 600;
 }
 
+<<<<<<< HEAD
 .actions-row {
   display: flex;
   gap: 10px;
   margin-top: 8px;
+=======
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  flex: 1 1 auto;
+  min-width: 320px;
+  max-width: 900px;
+  height: fit-content;  
+  height: auto;
+  margin: 0 auto;
+}
+
+section.card {
+  display: flex;
+  justify-content: center;   
+  padding: 40px;            
+}
+
+.card-content {
+  flex: 1 1 auto;
+  padding: 20px;
+  height: auto;   
+  overflow: visible; 
+  padding: 20px; 
+  
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.5fr;  
+  gap: 30px;
+  width: 100%;
+  align-items: start;
+}
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--card-border);
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  justify-content: flex-end;
+  overflow-y: auto
+>>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 }
 
 .badge {
@@ -203,6 +256,14 @@ small.error {
   opacity: 0.6;
   animation: pulse 1.5s infinite;
 }
+<<<<<<< HEAD
+=======
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr; 
+}
+>>>>>>> 5f1f8ed (fix:Subiendo codigo antiguol)
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
