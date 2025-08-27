@@ -68,29 +68,17 @@ export class ChatAdapter implements ChatPort {
     return vec as number[][];
   }
 
-  async stream?(
-    messages: Chatmessage | string,
+  async stream(
+    messages: string | Chatmessage | Chatmessage[],
     options: ChatOptions,
     onToken: (chunk: string) => void,
   ): Promise<ChatTextOutput> {
-    // const stream = await this.client.chat({ ..., stream: true });
-    // let full = '';
-    // for await (const chunk of stream) {
-    //   const piece = chunk?.message?.content ?? '';
-    //   full += piece;
-    //   onToken(piece);
-    // }
-    // return { text: full };
-    // Fallback no-stream:
-
-    let chatMessages: Chatmessage[];
-    if (typeof messages === 'string') {
-      chatMessages = [{ role: 'assistant', content: messages }];
-    } else if (Array.isArray(messages)) {
-      chatMessages = messages;
-    } else {
-      chatMessages = [messages]; 
-    }
+    // Convertimos cualquier input a array de Chatmessage
+    const chatMessages: Chatmessage[] = Array.isArray(messages)
+      ? messages
+      : typeof messages === 'string'
+      ? [{ role: 'user', content: messages }]
+      : [messages];
 
     const res = await this.chat(chatMessages, options);
     onToken?.(res.text);
@@ -108,3 +96,4 @@ export class ChatAdapter implements ChatPort {
     return this.complete(prompt, options);
   }
 }
+
