@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { Chat_PORT } from './tokens';
-import { ChatAdapter } from './infrastructure/adapters/chat.adapter';
+import { ChatAdapter } from './chat.adapter';
 
 const implProvider = {
   provide: Chat_PORT,
