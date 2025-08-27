@@ -4,15 +4,11 @@ import { Type } from 'class-transformer';
 export class CreateClassDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  courseId: string;
 
   @IsNotEmpty()
   @IsString()
   semester: string;
-
-  @IsNotEmpty()
-  @IsString()
-  courseId: string;
 
   @IsNotEmpty()
   @IsDate()
