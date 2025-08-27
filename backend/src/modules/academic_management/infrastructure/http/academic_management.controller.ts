@@ -23,6 +23,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { CreateCourseUseCase } from '../../application/commands/create-course.usecase';
 import { CreateCourseDTO } from './dtos/create-course.dto';
 import { GetCoursesByTeacherUseCase } from '../../application/queries/get-courses-by-teacher.usecase';
+import { GetClassesByCourseUseCase } from '../../application/queries/get-classes-by-course.usecase';
 
 @UseGuards(JwtAuthGuard)  
 @Controller('academic')
@@ -31,6 +32,7 @@ export class AcademicManagementController {
     private readonly listClasses: ListClassesUseCase,
     private readonly listStudents: ListStudentsUseCase,
     private readonly getCoursesByTeacher: GetCoursesByTeacherUseCase,
+    private readonly getClassesByCourse: GetClassesByCourseUseCase,
     private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
@@ -55,6 +57,10 @@ export class AcademicManagementController {
   @Get('course/by-teacher/:id')
   getCourseByTeaceherEndpoint(@Param('id') id: string) {
     return this.getCoursesByTeacher.execute(id)
+  }
+  @Get('classes/by-course/:id')
+  getClassesByCourseEndpoint(@Param('id') id: string) {
+    return this.getClassesByCourse.execute(id)
   }
   @Get('classes/:id')
   getClassByIdEndpoint(@Param('id') id: string) {
