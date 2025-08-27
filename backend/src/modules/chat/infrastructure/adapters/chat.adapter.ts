@@ -82,10 +82,15 @@ export class ChatAdapter implements ChatPort {
     // }
     // return { text: full };
     // Fallback no-stream:
-    const chatMessages: Chatmessage[] =
-      typeof messages === 'string'
-        ? [{ role: 'assistant', content: messages }]
-        : messages;
+
+    let chatMessages: Chatmessage[];
+    if (typeof messages === 'string') {
+      chatMessages = [{ role: 'assistant', content: messages }];
+    } else if (Array.isArray(messages)) {
+      chatMessages = messages;
+    } else {
+      chatMessages = [messages]; 
+    }
 
     const res = await this.chat(chatMessages, options);
     onToken?.(res.text);
