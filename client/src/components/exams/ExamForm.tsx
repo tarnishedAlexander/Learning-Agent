@@ -27,11 +27,13 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
   const [step, setStep] = useState(0);
   const steps = ['Datos generales', 'Cantidad de preguntas', 'Tiempo y referencia'];
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [sending, setSending] = useState(false);
 
   useImperativeHandle(ref, () => ({ getSnapshot }), [getSnapshot]);
 
-  useEffect(() => { touchAndValidate();
+  useEffect(() => {
+    // No validar al cargar, solo limpiar valores
     return () => {
       setValues({
         subject: '',
@@ -60,6 +62,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     const v = name === 'subject' ? value.replace(/\s+/g,' ').trimStart() : value;
     setValues(prev => ({ ...prev, [name]: v }));
     setValue(name as any, v);
+    setTouched(prev => ({ ...prev, [name]: true }));
     touchAndValidate();
   };
 
@@ -167,8 +170,11 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
                 className="input-hover subject-hover"
                 placeholder="Ej: Algorítmica 1"
                 value={values.subject || ''} onChange={e=>onChange('subject', e.target.value)} />
+              {/* <small className="help">Máx. 80 caracteres</small> */}
+              {touched.subject && errors.subject && <small className="error">{errors.subject}</small>}
               <small className="help">Máx. 30 caracteres</small>
-              {errors.subject && <small className="error">{errors.subject}</small>}
+              {/* Elimina la siguiente línea para evitar el mensaje duplicado */}
+              {/* {errors.subject && <small className="error">{errors.subject}</small>} */}
             </div>
 
             <div className="form-group">
@@ -181,7 +187,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
                 <option value="medio">Medio</option>
                 <option value="difícil">Difícil</option>
               </select>
-              {errors.difficulty && <small className="error">{errors.difficulty}</small>}
+              {touched.difficulty && errors.difficulty && <small className="error">{errors.difficulty}</small>}
             </div>
 
             <div className="form-group">
@@ -189,7 +195,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
               <input id="attempts" name="attempts" type="number" min={1} step={1} placeholder="1"
                 className="input-hover"
                 value={values.attempts || ''} onChange={e=>onChange('attempts', e.target.value)} />
-              {errors.attempts && <small className="error">{errors.attempts}</small>}
+              {touched.attempts && errors.attempts && <small className="error">{errors.attempts}</small>}
             </div>
           </>}
 
@@ -246,7 +252,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
               <input id="timeMinutes" name="timeMinutes" type="number" min={45} max={240} step={1} placeholder="45"
                 className="input-hover"
                 value={values.timeMinutes || ''} onChange={e=>onChange('timeMinutes', e.target.value)} />
-              {errors.timeMinutes && <small className="error">{errors.timeMinutes}</small>}
+              {touched.timeMinutes && errors.timeMinutes && <small className="error">{errors.timeMinutes}</small>}
             </div>
 
             <div className="form-group">
@@ -255,7 +261,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
                 className="input-hover"
                 value={values.reference || ''} onChange={e=>onChange('reference', e.target.value)} />
               <small className="help">Máx. 1000 caracteres</small>
-              {errors.reference && <small className="error">{errors.reference}</small>}
+              {touched.reference && errors.reference && <small className="error">{errors.reference}</small>}
             </div>
           </>}
         </div>
