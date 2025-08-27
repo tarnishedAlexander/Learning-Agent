@@ -27,6 +27,7 @@ import { TeacherPrismaRepository } from './infrastructure/persistence/teacher.pr
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { IdentityModule } from '../identity/identity.module';
 import { CoursePrismaRepository } from './infrastructure/persistence/course.prisma.repository';
+import { CreateCourseUseCase } from './application/commands/create-course.usecase';
 
 @Module({
   imports: [PrismaModule,IdentityModule],
@@ -44,6 +45,7 @@ import { CoursePrismaRepository } from './infrastructure/persistence/course.pris
     GetClassesByStudentUseCase,
     GetStudentsByClassUseCase,
     GetTeacherInfoByIDUseCase,
+    CreateCourseUseCase,
     CreateClassUseCase,
     CreateStudentUseCase,
     CreateEnrollmentUseCase,

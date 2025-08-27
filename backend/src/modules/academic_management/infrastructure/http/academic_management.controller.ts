@@ -20,6 +20,8 @@ import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-c
 import { DeleteClassDTO } from './dtos/delete-class.dto';
 import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { CreateCourseUseCase } from '../../application/commands/create-course.usecase';
+import { CreateCourseDTO } from './dtos/create-course.dto';
 
 @UseGuards(JwtAuthGuard)  
 @Controller('academic')
@@ -31,6 +33,7 @@ export class AcademicManagementController {
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
     private readonly getTeacherInfoById: GetTeacherInfoByIDUseCase,
+    private readonly createCourse: CreateCourseUseCase,
     private readonly createClasses: CreateClassUseCase,
     private readonly createProfileStudent: CreateStudentProfileUseCase,
     private readonly createEnrollment: CreateEnrollmentUseCase,
@@ -64,6 +67,10 @@ export class AcademicManagementController {
     return this.getTeacherInfoById.execute(id);
   }
 
+  @Post('course')
+  createCourseEndpoint(@Body() dto: CreateCourseDTO) {
+    return this.createCourse.execute(dto)
+  }
   @Post('classes')
   createClassEndpoint(@Body() dto: CreateClassDto) {
     return this.createClasses.execute(dto);
