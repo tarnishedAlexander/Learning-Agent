@@ -15,9 +15,11 @@ export class SoftDeleteClassUseCase {
         const objClass = await this.classRepo.findById(input.classId)
         if (!objClass) throw new Error(`Class not found with id ${input.classId}`);
         
+        /* TODO - Adaptar este endpoint
         if (objClass.teacherId != input.teacherId) {
             throw new Error(`Class ${objClass.id}-${objClass.name} doesnt belongs to teacher ${input.teacherId}`)
         }
+            */
 
         const enrollments = await this.enrollmentRepo.findByClassId(input.classId)
         const pendingEnrollments = enrollments.filter((e)=>e.isActive)
