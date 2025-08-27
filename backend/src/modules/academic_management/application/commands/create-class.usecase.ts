@@ -11,7 +11,7 @@ export class CreateClassUseCase {
   async execute(input: {
     name: string, 
     semester: string, 
-    teacherId: string,
+    courseId: string,
     dateBegin: Date,
     dateEnd: Date
   }): Promise<Classes> {
@@ -19,7 +19,7 @@ export class CreateClassUseCase {
     return this.classRepo.create(
       input.name, 
       input.semester, 
-      input.teacherId,
+      input.courseId,
       input.dateBegin,
       input.dateEnd
     );
