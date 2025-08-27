@@ -19,9 +19,10 @@ export class UpdateClassUseCase {
         const ojbClass = await this.classRepo.findById(input.classId)
         if (!ojbClass) throw new Error(`Class not found with id ${input.classId}`)
 
+            /* TODO - Adaptar este endpoint
         if (ojbClass.teacherId != input.teacherId) {
             throw new Error(`Class ${ojbClass.id}-${ojbClass.name} doesnt belongs to teacher ${input.teacherId}`)
-        }
+        }*/
         
         return this.classRepo.updateInfo(
             input.classId,

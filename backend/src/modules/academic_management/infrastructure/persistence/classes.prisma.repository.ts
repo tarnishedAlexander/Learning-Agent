@@ -14,46 +14,47 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
             classesData.id,
             classesData.name,
             classesData.semester,
-            classesData.teacherId,
             classesData.isActive,
             new Date(classesData.dateBegin),
-            new Date(classesData.dateEnd)
+            new Date(classesData.dateEnd),
+            classesData.courseId
         )
     }
 
-    async findByTeacherId(teacherId: string): Promise<Classes[]> {
-        const classesData = await this.prisma.classes.findMany({ where: { teacherId } });
+    //TODO cambiar teacher
+    async findByCourseId(courseId: string): Promise<Classes[]> {
+        const classesData = await this.prisma.classes.findMany({ where: { courseId } });
         if (!classesData) return [];
         return classesData.map(c => new Classes(
             c.id,
             c.name,
             c.semester,
-            c.teacherId,
             c.isActive,
             new Date(c.dateBegin),
-            new Date(c.dateEnd)
+            new Date(c.dateEnd),
+            c.courseId
         ));
     };
 
-    async create(name: string, semester: string, teacherId: string, dateBegin: Date, dateEnd: Date): Promise<Classes> {
+    async create(name: string, semester: string, courseId: string, dateBegin: Date, dateEnd: Date): Promise<Classes> {
         const newClass = await this.prisma.classes.create({
             data: {
                 name,
                 semester,
-                teacherId,
                 isActive: true,
                 dateBegin,
-                dateEnd
+                dateEnd,
+                courseId
             }
         });
         return new Classes(
             newClass.id,
             newClass.name,
             newClass.semester,
-            newClass.teacherId,
             newClass.isActive,
             new Date(newClass.dateBegin),
-            new Date(newClass.dateEnd)
+            new Date(newClass.dateEnd),
+            newClass.courseId
         );
     }
 
@@ -63,7 +64,7 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
         if (semester) data.semester=semester;
         if (dateBegin) data.dateBegin=dateBegin;
         if (dateEnd) data.dateEnd=dateEnd;
-
+        
         return this.prisma.classes.update({
             where: {id},
             data
@@ -85,10 +86,10 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
             c.id,
             c.name,
             c.semester,
-            c.teacherId,
             c.isActive,
             new Date(c.dateBegin),
-            new Date(c.dateEnd)
+            new Date(c.dateEnd),
+            c.courseId
         ));
     }
 
