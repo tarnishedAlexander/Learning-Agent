@@ -42,7 +42,7 @@ export default function QuestionCard({ index, question, onChange, onRegenerate }
       style={{ borderLeft: `4px solid ${typeAccent}` }}
       bodyStyle={{ padding: 20 }}
     >
-     
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <Space size={8} align="center">
           <Tag color={palette.P0} style={{ color: '#fff', fontWeight: 600 }}>

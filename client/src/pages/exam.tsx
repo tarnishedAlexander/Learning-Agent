@@ -8,7 +8,7 @@ export default function Exam() {
   return (
     <div style={{ padding: 24 }}>
       <Card style={{ borderRadius: 12, maxWidth: 800, margin: "0 auto" }}>
-        <Title level={3}>Exámenes</Title>
+        <Title level={5}>Exámenes</Title>
         <Text>Próximamente encontrarás cuestionarios y recursos para practicar.</Text>
 
         <div style={{ marginTop: 24 }}>
