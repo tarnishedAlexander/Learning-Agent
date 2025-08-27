@@ -1,4 +1,4 @@
-export type ChatRole = 'assistant' | 'user'; /
+export type ChatRole = 'assistant' | 'user';
 
 export type Chatmessage = {
   role: ChatRole;
