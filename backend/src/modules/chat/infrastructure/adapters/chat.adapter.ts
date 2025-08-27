@@ -69,10 +69,10 @@ export class ChatAdapter implements ChatPort {
   }
 
   async stream?(
-    messages: Chatmessage[] | string,
+    messages: Chatmessage | string,
     options: ChatOptions,
-    onToken: (t: string) => void,
-  ) {
+    onToken: (chunk: string) => void,
+  ): Promise<ChatTextOutput> {
     // const stream = await this.client.chat({ ..., stream: true });
     // let full = '';
     // for await (const chunk of stream) {
@@ -82,12 +82,12 @@ export class ChatAdapter implements ChatPort {
     // }
     // return { text: full };
     // Fallback no-stream:
-    const res = await this.chat(
-      Array.isArray(messages)
-        ? messages
-        : [{ role: 'user', content: messages }],
-      options,
-    );
+    const chatMessages: Chatmessage[] =
+      typeof messages === 'string'
+        ? [{ role: 'assistant', content: messages }]
+        : messages;
+
+    const res = await this.chat(chatMessages, options);
     onToken?.(res.text);
     return res;
   }
