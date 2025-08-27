@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Put} from '@nestjs/common';
-import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
+import { CreateClassUseCase } from '../../application/commands/create-class.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
 import { ListClassesUseCase } from '../../application/queries/list-classes.usecase';
@@ -11,7 +11,7 @@ import { GetClassesByStudentUseCase } from '../../application/queries/get-classe
 import { GetStudentsByClassUseCase } from '../../application/queries/get-students-by-class.usecase';
 import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
-import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
+import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-single-student.usecase';
 import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-group-students.usecase';
 import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
 import { UpdateClassUseCase } from '../../application/commands/update-class.usecase';
