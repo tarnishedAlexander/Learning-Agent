@@ -262,7 +262,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
       </div>
 
 
-      <div className="actions-row button-hover" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
+      <div className="actions-row button-hover" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: 24, position: 'relative', minHeight: 64 }}>
         <div style={{ display: 'flex', gap: 8 }}>
           {step > 0 && (
             <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>
@@ -282,28 +282,27 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
             Limpiar
           </button>
         </div>
-        <div>
-          {/* Botón IA visible en el paso 2 si el prop existe */}
-          {step === 2 && onGenerateAI && (
-            <button
-              type="button"
-              className="btn btn-outline"
-              disabled={sending || !validStep()}
-              onClick={() => { if (validStep()) onGenerateAI(); }}
-              style={{ marginRight: 8 }}
-            >
-              Generar preguntas con IA
-            </button>
-          )}
+        {/* Botón IA visible en el paso 2 si el prop existe */}
+        {step === 2 && onGenerateAI && (
           <button
-            type={step === 2 ? "submit" : "button"}
-            className="btn btn-primary float-button-animation"
+            type="button"
+            className="btn btn-outline next-fixed"
             disabled={sending || !validStep()}
-            onClick={step < 2 ? (e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); } : undefined}
+            onClick={() => { if (validStep()) onGenerateAI(); }}
           >
-            {step === 2 ? (sending ? 'Enviando…' : 'Siguiente') : 'Siguiente'}
+            Generar preguntas con IA
           </button>
-        </div>
+        )}
+        {step < 2 && (
+          <button
+            type="button"
+            className="btn btn-primary float-button-animation next-fixed"
+            disabled={sending || !validStep()}
+            onClick={(e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); }}
+          >
+            Siguiente
+          </button>
+        )}
       </div>
 
     </form>
