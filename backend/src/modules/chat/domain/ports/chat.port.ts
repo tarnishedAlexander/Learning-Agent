@@ -22,7 +22,7 @@ export type ChatOptions = {
     presence_penalty?: number;
 }
 
-export type ChatTextOutput: {
+export type ChatTextOutput= {
     text: string; 
     finishReason?: 'stop' | 'length' | 'error'; 
     tokens?: {prompt?: number; completion?: number; total ?: number; }; 
@@ -42,6 +42,3 @@ export interface ChatPort {
         onToken: (chunk: string) => void,
     ): Promise<ChatTextOutput>;
 }
-
-
-
