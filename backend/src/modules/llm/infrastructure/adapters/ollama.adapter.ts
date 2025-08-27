@@ -6,10 +6,13 @@ import {
   LlmMessage,
 } from '../../domain/ports/llm.port';
 import { Ollama } from 'ollama';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class OllamaAdapter implements LlmPort {
   private client: any;
+  private templatesDir = path.resolve(process.cwd(), 'backend/templates');
 
   constructor() {
     const host = process.env.OLLAMA_HOST ?? 'http://localhost:11434';
@@ -89,5 +92,16 @@ export class OllamaAdapter implements LlmPort {
     );
     onToken?.(res.text);
     return res;
+  }
+
+  async getChatPrompt(userQuestion: string): Promise<string> {
+    const templatePath = path.join(this.templatesDir, 'singleQuestion.v1.md');
+    const template = await fs.readFile(templatePath, 'utf8');
+    return template.replace('{{user_question}}', userQuestion);
+  }
+
+  async askChatQuestion(userQuestion: string, options: LlmGenOptions) {
+    const prompt = await this.getChatPrompt(userQuestion);
+    return this.complete(prompt, options);
   }
 }

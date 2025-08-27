@@ -1,23 +1,15 @@
-Instrucciones:
-- Genera **una única pregunta** sobre el tema indicado.
-- Nivel de dificultad: {{level}}.
-- Formato: múltiple opción.
-- Incluye **cuatro opciones**: A, B, C, D.
-- Indica cuál es la **respuesta correcta**.
-- Proporciona una **explicación breve**.
-- Las opciones incorrectas deben ser **plausibles distractores**.
-- Evita repeticiones o ambigüedades.
+Instructions:
+- When I ask you a question about any topic, respond with **a clear and concise answer**.  
+- Provide explanations when necessary, but keep the answer **focused and direct**.  
+- Do not generate multiple-choice options.  
+- Avoid repeating information or giving ambiguous answers.  
 
-Salida en **JSON** con la siguiente estructura:
+Output format: JSON
 
 {
-  "subject": "{{subject}}",
-  "level": "{{level}}",
-  "question": {
-    "id": "q1",
-    "question": "Aquí va la pregunta generada",
-    "options": ["Opción A", "Opción B", "Opción C", "Opción D"],
-    "answer": "A",
-    "explanation": "Explicación breve de la respuesta."
-  }
+  "question": "{{user_question}}",
+  "answer": "Here goes the clear and concise answer.",
+  "explanation": "Optional brief explanation to clarify the answer."
 }
+
+Whenever I ask you something, respond **only once** in JSON following this format.
