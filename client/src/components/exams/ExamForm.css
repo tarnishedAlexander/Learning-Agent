@@ -1,3 +1,10 @@
+/* Fijar el botón Siguiente en la esquina inferior derecha solo en los primeros dos pasos */
+.next-fixed {
+  position: absolute;
+  right: 32px;
+  bottom: 12px;
+  z-index: 10;
+}
 :root {
   --primary: #3B38A0;
   --primary-dark: #1A2A80;
@@ -96,11 +103,8 @@ section.card {
   padding: 12px 20px;
   border-top: 1px solid var(--card-border);
   background: #fff;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   justify-content: flex-end;
-  overflow-y: auto
+  overflow-y: auto;
 }
 
 .page-container {
