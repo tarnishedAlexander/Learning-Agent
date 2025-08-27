@@ -3,6 +3,6 @@ export class Course {
         public readonly id: string,
         public name: string,
         public isActive: boolean,
-        public courseId: string
+        public teacherId: string
     ) {}
 }
