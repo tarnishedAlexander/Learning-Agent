@@ -194,15 +194,20 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
           </>}
 
           {step === 1 && <>
-            <div className="form-group" style={{gridColumn:'1/3'}}>
-              <label style={{ fontWeight: 700 }}>Cantidad de preguntas por tipo *</label>
+            <div className="form-group" style={{gridColumn:'1/3', display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
+              <label style={{ fontWeight: 700, textAlign: 'center', width:'100%' }}>Cantidad de preguntas por tipo *</label>
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                alignItems: 'center',
                 gap: '20px',
-
                 background: '#f6f9ff',
-                borderRadius: '8px',border: '1px dashed #7A85C1',
+                borderRadius: '8px',
+                border: '1px dashed #7A85C1',
+                width: '100%',
+                maxWidth: 600,
+                margin: '0 auto'
               }}>
                 <div style={{background:'#fff', border:'1px solid #e0e7ff', borderRadius:8, padding:'16px 12px'}}>
                   <label htmlFor="multipleChoice" style={{display:'block', marginBottom:10}}>Opción Múltiple</label>
@@ -228,12 +233,10 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
                     className="input-hover"
                     value={values.openEnded || ''} onChange={e=>onChange('openEnded', e.target.value)} />
                 </div>
-                <div style={{ marginTop: 8, fontWeight: 600 }}>
-                Total de preguntas: <span>{totalQuestions}</span>
+                <div style={{ width: '100%', marginTop: 16, fontWeight: 600, textAlign: 'center' }}>
+                  Total de preguntas: <span>{totalQuestions}</span>
                 </div>
-                
               </div>
-            
             </div>
           </>}
 
@@ -258,48 +261,50 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
         </div>
       </div>
 
-      <div className="actions-row button-hover">
-  {step > 0 && (
-    <button type="button" className="btn btn-secondary" onClick={()=>setStep(s=>s-1)}>
-      Anterior
-    </button>
-  )}
 
-  {/* Botón IA visible en el paso 2 si el prop existe */}
-  {step === 2 && onGenerateAI && (
-    <button
-      type="button"
-      className="btn btn-outline"
-      disabled={sending || !validStep()}
-      onClick={() => { if (validStep()) onGenerateAI(); }}
-      style={{ marginLeft: 8 }}
-    >
-      Generar preguntas con IA
-    </button>
-  )}
-
-  <button
-    type={step === 2 ? "submit" : "button"}
-    className="btn btn-primary float-button-animation"
-    disabled={sending || !validStep()}
-    onClick={step < 2 ? (e)=>{e.preventDefault(); if(validStep()) setStep(s=>s+1);} : undefined}
-  >
-    {step === 2 ? (sending ? 'Enviando…' : 'Generar') : 'Siguiente'}
-  </button>
-
-  <button
-    type="button"
-    className="btn btn-secondary"
-    onClick={onResetStep}
-    disabled={
-      (step === 0 && !values.subject && !values.difficulty && !values.attempts) ||
-      (step === 1 && !values.multipleChoice && !values.trueFalse && !values.analysis && !values.openEnded) ||
-      (step === 2 && !values.timeMinutes && !values.reference)
-    }
-  >
-    Limpiar
-  </button>
-</div>
+      <div className="actions-row button-hover" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {step > 0 && (
+            <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>
+              Anterior
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onResetStep}
+            disabled={
+              (step === 0 && !values.subject && !values.difficulty && !values.attempts) ||
+              (step === 1 && !values.multipleChoice && !values.trueFalse && !values.analysis && !values.openEnded) ||
+              (step === 2 && !values.timeMinutes && !values.reference)
+            }
+          >
+            Limpiar
+          </button>
+        </div>
+        <div>
+          {/* Botón IA visible en el paso 2 si el prop existe */}
+          {step === 2 && onGenerateAI && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={sending || !validStep()}
+              onClick={() => { if (validStep()) onGenerateAI(); }}
+              style={{ marginRight: 8 }}
+            >
+              Generar preguntas con IA
+            </button>
+          )}
+          <button
+            type={step === 2 ? "submit" : "button"}
+            className="btn btn-primary float-button-animation"
+            disabled={sending || !validStep()}
+            onClick={step < 2 ? (e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); } : undefined}
+          >
+            {step === 2 ? (sending ? 'Enviando…' : 'Siguiente') : 'Siguiente'}
+          </button>
+        </div>
+      </div>
 
     </form>
   );

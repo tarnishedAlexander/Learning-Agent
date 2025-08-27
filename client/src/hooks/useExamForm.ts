@@ -86,8 +86,8 @@ export function useExamForm() {
       errors.difficulty = 'Selecciona una dificultad válida.';
     }
 
-    if (!isPosInt(values.attempts)) errors.attempts = 'Debe ser entero > 0.';
-    if (!isPosInt(values.timeMinutes)) errors.timeMinutes = 'Debe ser entero > 0.';
+    if (!isPosInt(values.attempts)) errors.attempts = 'Los intentos deben ser mayor a 0';
+    if (!isPosInt(values.timeMinutes)) errors.timeMinutes = 'El tiempo debe ser mayor a 0';
 
     ([
       ['multipleChoice','Opción múltiple'],
@@ -127,11 +127,11 @@ export function useExamForm() {
       return;
     }
     if (name === 'attempts') {
-      if (!isPosInt(value)) errors.attempts = 'Debe ser entero > 0.'; else delete errors.attempts;
+      if (!isPosInt(value)) errors.attempts = 'Los intentos deben ser mayor a 0'; else delete errors.attempts;
       return;
     }
     if (name === 'timeMinutes') {
-      if (!isPosInt(value)) errors.timeMinutes = 'Debe ser entero > 0.'; else delete errors.timeMinutes;
+      if (!isPosInt(value)) errors.timeMinutes = 'El tiempo debe ser mayor a 0'; else delete errors.timeMinutes;
       return;
     }
     if (['multipleChoice','trueFalse','analysis','openEnded'].includes(name as string)) {
