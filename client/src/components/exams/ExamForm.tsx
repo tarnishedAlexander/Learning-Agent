@@ -73,7 +73,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     if (step === 0) return !!(values.subject && values.difficulty && values.attempts);
     if (step === 1) return totalQuestions > 0;
     if (step === 2) return !!values.timeMinutes;
-    return false;
+    return Boolean(values.timeMinutes) && !errors.timeMinutes;
   };
 
   const hasQuestions = totalQuestions > 0;
@@ -163,11 +163,11 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
           {step === 0 && <>
             <div className="form-group">
               <label htmlFor="subject">Materia *</label>
-              <input id="subject" name="subject" type="text" maxLength={80}
+              <input id="subject" name="subject" type="text" maxLength={30}
                 className="input-hover subject-hover"
                 placeholder="Ej: Algorítmica 1"
                 value={values.subject || ''} onChange={e=>onChange('subject', e.target.value)} />
-              <small className="help">Máx. 80 caracteres</small>
+              <small className="help">Máx. 30 caracteres</small>
               {errors.subject && <small className="error">{errors.subject}</small>}
             </div>
 
@@ -243,7 +243,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
           {step === 2 && <>
             <div className="form-group">
               <label htmlFor="timeMinutes">Tiempo (min) *</label>
-              <input id="timeMinutes" name="timeMinutes" type="number" min={1} step={1} placeholder="45"
+              <input id="timeMinutes" name="timeMinutes" type="number" min={45} max={240} step={1} placeholder="45"
                 className="input-hover"
                 value={values.timeMinutes || ''} onChange={e=>onChange('timeMinutes', e.target.value)} />
               {errors.timeMinutes && <small className="error">{errors.timeMinutes}</small>}
