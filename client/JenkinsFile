@@ -6,7 +6,6 @@ pipeline {
     CI = 'true'
     NODE_ENV = 'production'
     VITE_URL = 'http://localhost:3000'
-    VITE_OPENAI_API_KEY = credentials('openai-api-key')
   }
 
   stages {
