@@ -49,43 +49,27 @@ export async function getSettings(): Promise<UserSettings> {
   };
 }
 
-export async function updateProfile(payload: {
-  fullName: string;
-  headline?: string;
-  role: string;
-  avatarBase64?: string;
-}) {
+export async function updateProfile() {
   await sleep(300);
   return true;
 }
 
-export async function updateAccount(payload: {
-  email: string;
-  username: string;
-}) {
+export async function updateAccount() {
   await sleep(300);
   return true;
 }
 
-export async function updatePassword(payload: {
-  currentPassword: string;
-  newPassword: string;
-}) {
+export async function updatePassword() {
   await sleep(300);
   return true;
 }
 
-export async function updateNotifications(payload: { [k: string]: boolean }) {
+export async function updateNotifications() {
   await sleep(300);
   return true;
 }
 
-export async function updatePreferences(payload: {
-  theme: string;
-  language: string;
-  timezone: string;
-  dateFormat: string;
-}) {
+export async function updatePreferences() {
   await sleep(300);
   return true;
 }
