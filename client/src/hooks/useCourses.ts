@@ -4,19 +4,19 @@ import { courseService } from "../services/course.service";
 import type { Course } from "../interfaces/courseInterface";
 
 const useCourses = () => {
-    const [courses, setCourses] = useState<Course[]>();
+    const [courses, setCourses] = useState<Course[]>([]);
     const { user, fetchUser } = useUserContext();
 
     useEffect(() => {
         const prepareHook = async () => {
-            if (!user || user === null) {
+            if (!user) {
                 await fetchUser();
             }
-        }
-        
+            await fetchCourses();
+        };
+
         prepareHook();
-        fetchCourses();
-    }, []);
+    }, [user]);
 
     const fetchCourses = async () => {
         if (!user) return
@@ -30,7 +30,8 @@ const useCourses = () => {
             name,
             teacherId: user.id
         }
-        await courseService.createCourse(req);   
+        await courseService.createCourse(req);
+        await fetchCourses();
     }
 
     return {
