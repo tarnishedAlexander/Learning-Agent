@@ -26,7 +26,7 @@ import type {
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export function CourseDetailPage() {
