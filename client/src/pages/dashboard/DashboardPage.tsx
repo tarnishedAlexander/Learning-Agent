@@ -1,7 +1,6 @@
-import { Button, Card, Row, Col } from "antd";
+import { Button} from "antd";
 import PageTemplate from "../../components/PageTemplate";
 import { formatTodayEs } from "../../utils/date";
-import StudentHome from "./StudentHome";
 import ProfessorHome from "./ProfessorHome";
 
 export default function DashboardPage() {

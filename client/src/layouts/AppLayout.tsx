@@ -6,7 +6,7 @@ import {
   SettingOutlined,
   SunOutlined,
   MoonOutlined,
-  BookOutlined ,
+  BookOutlined,
   FileAddOutlined,
   CloudUploadOutlined,
 } from "@ant-design/icons";
@@ -14,15 +14,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
 import { useThemeStore } from "../store/themeStore";
+import type { SiderTheme } from "antd/es/layout/Sider";
 
 const { Sider, Content } = Layout;
 
 const navItems = [
   { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
-  { 
-    key: "/classes", 
-    icon: <BookOutlined />, 
-    label: <Link to="/classes">Clases</Link> 
+  {
+    key: "/classes",
+    icon: <BookOutlined />,
+    label: <Link to="/classes">Clases</Link>,
   },
   {
     key: "/upload-pdf",
@@ -44,7 +45,7 @@ const navItems = [
     icon: <TeamOutlined />,
     label: <Link to="/clases">Clases</Link>,
   },
-    {
+  {
     key: "/classes-student",
     icon: <TeamOutlined />,
     label: <Link to="/classes-student">Clases Estudiante</Link>,
@@ -53,7 +54,7 @@ const navItems = [
     key: "/settings",
     icon: <SettingOutlined />,
     label: <Link to="/settings">Settings</Link>,
-  }
+  },
 ];
 
 export default function AppLayout() {
@@ -62,9 +63,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { theme, setTheme } = useThemeStore();
   const [systemTheme, setSystemTheme] = useState(
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light"
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
   );
 
   useEffect(() => {
@@ -75,8 +74,9 @@ export default function AppLayout() {
     return () => media.removeEventListener("change", listener);
   }, []);
 
-  const currentTheme = useMemo(
-    () => (theme === "system" ? systemTheme : theme),
+  const currentTheme: SiderTheme = useMemo(
+    () =>
+      theme === "system" ? (systemTheme as SiderTheme) : (theme as SiderTheme),
     [theme, systemTheme]
   );
 
@@ -139,7 +139,9 @@ export default function AppLayout() {
               <div className="flex flex-col items-center text-center">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                    onClick={() =>
+                      setTheme(theme === "light" ? "dark" : "light")
+                    }
                     className="p-1 rounded-full hover:bg-[var(--ant-colorBgElevated)]"
                     aria-label="Toggle theme"
                   >

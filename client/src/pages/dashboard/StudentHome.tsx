@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Card, Button, List, Tag, Progress, Skeleton, Empty, Typography } from "antd";
+import { Card, Button, List, Tag, Progress, Skeleton, Empty } from "antd";
 import { CalendarOutlined, PlayCircleOutlined, ReadOutlined } from "@ant-design/icons";
 
 type WeakTopic = { id: string; name: string; mastery: number }; // 0-100
 type Recommendation = { id: string; title: string; cta: string };
 type NextExam = { course: string; title: string; dateISO: string };
 
-const { Title, Text } = Typography;
 
 export default function StudentHome() {
   const [loading, setLoading] = useState(true);
