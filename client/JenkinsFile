@@ -14,8 +14,8 @@ pipeline {
   environment {
     CI = 'true'
     NODE_ENV = 'production'
-    VITE_URL = http://localhost:3000
-    VITE_OPENAI_API_KEY = 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
+    VITE_URL = 'http://localhost:3000'
+    VITE_OPENAI_API_KEY = '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'
   }
 
   stages {
