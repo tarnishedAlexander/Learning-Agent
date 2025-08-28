@@ -44,9 +44,6 @@ export class Document {
     );
   }
 
-  /**
-   * Actualiza el texto extraído del documento
-   */
   withExtractedText(
     extractedText: string,
     pageCount?: number,
@@ -75,9 +72,6 @@ export class Document {
     );
   }
 
-  /**
-   * Actualiza el estado del documento
-   */
   withStatus(status: DocumentStatus): Document {
     return new Document(
       this.id,
@@ -100,23 +94,14 @@ export class Document {
     );
   }
 
-  /**
-   * Verifica si el documento está listo para procesamiento
-   */
   isReadyForProcessing(): boolean {
     return this.status === DocumentStatus.UPLOADED;
   }
 
-  /**
-   * Verifica si el documento ha sido procesado completamente
-   */
   isProcessed(): boolean {
     return this.status === DocumentStatus.PROCESSED;
   }
 
-  /**
-   * Verifica si el documento tiene texto extraído
-   */
   hasExtractedText(): boolean {
     return Boolean(this.extractedText && this.extractedText.trim().length > 0);
   }

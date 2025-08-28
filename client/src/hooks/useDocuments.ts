@@ -38,8 +38,8 @@ export const useDocuments = () => {
       setLoading(false);
     }
   }, []);
-  
-  const downloadDocument = useCallback(async (document: Document): Promise<void> => {
+
+  const downloadDocument = useCallback(async (doc: Document): Promise<void> => {
     setLoading(true);
     setError(null);
     try {

@@ -6,7 +6,7 @@ import type { StudentRepositoryPort } from '../../domain/ports/student.repositor
 import { Student } from '../../domain/entities/student.entity'
 import { CreateStudentUseCase } from './create-student.usecase'
 import { CreateUserUseCase } from './create-user.usecase'
-// import { email } from 'zod';
+import { email } from 'zod';
 @Injectable()
 export class CreateStudentProfileUseCase {
   constructor(

@@ -6,71 +6,38 @@ import type {
 } from '../../domain/ports/vector-search.port';
 
 /**
- * DTO para solicitud de búsqueda semántica
+ * Request DTO for semantic search
  */
 export interface SearchDocumentsRequest {
-  /** Texto de búsqueda */
   query: string;
-
-  /** Opciones de búsqueda */
   searchOptions?: {
-    /** Número máximo de resultados */
     limit?: number;
-
-    /** Umbral de similitud mínimo */
     similarityThreshold?: number;
-
-    /** Filtrar por documentos específicos */
     documentIds?: string[];
-
-    /** Filtrar por tipos de chunks */
     chunkTypes?: string[];
-
-    /** Configuración adicional */
     additionalFilters?: Record<string, any>;
   };
-
-  /** Si debe incluir metadatos extendidos */
   includeMetadata?: boolean;
-
-  /** Si debe incluir contenido completo de chunks */
   includeContent?: boolean;
 }
 
 /**
- * Resultado de la búsqueda semántica
+ * Response for semantic search
  */
 export interface SearchDocumentsResponse {
-  /** Indica si la búsqueda fue exitosa */
   success: boolean;
-
-  /** Resultado de la búsqueda */
   result?: SemanticSearchResult;
-
-  /** Mensaje de error si falló */
   error?: string;
-
-  /** Código de error */
   errorCode?: string;
-
-  /** Información adicional sobre la búsqueda */
   searchInfo?: {
-    /** Tiempo de procesamiento en ms */
     processingTimeMs: number;
-
-    /** Términos de búsqueda procesados */
     processedQuery: string;
-
-    /** Configuración aplicada */
     appliedOptions: VectorSearchOptions;
   };
 }
 
 /**
- * Caso de uso para búsqueda semántica de documentos
- *
- * Permite realizar búsquedas por similaridad semántica en la base
- * de conocimientos de documentos usando embeddings vectoriales
+ * Use case for semantic document search
  */
 @Injectable()
 export class SearchDocumentsUseCase {
@@ -79,9 +46,7 @@ export class SearchDocumentsUseCase {
   ) {}
 
   /**
-   * Ejecuta una búsqueda semántica en los documentos
-   *
-   * @param request - Solicitud con parámetros de búsqueda
+   * Execute semantic search on documents
    */
   async execute(
     request: SearchDocumentsRequest,
@@ -89,13 +54,10 @@ export class SearchDocumentsUseCase {
     const startTime = Date.now();
 
     try {
-      // 1. Validar entrada
       this.validateRequest(request);
 
-      // 2. Preparar opciones de búsqueda
       const searchOptions = this.prepareSearchOptions(request);
 
-      // 3. Ejecutar búsqueda
       const result = await this.documentEmbeddingService.searchDocuments(
         request.query,
         searchOptions,
@@ -115,7 +77,7 @@ export class SearchDocumentsUseCase {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      console.error('❌ Error en SearchDocumentsUseCase:', errorMessage);
+      console.error('Error in SearchDocumentsUseCase:', errorMessage);
 
       return {
         success: false,
@@ -130,47 +92,37 @@ export class SearchDocumentsUseCase {
     }
   }
 
-  // ============ MÉTODOS PRIVADOS ============
-
   /**
-   * Valida la solicitud de búsqueda
+   * Validate search request
    */
   private validateRequest(request: SearchDocumentsRequest): void {
-    // Validar query
     if (!request.query || typeof request.query !== 'string') {
-      throw new Error(
-        'La consulta de búsqueda es requerida y debe ser una cadena válida',
-      );
+      throw new Error('Search query is required and must be a valid string');
     }
 
     const trimmedQuery = request.query.trim();
     if (trimmedQuery.length === 0) {
-      throw new Error('La consulta de búsqueda no puede estar vacía');
+      throw new Error('Search query cannot be empty');
     }
 
     if (trimmedQuery.length < 3) {
-      throw new Error(
-        'La consulta de búsqueda debe tener al menos 3 caracteres',
-      );
+      throw new Error('Search query must have at least 3 characters');
     }
 
     if (trimmedQuery.length > 8000) {
-      throw new Error(
-        'La consulta de búsqueda es demasiado larga (máximo 8000 caracteres)',
-      );
+      throw new Error('Search query is too long (maximum 8000 characters)');
     }
 
-    // Validar opciones de búsqueda
     if (request.searchOptions) {
       const { limit, similarityThreshold, documentIds } = request.searchOptions;
 
       if (limit !== undefined) {
         if (!Number.isInteger(limit) || limit < 1) {
-          throw new Error('El límite debe ser un número entero positivo');
+          throw new Error('Limit must be a positive integer');
         }
 
         if (limit > 1000) {
-          throw new Error('El límite no puede ser mayor a 1000 resultados');
+          throw new Error('Limit cannot be greater than 1000 results');
         }
       }
 
@@ -181,7 +133,7 @@ export class SearchDocumentsUseCase {
           similarityThreshold > 1
         ) {
           throw new Error(
-            'El umbral de similitud debe ser un número entre 0 y 1',
+            'Similarity threshold must be a number between 0 and 1',
           );
         }
       }
@@ -189,7 +141,7 @@ export class SearchDocumentsUseCase {
       if (documentIds && Array.isArray(documentIds)) {
         if (documentIds.length === 0) {
           throw new Error(
-            'Si se especifican IDs de documentos, debe haber al menos uno',
+            'If document IDs are specified, there must be at least one',
           );
         }
 
@@ -197,16 +149,14 @@ export class SearchDocumentsUseCase {
           (id) => !id || typeof id !== 'string',
         );
         if (invalidIds.length > 0) {
-          throw new Error(
-            'Todos los IDs de documentos deben ser cadenas válidas no vacías',
-          );
+          throw new Error('All document IDs must be valid non-empty strings');
         }
       }
     }
   }
 
   /**
-   * Prepara las opciones de búsqueda vectorial
+   * Prepare vector search options
    */
   private prepareSearchOptions(
     request: SearchDocumentsRequest,
@@ -237,7 +187,7 @@ export class SearchDocumentsUseCase {
   }
 
   /**
-   * Categoriza el tipo de error para mejor manejo
+   * Categorize error type for better handling
    */
   private categorizeError(error: unknown): string {
     if (!(error instanceof Error)) {
@@ -246,7 +196,7 @@ export class SearchDocumentsUseCase {
 
     const message = error.message.toLowerCase();
 
-    if (message.includes('consulta') || message.includes('query')) {
+    if (message.includes('query')) {
       return 'INVALID_QUERY';
     }
 
@@ -254,7 +204,7 @@ export class SearchDocumentsUseCase {
       return 'EMBEDDING_ERROR';
     }
 
-    if (message.includes('búsqueda') || message.includes('search')) {
+    if (message.includes('search')) {
       return 'SEARCH_ERROR';
     }
 
@@ -262,19 +212,15 @@ export class SearchDocumentsUseCase {
       return 'API_ERROR';
     }
 
-    if (message.includes('base de datos') || message.includes('database')) {
+    if (message.includes('database')) {
       return 'DATABASE_ERROR';
     }
 
-    if (
-      message.includes('red') ||
-      message.includes('network') ||
-      message.includes('timeout')
-    ) {
+    if (message.includes('network') || message.includes('timeout')) {
       return 'NETWORK_ERROR';
     }
 
-    if (message.includes('validar') || message.includes('invalid')) {
+    if (message.includes('invalid')) {
       return 'VALIDATION_ERROR';
     }
 

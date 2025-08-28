@@ -6,31 +6,17 @@ import type {
 } from '../../domain/services/document-embedding.service';
 
 /**
- * DTO para solicitud de generación de embeddings
+ * Request DTO for document embeddings generation
  */
 export interface GenerateDocumentEmbeddingsRequest {
-  /** ID del documento */
   documentId: string;
-
-  /** Configuración de embeddings */
   embeddingConfig?: {
-    /** Modelo a utilizar */
     model?: string;
-
-    /** Dimensiones del embedding */
     dimensions?: number;
-
-    /** Configuración adicional */
     additionalConfig?: Record<string, any>;
   };
-
-  /** Si debe reemplazar embeddings existentes */
   replaceExisting?: boolean;
-
-  /** Tamaño de lote para procesamiento */
   batchSize?: number;
-
-  /** Filtros para chunks específicos */
   chunkFilters?: {
     chunkTypes?: string[];
     chunkIndices?: number[];
@@ -39,27 +25,17 @@ export interface GenerateDocumentEmbeddingsRequest {
 }
 
 /**
- * Resultado de la generación de embeddings
+ * Response for document embeddings generation
  */
 export interface GenerateDocumentEmbeddingsResponse {
-  /** Indica si la operación fue exitosa */
   success: boolean;
-
-  /** Resultado detallado */
   result?: DocumentEmbeddingResult;
-
-  /** Mensaje de error si falló */
   error?: string;
-
-  /** Código de error */
   errorCode?: string;
 }
 
 /**
- * Caso de uso para generar embeddings de un documento
- *
- * Coordina el proceso completo de generación de embeddings vectoriales
- * para todos los chunks de un documento específico
+ * Use case for generating document embeddings
  */
 @Injectable()
 export class GenerateDocumentEmbeddingsUseCase {
@@ -68,18 +44,14 @@ export class GenerateDocumentEmbeddingsUseCase {
   ) {}
 
   /**
-   * Ejecuta la generación de embeddings para un documento
-   *
-   * @param request - Solicitud con parámetros de generación
+   * Execute embeddings generation for a document
    */
   async execute(
     request: GenerateDocumentEmbeddingsRequest,
   ): Promise<GenerateDocumentEmbeddingsResponse> {
     try {
-      // 1. Validar entrada
       this.validateRequest(request);
 
-      // 2. Preparar opciones
       const options: DocumentEmbeddingOptions = {
         embeddingConfig: request.embeddingConfig
           ? {
@@ -93,17 +65,15 @@ export class GenerateDocumentEmbeddingsUseCase {
         chunkFilters: request.chunkFilters,
       };
 
-      // 3. Generar embeddings
       const result =
         await this.documentEmbeddingService.generateDocumentEmbeddings(
           request.documentId,
           options,
         );
 
-      // 4. Verificar si hubo errores parciales
       if (result.chunksWithErrors > 0) {
         console.warn(
-          `⚠️ Algunos chunks tuvieron errores: ${result.chunksWithErrors}/${result.totalChunksProcessed + result.chunksWithErrors}`,
+          `Some chunks had errors: ${result.chunksWithErrors}/${result.totalChunksProcessed + result.chunksWithErrors}`,
         );
       }
 
@@ -115,7 +85,7 @@ export class GenerateDocumentEmbeddingsUseCase {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       console.error(
-        '❌ Error en GenerateDocumentEmbeddingsUseCase:',
+        'Error in GenerateDocumentEmbeddingsUseCase:',
         errorMessage,
       );
 
@@ -127,37 +97,28 @@ export class GenerateDocumentEmbeddingsUseCase {
     }
   }
 
-  // ============ MÉTODOS PRIVADOS ============
-
   /**
-   * Valida la solicitud de generación de embeddings
+   * Validate embeddings generation request
    */
   private validateRequest(request: GenerateDocumentEmbeddingsRequest): void {
-    // Validar documentId
     if (!request.documentId || typeof request.documentId !== 'string') {
-      throw new Error(
-        'El ID del documento es requerido y debe ser una cadena válida',
-      );
+      throw new Error('Document ID is required and must be a valid string');
     }
 
     if (request.documentId.trim().length === 0) {
-      throw new Error('El ID del documento no puede estar vacío');
+      throw new Error('Document ID cannot be empty');
     }
 
-    // Validar batchSize
     if (request.batchSize !== undefined) {
       if (!Number.isInteger(request.batchSize) || request.batchSize < 1) {
-        throw new Error('El tamaño de lote debe ser un número entero positivo');
+        throw new Error('Batch size must be a positive integer');
       }
 
       if (request.batchSize > 2048) {
-        throw new Error(
-          'El tamaño de lote no puede ser mayor a 2048 (límite de OpenAI)',
-        );
+        throw new Error('Batch size cannot be greater than 2048');
       }
     }
 
-    // Validar filtros de chunks
     if (request.chunkFilters) {
       if (request.chunkFilters.chunkIndices) {
         const invalidIndices = request.chunkFilters.chunkIndices.filter(
@@ -165,9 +126,7 @@ export class GenerateDocumentEmbeddingsUseCase {
         );
 
         if (invalidIndices.length > 0) {
-          throw new Error(
-            'Los índices de chunks deben ser números enteros no negativos',
-          );
+          throw new Error('Chunk indices must be non-negative integers');
         }
       }
 
@@ -177,27 +136,24 @@ export class GenerateDocumentEmbeddingsUseCase {
           request.chunkFilters.minContentLength < 0
         ) {
           throw new Error(
-            'La longitud mínima de contenido debe ser un número entero no negativo',
+            'Minimum content length must be a non-negative integer',
           );
         }
       }
     }
 
-    // Validar configuración de embeddings
     if (request.embeddingConfig?.dimensions !== undefined) {
       if (
         !Number.isInteger(request.embeddingConfig.dimensions) ||
         request.embeddingConfig.dimensions < 1
       ) {
-        throw new Error(
-          'Las dimensiones del embedding deben ser un número entero positivo',
-        );
+        throw new Error('Embedding dimensions must be a positive integer');
       }
     }
   }
 
   /**
-   * Categoriza el tipo de error para mejor manejo
+   * Categorize error type for better handling
    */
   private categorizeError(error: unknown): string {
     if (!(error instanceof Error)) {
@@ -206,11 +162,11 @@ export class GenerateDocumentEmbeddingsUseCase {
 
     const message = error.message.toLowerCase();
 
-    if (message.includes('documento') && message.includes('no encontr')) {
+    if (message.includes('document') && message.includes('not found')) {
       return 'DOCUMENT_NOT_FOUND';
     }
 
-    if (message.includes('chunks') && message.includes('no encontr')) {
+    if (message.includes('chunks') && message.includes('not found')) {
       return 'NO_CHUNKS_FOUND';
     }
 
@@ -218,19 +174,15 @@ export class GenerateDocumentEmbeddingsUseCase {
       return 'API_ERROR';
     }
 
-    if (message.includes('validar') || message.includes('invalid')) {
+    if (message.includes('invalid')) {
       return 'VALIDATION_ERROR';
     }
 
-    if (message.includes('base de datos') || message.includes('database')) {
+    if (message.includes('database')) {
       return 'DATABASE_ERROR';
     }
 
-    if (
-      message.includes('red') ||
-      message.includes('network') ||
-      message.includes('timeout')
-    ) {
+    if (message.includes('network') || message.includes('timeout')) {
       return 'NETWORK_ERROR';
     }
 
