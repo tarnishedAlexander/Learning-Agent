@@ -30,9 +30,6 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Marca el job como iniciado
-   */
   start(): ProcessingJob {
     return new ProcessingJob(
       this.id,
@@ -49,9 +46,6 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Actualiza el progreso del job
-   */
   updateProgress(progress: number): ProcessingJob {
     const validProgress = Math.max(0, Math.min(100, progress));
 
@@ -70,9 +64,6 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Marca el job como completado exitosamente
-   */
   complete(result?: Record<string, any>): ProcessingJob {
     return new ProcessingJob(
       this.id,
@@ -89,9 +80,6 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Marca el job como fallido
-   */
   fail(errorMessage: string): ProcessingJob {
     return new ProcessingJob(
       this.id,
@@ -108,9 +96,6 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Verifica si el job está en estado terminal (completado o fallido)
-   */
   isTerminal(): boolean {
     return (
       this.status === ProcessingStatus.COMPLETED ||
@@ -119,16 +104,10 @@ export class ProcessingJob {
     );
   }
 
-  /**
-   * Verifica si el job está en ejecución
-   */
   isRunning(): boolean {
     return this.status === ProcessingStatus.RUNNING;
   }
 
-  /**
-   * Verifica si el job puede ser reintentado
-   */
   canRetry(): boolean {
     return this.status === ProcessingStatus.FAILED;
   }
