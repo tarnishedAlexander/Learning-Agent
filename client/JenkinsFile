@@ -1,60 +1,31 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:20-alpine'
-      args '-u root:root'
-    }
-  }
-
-  options {
-    timestamps()
-    ansiColor('xterm')
-  }
+  agent any
+  tools { nodejs 'node20' }
 
   environment {
     CI = 'true'
     NODE_ENV = 'production'
     VITE_URL = 'http://localhost:3000'
-    VITE_OPENAI_API_KEY = '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'
+    VITE_OPENAI_API_KEY = credentials('openai-api-key')
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-        sh 'node -v && npm -v'
-      }
-    }
+    stage('Checkout'){ steps { checkout scm } }
 
-    stage('Install') {
+    stage('Build frontend') {
       steps {
-        sh 'npm ci'
-      }
-    }
-
-    stage('Lint') {
-      when { expression { return fileExists('package.json') } }
-      steps {
-        sh 'npm run lint'
-      }
-    }
-
-    stage('Build') {
-      steps {
-        sh 'npm run build'
+        dir('client') {
+          sh 'node -v && npm -v'
+          sh 'npm ci'
+          sh 'npm run build'
+        }
       }
     }
 
     stage('Artefactos') {
       steps {
-        archiveArtifacts artifacts: 'dist/**', fingerprint: true
+        archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
       }
-    }
-  }
-
-  post {
-    always {
-      echo "Build finalizado en ${env.JOB_NAME} #${env.BUILD_NUMBER}"
     }
   }
 }
