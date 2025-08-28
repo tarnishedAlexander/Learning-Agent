@@ -21,6 +21,7 @@ export class GetClassesByStudentUseCase {
         const classes: Classes[] = [];
         for (const enrollment of enrollmentIDs) {
             const ojbClass = await this.classesRepo.findById(enrollment.classId);
+            if (!ojbClass) continue;
             if (ojbClass?.isActive) classes.push(ojbClass);
         }
         return classes;

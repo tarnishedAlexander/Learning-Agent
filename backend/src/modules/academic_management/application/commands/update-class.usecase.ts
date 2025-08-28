@@ -3,6 +3,7 @@ import { CLASSES_REPO, ENROLLMENT_REPO } from "../../tokens";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
+import { ForbiddenError, NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
 export class UpdateClassUseCase {
@@ -17,10 +18,12 @@ export class UpdateClassUseCase {
     }): Promise<Classes> {
 
         const ojbClass = await this.classRepo.findById(input.classId)
-        if (!ojbClass) throw new Error(`Class not found with id ${input.classId}`)
+        if (!ojbClass) {
+            throw new NotFoundError(`Class not found with id ${input.classId}`)
+        }
 
         if (ojbClass.teacherId != input.teacherId) {
-            throw new Error(`Class ${ojbClass.id}-${ojbClass.name} doesnt belongs to teacher ${input.teacherId}`)
+            throw new ForbiddenError(`Class ${ojbClass.id}-${ojbClass.name} doesnt belongs to teacher ${input.teacherId}`)
         }
         
         return this.classRepo.updateInfo(

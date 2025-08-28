@@ -18,7 +18,7 @@ import { GetClassesByStudentUseCase } from './application/queries/get-classes-by
 import { GetStudentsByClassUseCase } from './application/queries/get-students-by-class.usecase';
 import { CreateEnrollmentUseCase } from './application/commands/create-enrollment.usecase';
 import { GetClassByIdUseCase } from './application/queries/get-class-by-id.usecase';
-import { EnrollSingleStudentUseCase } from './application/commands/enroll-sigle-student.usecase';
+import { EnrollSingleStudentUseCase } from './application/commands/enroll-single-student.usecase';
 import { EnrollGroupStudentUseCase } from './application/commands/enroll-group-students.usecase';
 import { UpdateClassUseCase } from './application/commands/update-class.usecase';
 import { SoftDeleteClassUseCase } from './application/commands/soft-delete-class.usecase';
