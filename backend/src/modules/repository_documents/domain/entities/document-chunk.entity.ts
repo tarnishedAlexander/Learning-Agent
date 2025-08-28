@@ -2,12 +2,12 @@ export class DocumentChunk {
   constructor(
     public readonly id: string,
     public readonly documentId: string,
-    public content: string, // No readonly para permitir modificaciones durante overlap
+    public content: string, 
     public readonly chunkIndex: number,
-    public type: string, // Cambiar de chunkType a type y no readonly
+    public type: string, 
     public readonly metadata?: Record<string, any>,
     public readonly createdAt: Date = new Date(),
-    public readonly updatedAt: Date = new Date(), // Agregar updatedAt
+    public readonly updatedAt: Date = new Date(), 
   ) {}
 
   static create(
@@ -32,23 +32,14 @@ export class DocumentChunk {
     );
   }
 
-  /**
-   * Verifica si el chunk tiene contenido válido
-   */
   isValid(): boolean {
     return this.content.trim().length > 0 && this.chunkIndex >= 0;
   }
 
-  /**
-   * Obtiene la longitud del contenido del chunk
-   */
   getContentLength(): number {
     return this.content.length;
   }
 
-  /**
-   * Verifica si este chunk es del tipo especificado
-   */
   isOfType(type: string): boolean {
     return this.type === type;
   }

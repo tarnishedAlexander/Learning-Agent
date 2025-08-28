@@ -13,68 +13,39 @@ import type {
 import type { DocumentChunkRepositoryPort } from '../ports/document-chunk-repository.port';
 
 /**
- * Opciones para generación de embeddings de documento
+ * Options for document embedding generation
  */
 export interface DocumentEmbeddingOptions {
-  /** Configuración de embeddings */
   embeddingConfig?: Partial<EmbeddingConfig>;
-
-  /** Si debe reemplazar embeddings existentes */
   replaceExisting?: boolean;
-
-  /** Procesar en lotes de este tamaño */
   batchSize?: number;
-
-  /** Filtros para chunks específicos */
   chunkFilters?: {
-    /** Tipos de chunks a procesar */
     chunkTypes?: string[];
-
-    /** Índices de chunks específicos */
     chunkIndices?: number[];
-
-    /** Tamaño mínimo de contenido */
     minContentLength?: number;
   };
 }
 
 /**
- * Resultado del procesamiento de embeddings de documento
+ * Result of document embedding processing
  */
 export interface DocumentEmbeddingResult {
-  /** ID del documento procesado */
   documentId: string;
-
-  /** Resultado del procesamiento en lotes */
   batchResults: BatchEmbeddingResult[];
-
-  /** Número total de chunks procesados */
   totalChunksProcessed: number;
-
-  /** Número de chunks que ya tenían embeddings */
   chunksSkipped: number;
-
-  /** Número de chunks con errores */
   chunksWithErrors: number;
-
-  /** Tiempo total de procesamiento */
   totalProcessingTimeMs: number;
-
-  /** Costo estimado (si está disponible) */
   estimatedCost?: {
     totalTokens: number;
     costPerToken?: number;
     totalCost?: number;
   };
-
-  /** Errores encontrados */
   errors?: string[];
 }
 
 /**
- * Servicio de dominio para gestión de embeddings de documentos
- *
- * Coordina la generación de embeddings para chunks y la búsqueda vectorial
+ * Domain service for document embeddings management
  */
 @Injectable()
 export class DocumentEmbeddingService {
@@ -85,10 +56,7 @@ export class DocumentEmbeddingService {
   ) {}
 
   /**
-   * Genera embeddings para todos los chunks de un documento
-   *
-   * @param documentId - ID del documento a procesar
-   * @param options - Opciones de procesamiento
+   * Generate embeddings for all chunks of a document
    */
   async generateDocumentEmbeddings(
     documentId: string,
@@ -97,37 +65,29 @@ export class DocumentEmbeddingService {
     const startTime = Date.now();
 
     try {
-      // 1. Obtener chunks del documento
       const chunksResult =
         await this.chunkRepository.findByDocumentId(documentId);
       let chunks = chunksResult.chunks;
 
       if (chunks.length === 0) {
-        throw new Error(
-          `No se encontraron chunks para el documento ${documentId}`,
-        );
+        throw new Error(`No chunks found for document ${documentId}`);
       }
 
-      // 2. Aplicar filtros si se especificaron
       chunks = this.applyChunkFilters(chunks, options.chunkFilters);
 
-      // 3. Filtrar chunks que ya tienen embeddings (si no se debe reemplazar)
       if (!options.replaceExisting) {
         chunks = this.filterChunksWithoutEmbeddings(chunks);
-        // chunks = await this.filterChunksWithoutEmbeddings(chunks);
       }
 
-      // 4. Validar textos antes de procesar
       const validChunks = chunks.filter((chunk) =>
         this.embeddingGenerator.validateText(chunk.content),
       );
 
       if (validChunks.length === 0) {
-        throw new Error('No hay chunks válidos para procesar embeddings');
+        throw new Error('No valid chunks to process embeddings');
       }
 
-      // 5. Procesar en lotes
-      const batchSize = options.batchSize || 20; // OpenAI permite hasta 2048 inputs
+      const batchSize = options.batchSize || 20;
       const batchResults: BatchEmbeddingResult[] = [];
       let totalChunksProcessed = 0;
       let chunksWithErrors = 0;
@@ -144,9 +104,7 @@ export class DocumentEmbeddingService {
               options.embeddingConfig,
             );
 
-          // 6. Almacenar embeddings en la base de datos
           this.storeEmbeddings(batch);
-          // await this.storeEmbeddings(batch, batchResult);
 
           batchResults.push(batchResult);
           totalChunksProcessed += batchResult.totalEmbeddings;
@@ -154,7 +112,7 @@ export class DocumentEmbeddingService {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error';
           errors.push(
-            `Error procesando lote ${i / batchSize + 1}: ${errorMessage}`,
+            `Error processing batch ${i / batchSize + 1}: ${errorMessage}`,
           );
           chunksWithErrors += batch.length;
         }
@@ -162,7 +120,6 @@ export class DocumentEmbeddingService {
 
       const totalProcessingTimeMs = Date.now() - startTime;
 
-      // 7. Calcular estadísticas finales
       const totalTokens = batchResults.reduce(
         (sum, result) => sum + result.totalTokensUsed,
         0,
@@ -178,7 +135,7 @@ export class DocumentEmbeddingService {
         totalProcessingTimeMs,
         estimatedCost: {
           totalTokens,
-          costPerToken: 0.00002, // Precio aproximado de text-embedding-3-small
+          costPerToken: 0.00002,
           totalCost: totalTokens * 0.00002,
         },
         errors: errors.length > 0 ? errors : undefined,
@@ -187,16 +144,13 @@ export class DocumentEmbeddingService {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       throw new Error(
-        `Error generando embeddings para documento ${documentId}: ${errorMessage}`,
+        `Error generating embeddings for document ${documentId}: ${errorMessage}`,
       );
     }
   }
 
   /**
-   * Realiza búsqueda semántica en todos los documentos
-   *
-   * @param query - Texto de búsqueda
-   * @param options - Opciones de búsqueda
+   * Perform semantic search on all documents
    */
   async searchDocuments(
     query: string,
@@ -206,20 +160,14 @@ export class DocumentEmbeddingService {
   }
 
   /**
-   * Encuentra chunks similares a uno específico
-   *
-   * @param chunkId - ID del chunk de referencia
-   * @param options - Opciones de búsqueda
+   * Find chunks similar to a specific one
    */
   async findSimilarChunks(chunkId: string, options?: VectorSearchOptions) {
     return this.vectorSearch.findSimilarChunks(chunkId, options);
   }
 
   /**
-   * Encuentra documentos similares a uno específico
-   *
-   * @param documentId - ID del documento de referencia
-   * @param options - Opciones de búsqueda
+   * Find documents similar to a specific one
    */
   async findSimilarDocuments(
     documentId: string,
@@ -229,21 +177,15 @@ export class DocumentEmbeddingService {
   }
 
   /**
-   * Verifica si un documento tiene embeddings generados
-   *
-   * @param documentId - ID del documento a verificar
+   * Check if a document has generated embeddings
    */
   async hasEmbeddings(documentId: string): Promise<boolean> {
-    // Implementar verificación en el repositorio
-    // Por ahora, asumimos que si hay chunks, podrían tener embeddings
     const chunks = await this.chunkRepository.findByDocumentId(documentId);
     return chunks.chunks.length > 0;
   }
 
-  // ============ MÉTODOS PRIVADOS ============
-
   /**
-   * Aplica filtros a los chunks
+   * Apply filters to chunks
    */
   private applyChunkFilters(
     chunks: DocumentChunk[],
@@ -275,27 +217,20 @@ export class DocumentEmbeddingService {
   }
 
   /**
-   * Filtra chunks que ya tienen embeddings
-   * TODO: Implementar verificación real con pgvector
+   * Filter chunks that already have embeddings
+   * TODO: Implement real verification with pgvector
    */
   private filterChunksWithoutEmbeddings(
     chunks: DocumentChunk[],
   ): DocumentChunk[] {
-    // Por ahora retornamos todos los chunks
-    // En la implementación real, verificaríamos si ya tienen embeddings en la BD
     return chunks;
   }
 
   /**
-   * Almacena embeddings en la base de datos
-   * TODO: Implementar actualización real con pgvector
+   * Store embeddings in database
+   * TODO: Implement real update with pgvector
    */
-  private storeEmbeddings(
-    chunks: DocumentChunk[],
-    // batchResult: BatchEmbeddingResult,
-  ): void {
-    // Por ahora no hacemos nada
-    // En la implementación real, actualizaríamos la columna embedding de cada chunk
-    console.log(`📊 Almacenando ${chunks.length} embeddings...`);
+  private storeEmbeddings(chunks: DocumentChunk[]): void {
+    console.log(`Storing ${chunks.length} embeddings...`);
   }
 }
