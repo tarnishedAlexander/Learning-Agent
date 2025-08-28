@@ -4,7 +4,7 @@ import { courseService } from "../services/course.service";
 import type { Course } from "../interfaces/courseInterface";
 
 const useCourses = () => {
-    const [courses, setCourses] = useState<Course[]>();
+    const [courses, setCourses] = useState<Course[]>([]);
     const { user, fetchUser } = useUserContext();
 
     useEffect(() => {
