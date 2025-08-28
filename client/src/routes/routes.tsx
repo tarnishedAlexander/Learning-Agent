@@ -8,7 +8,6 @@ import Login from "../pages/Login";
 import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
-import { DocumentsPage } from "../pages/repository/DocumentsPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -26,7 +25,7 @@ export const AppRoutes = () => {
           {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
-        {/* <Route element={<PrivateRoute />}> */}
+        <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
@@ -39,10 +38,10 @@ export const AppRoutes = () => {
             <Route path="/" element={<Navigate to="/exams/create" replace />} />
             <Route path="/exams/create" element={<ExamsCreatePage />} />
             <Route path="*" element={<Navigate to="/exams/create" replace />} />
+
             <Route path="/upload-pdf" element={<UploadPdfPage />} />
-            <Route path="/documents" element={<DocumentsPage />} />
           </Route>
-        {/* </Route> */}
+        </Route>
       </Routes>
     </BrowserRouter>
   );
