@@ -48,7 +48,7 @@ function normalizeToQuestions(res: any): GeneratedQuestion[] {
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
-  // 👇 Ref compatible con ExamFormHandle ({ getSnapshot: () => any })
+  // Ref compatible con ExamFormHandle ({ getSnapshot: () => any })
   const formRef = useRef<ExamFormHandle>(null!);
 
   const [aiOpen, setAiOpen] = useState(false);
@@ -219,14 +219,7 @@ export default function ExamsCreatePage() {
         role: 'Sales Manager',
         avatarUrl: 'https://i.pravatar.cc/128?img=5',
       }}
-      actions={
-        <div className="flex gap-2">
-          <button className="btn btn-secondary" data-action="add">Añadir</button>
-          <button className="btn btn-primary" data-action="ai" onClick={handleAIPropose}>
-            Generar examen IA uwu
-          </button>
-        </div>
-      }
+      
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Exámenes', href: '/exam' },
