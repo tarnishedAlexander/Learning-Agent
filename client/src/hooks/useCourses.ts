@@ -9,14 +9,14 @@ const useCourses = () => {
 
     useEffect(() => {
         const prepareHook = async () => {
-            if (!user || user === null) {
+            if (!user) {
                 await fetchUser();
             }
-        }
-        
+            await fetchCourses();
+        };
+
         prepareHook();
-        fetchCourses();
-    }, []);
+    }, [user]);
 
     const fetchCourses = async () => {
         if (!user) return
@@ -30,7 +30,8 @@ const useCourses = () => {
             name,
             teacherId: user.id
         }
-        await courseService.createCourse(req);   
+        await courseService.createCourse(req);
+        await fetchCourses();
     }
 
     return {

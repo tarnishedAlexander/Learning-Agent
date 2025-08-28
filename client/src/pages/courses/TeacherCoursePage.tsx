@@ -1,6 +1,6 @@
-import { Button, Card, Col, Empty, Row } from "antd";
+import { Button, Card, Col, Empty, Row, Space, Input } from "antd";
 import PageTemplate from "../../components/PageTemplate";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,33 @@ import { useNavigate } from "react-router-dom";
 export function TeacherCoursePage() {
     const { courses } = useCourses();
     const [modalOpen, setModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const lower = searchTerm.trim().toLowerCase();
+        if (lower == "") {
+            setFilteredCourses(courses)
+            return
+        }
+
+        const words = lower.split(" ");
+        const specialChars = /[!@#$%^&*?:{}|<>]/
+
+        const filterWords = (c: Course, words: string[]) => {
+            let match = true;
+            for (const word of words) {
+                if (!match) return false;
+                if (specialChars.test(word)) continue;
+                match = match && (c.name).toString().toLowerCase().includes(word);
+            }
+            return match;
+        }
+
+        const filtered = courses.filter(c => filterWords(c, words));
+        setFilteredCourses(filtered);
+    }, [searchTerm, courses])
 
     const goToCourse = (id: string) => {
         navigate(`/courses/${id}`)
@@ -16,7 +42,7 @@ export function TeacherCoursePage() {
 
     const renderGrid = (items: Course[]) =>
         items.length ? (
-            <Row gutter={[16,16]}>
+            <Row gutter={[16, 16]}>
                 {items.map((course) => (
                     <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
                         <Card
@@ -62,20 +88,28 @@ export function TeacherCoursePage() {
                     onSubmit={handleAddClase}
                 /> */}
 
-                {/* <div
+                <div
                     style={{
                         display: "flex",
                         justifyContent: "space-between",
                         marginBottom: 24,
                     }}
                 >
+                    <Space>
+                        <Input
+                            placeholder="Buscar curso"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            allowClear
+                            style={{ width: 240 }}
+                        />
+                    </Space>
                     <Button type="primary" onClick={() => setModalOpen(true)}>
                         Añadir
                     </Button>
-                </div> */}
+                </div>
 
-                <h1>Cursos Actuales</h1>
-                {renderGrid(courses)}
+                {renderGrid(filteredCourses)}
             </div>
         </PageTemplate>
     );
