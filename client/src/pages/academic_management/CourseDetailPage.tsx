@@ -246,10 +246,7 @@ export function CourseDetailPage() {
       <PageTemplate
         title="Cargando..."
         subtitle="Cargando información del curso"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Clases", href: "/classes" },
-        ]}
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
       >
         <div style={{ padding: "2rem", textAlign: "center" }}>
           <Text>Cargando datos del curso...</Text>
@@ -287,7 +284,7 @@ export function CourseDetailPage() {
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
-        { label: objClass.name, href: `/classes/${objClass.id}` },
+        { label: objClass.name },
       ]}
       actions={
         <>
