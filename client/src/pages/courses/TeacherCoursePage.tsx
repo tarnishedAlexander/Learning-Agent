@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
+import { CreateCourseForm } from "./CreateCourseForm";
+import { PlusOutlined } from "@ant-design/icons";
 
 export function TeacherCoursePage() {
-    const { courses } = useCourses();
+    const { courses, createCourse } = useCourses();
     const [modalOpen, setModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
@@ -40,6 +42,10 @@ export function TeacherCoursePage() {
         navigate(`/courses/${id}`)
     }
 
+    const handleAddCourse = (values: any) => {
+        createCourse(values.name);
+    }
+
     const renderGrid = (items: Course[]) =>
         items.length ? (
             <Row gutter={[16, 16]}>
@@ -68,7 +74,7 @@ export function TeacherCoursePage() {
     return (
         <PageTemplate
             title="Materias"
-            subtitle="Materias que haz dictado anteriormente"
+            subtitle="Revisa a detalle las materias que dictaste en algún momento."
             breadcrumbs={[
                 { label: "Home", href: "/" },
                 { label: "Materias", href: "/courses" }
@@ -82,11 +88,11 @@ export function TeacherCoursePage() {
                     padding: "24px 24px",
                 }}
             >
-                {/* <CursosForm
+                <CreateCourseForm
                     open={modalOpen}
                     onClose={() => setModalOpen(false)}
-                    onSubmit={handleAddClase}
-                /> */}
+                    onSubmit={handleAddCourse}
+                />
 
                 <div
                     style={{
@@ -97,7 +103,7 @@ export function TeacherCoursePage() {
                 >
                     <Space>
                         <Input
-                            placeholder="Buscar curso"
+                            placeholder="Buscar materia"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             allowClear
@@ -105,7 +111,8 @@ export function TeacherCoursePage() {
                         />
                     </Space>
                     <Button type="primary" onClick={() => setModalOpen(true)}>
-                        Añadir
+                        <PlusOutlined />
+                        Registrar materia
                     </Button>
                 </div>
 
