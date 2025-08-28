@@ -15,7 +15,7 @@ pipeline {
       steps {
         dir('client') {
           sh 'node -v && npm -v'
-          sh 'npm ci'
+          sh 'npm ci --include=dev'
           sh 'npm run build'
         }
       }
