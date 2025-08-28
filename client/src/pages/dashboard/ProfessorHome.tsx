@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { Card, Button, Statistic, Row, Col, Table, Tag, List, Skeleton, Typography, Space } from "antd";
+import { Card, Button, Statistic, Row, Col, Table, Tag, List, Skeleton, Space } from "antd";
 import { PlusOutlined, FileAddOutlined, DatabaseOutlined, BarChartOutlined } from "@ant-design/icons";
 
 type Snapshot = { courses: number; students: number; activeExams: number };
 type GradeRow = { key: string; student: string; exam: string; submittedAtISO: string; status: "pending" | "in-review" };
 type ScheduleItem = { id: string; whenISO: string; title: string };
-
-const { Title, Text } = Typography;
 
 export default function ProfessorHome() {
   const [loading, setLoading] = useState(true);

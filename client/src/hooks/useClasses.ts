@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { claseService } from "../services/classesService"
 import { useClaseStore } from "../store/claseStore";
 import type { Clase } from "../interfaces/claseInterface";
-import { v4 as uuidv4 } from "uuid";
 import { studentService } from "../services/studentService";
 import type { StudentInfo } from "../interfaces/studentInterface";
 import { useUserContext } from "../context/UserContext";
@@ -52,10 +51,11 @@ const useClasses = () => {
   }
 
   const createStudents = async (newStudentGroup: Omit<StudentInfo, 'id'>) => {
-    const newStudents = {
-      ...newStudentGroup,
-      id: uuidv4()
-    }
+    console.log(newStudentGroup)
+    // const newStudents = {
+    //   ...newStudentGroup,
+    //   id: uuidv4()
+    // }
     //await studentService.createStudentGroup(newStudents)
     //setStudents(newStudents)
   }

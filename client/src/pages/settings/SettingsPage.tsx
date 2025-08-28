@@ -34,7 +34,7 @@ import { useThemeStore } from "../../store/themeStore";
 const { Title, Text } = Typography;
 
 export default function SettingsPage() {
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<UserSettings | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
@@ -155,14 +155,9 @@ function ProfileTab({
     return false;
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async () => {
     try {
-      await updateProfile({
-        fullName: values.fullName,
-        headline: values.headline,
-        role: data?.profile.role ?? "Student",
-        avatarBase64: avatarPreview,
-      });
+      await updateProfile();
       message.success("Profile updated");
     } catch (e: any) {
       message.error(e?.message ?? "Could not update profile");
@@ -251,9 +246,9 @@ function AccountTab({
     });
   }, [data, form]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async () => {
     try {
-      await updateAccount(values);
+      await updateAccount();
       message.success("Account updated");
     } catch (e: any) {
       message.error(e?.message ?? "Could not update account");
@@ -313,10 +308,7 @@ function SecurityTab() {
       if (values.newPassword !== values.confirmPassword) {
         throw new Error("Passwords do not match");
       }
-      await updatePassword({
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
-      });
+      await updatePassword();
       form.resetFields();
       message.success("Password updated");
     } catch (e: any) {
@@ -396,9 +388,9 @@ function NotificationsTab({
     });
   }, [data, form]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async () => {
     try {
-      await updateNotifications(values);
+      await updateNotifications();
       message.success("Notification preferences saved");
     } catch (e: any) {
       message.error(e?.message ?? "Could not update notifications");
@@ -489,7 +481,7 @@ function PreferencesTab({
 
   const onFinish = async (values: any) => {
     try {
-      await updatePreferences(values);
+      await updatePreferences();
       setTheme(values.theme);
       message.success("Preferences updated");
     } catch (e: any) {
