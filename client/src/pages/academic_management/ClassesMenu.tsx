@@ -90,12 +90,7 @@ export function ClassMenu() {
         role: "Sales Manager",
         avatarUrl: "https://i.pravatar.cc/128?img=5",
       }}
-      actions={
-        <div className="flex gap-2">
-          <Button>Export</Button>
-          <Button type="primary">Upgrade</Button>
-        </div>
-      }
+      
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
