@@ -30,7 +30,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [sending, setSending] = useState(false);
 
-  useImperativeHandle(ref, () => ({ getSnapshot }), [getSnapshot]);
+    useImperativeHandle(ref, () => ({ getSnapshot }), [getSnapshot]);
 
   useEffect(() => {
     // No validar al cargar, solo limpiar valores
@@ -66,11 +66,11 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     touchAndValidate();
   };
 
-  const touchAndValidate = () => {
-    const { valid, errors } = validate();
-    setErrors(errors);
-    return valid;
-  };
+    const touchAndValidate = () => {
+      const { valid, errors } = validate();
+      setErrors(errors);
+      return valid;
+    };
 
   const validStep = () => {
     if (step === 0) return !!(values.subject && values.difficulty && values.attempts);
