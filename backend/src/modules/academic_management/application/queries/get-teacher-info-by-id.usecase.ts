@@ -3,6 +3,7 @@ import { TEACHER_REPO, USER_REPO } from "../../tokens";
 import type { UserRepositoryPort } from "../../domain/ports/user.repository.ports";
 import type { ProfessorRepositoryPort } from "../../domain/ports/teacher.repository.ports";
 import { TeacherInfoDTO } from "../../infrastructure/http/dtos/response.teacher-info.dto";
+import { NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
 export class GetTeacherInfoByIDUseCase {
@@ -13,10 +14,14 @@ export class GetTeacherInfoByIDUseCase {
 
     async execute(teacherID: string): Promise<TeacherInfoDTO> {
         const teacher = await this.teacherRepo.findByUserId(teacherID);
-        if (!teacher) throw new Error(`Teacher not found with ID ${teacherID}`);
+        if (!teacher) {
+            throw new NotFoundError(`Teacher not found with ID ${teacherID}`)
+        }
 
         const user = await this.userRepo.findById(teacher.userId);
-        if (!user) throw new Error(`User not found with ID ${teacher.userId}`);
+        if (!user) {
+            throw new NotFoundError(`User not found with ID ${teacher.userId}`);
+        }
 
         const data = {
             userId: teacher.userId,

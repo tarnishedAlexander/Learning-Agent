@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Card, Divider, Typography, Avatar, Layout, FloatButton, Modal, Input, Button } from "antd";
-import { UserOutlined, MessageOutlined, SendOutlined } from "@ant-design/icons";
+import { useState, useEffect, useRef } from "react";
+import { Card, Typography, Layout, FloatButton, Modal, Input, Button } from "antd";
+import { MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { getResponse } from "../api/api";
 import "./reinforcement.css";
 const MIN_CHARACTERS = 1;
 
 export function StudentProfile() {
-  const [activeSubject, setActiveSubject] = useState("Matemáticas");
+  const [activeSubject] = useState("Matemáticas");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);

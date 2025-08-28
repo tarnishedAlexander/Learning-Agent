@@ -184,7 +184,7 @@ const Uploader: React.FC<UploaderProps> = ({ onUploadSuccess }) => {
           size="small"
           current={processingSteps.findIndex(s => s.status === 'process')}
         >
-          {processingSteps.map((step, index) => (
+          {processingSteps.map((step, _index) => (
             <Step
               key={step.key}
               title={step.title}

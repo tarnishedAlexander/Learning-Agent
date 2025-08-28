@@ -165,8 +165,8 @@ export function StudentsByClass() {
             onClick={async () => {
               try {
                 setDownloadingId(record.code);
-                const key =
-                  record.documentKey ?? `documents/${record.code}.pdf`;
+                // const key =
+                //   record.documentKey ?? `documents/${record.code}.pdf`;
                 message.success("Descarga iniciada");
               } catch (e: unknown) {
                 const err = e as Error;
