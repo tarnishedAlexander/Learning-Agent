@@ -7,18 +7,14 @@ export default function DashboardPage() {
   return (
     <PageTemplate
       title="Dashboard"
-      subtitle={'Welcome back — focus on what moves the needle. ' + formatTodayEs()}
+      subtitle={
+        "Welcome back — focus on what moves the needle. " + formatTodayEs()
+      }
       user={{
         name: "Nora Watson",
         role: "Sales Manager",
         avatarUrl: "https://i.pravatar.cc/128?img=5",
       }}
-      actions={
-        <div className="flex gap-2">
-          <Button>Export</Button>
-          <Button type="primary">Upgrade</Button>
-        </div>
-      }
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
     >
       <ProfessorHome />
