@@ -18,6 +18,7 @@ type Props = {
   breadcrumbs?: { label: ReactNode; href?: string }[];
   actions?: ReactNode;
   children: ReactNode;
+  alwaysShowActions?: boolean;
 };
 export default function PageTemplate({
   title,
@@ -26,6 +27,7 @@ export default function PageTemplate({
   breadcrumbs,
   actions,
   children,
+  alwaysShowActions = false,
 }: Props) {
   const { theme, setTheme } = useThemeStore();
 
@@ -50,7 +52,6 @@ export default function PageTemplate({
               <Title level={2} className="!m-0">
                 {title}
               </Title>
-              {actions && <div className="ml-auto md:hidden">{actions}</div>}
             </div>
             {subtitle && (
               <Text type="secondary" className="block mt-1">
@@ -59,8 +60,10 @@ export default function PageTemplate({
             )}
           </div>
 
-          <div className="flex items-center gap-4">
-            {actions && <div className="hidden md:block">{actions}</div>}
+          <div className="flex items-center gap-4 flex-wrap">
+            {actions && (
+              <div className={alwaysShowActions ? "" : "hidden md:block"}>{actions}</div>
+            )}
             {user && (
               <div className="flex items-center gap-3 bg-[var(--ant-colorBgContainer)] rounded-2xl px-3 py-2 shadow-sm ring-1 ring-[var(--ant-colorBorder)]">
                 <button

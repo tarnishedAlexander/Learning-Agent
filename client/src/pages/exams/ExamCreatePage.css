@@ -1,0 +1,9 @@
+
+
+.ai-results {
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  padding: 12px;
+  background: #fafbfc;
+}
