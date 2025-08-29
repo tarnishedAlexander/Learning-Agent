@@ -1,14 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Space,
-  message,
-  Typography,
-  Empty,
-  Tabs
-} from "antd";
+import { Table, Button, Space, message, Typography, Empty, Tabs } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -16,8 +8,6 @@ import {
   InboxOutlined,
   UserOutlined,
   FolderOutlined,
-  CalendarOutlined,
-  TeamOutlined
 } from "@ant-design/icons";
 import useClasses from "../../hooks/useClasses";
 import useTeacher from "../../hooks/useTeacher";
@@ -29,17 +19,21 @@ import { StudentUpload } from "../../components/studentUpload";
 import StudentPreviewModal from "../../components/StudentPreviewModal";
 import type { Clase } from "../../interfaces/claseInterface";
 import type { TeacherInfo } from "../../interfaces/teacherInterface";
-import type { createEnrollmentInterface, EnrollGroupRow } from "../../interfaces/enrollmentInterface";
+import type {
+  createEnrollmentInterface,
+  EnrollGroupRow,
+} from "../../interfaces/enrollmentInterface";
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchClase, students, objClass, updateClass, softDeleteClass } = useClasses();
+  const { fetchClase, students, objClass, updateClass, softDeleteClass } =
+    useClasses();
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
   const { getTeacherInfoById } = useTeacher();
 
@@ -50,7 +44,15 @@ export function CourseDetailPage() {
 
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
 
-  const [parsedStudents, setParsedStudents] = useState<Array<Record<string, any> & { nombres: string; apellidos: string; codigo: number }>>([]);
+  const [parsedStudents, setParsedStudents] = useState<
+    Array<
+      Record<string, any> & {
+        nombres: string;
+        apellidos: string;
+        codigo: number;
+      }
+    >
+  >([]);
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("archivo.xlsx");
   const [sending, setSending] = useState(false);
@@ -73,7 +75,9 @@ export function CourseDetailPage() {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   // Efecto para cargar información del docente cuando objClass cambia
@@ -102,7 +106,7 @@ export function CourseDetailPage() {
       const data = await updateClass(values);
       if (!data.success) {
         message.error("Error al actualizar el curso");
-        return
+        return;
       }
       setEditModalOpen(false);
       if (id) await fetchClase(id);
@@ -151,7 +155,9 @@ export function CourseDetailPage() {
 
     const seen = new Set<string>();
     const filtered = parsedStudents.filter((r) => {
-      const k = String(r.codigo || "").trim().toLowerCase();
+      const k = String(r.codigo || "")
+        .trim()
+        .toLowerCase();
       if (!k) return false;
       if (seen.has(k)) return false;
       seen.add(k);
@@ -185,7 +191,9 @@ export function CourseDetailPage() {
       setDuplicates([]);
       fetchClase(id);
     } catch (error: any) {
-      message.error(error?.message || "Error al inscribir el grupo de estudiantes");
+      message.error(
+        error?.message || "Error al inscribir el grupo de estudiantes"
+      );
     } finally {
       setSending(false);
     }
@@ -195,42 +203,42 @@ export function CourseDetailPage() {
     {
       title: "Nombres",
       dataIndex: "name",
-      key: "name"
+      key: "name",
     },
     {
       title: "Apellidos",
       dataIndex: "lastname",
-      key: "lastname"
+      key: "lastname",
     },
     {
       title: "Código",
       dataIndex: "code",
-      key: "code"
+      key: "code",
     },
     {
       title: "Asistencia",
       dataIndex: "asistencia",
       key: "asistencia",
-      render: () => "-"
+      render: () => "-",
     },
     {
       title: "1er Parcial",
       dataIndex: "1er_parcial",
       key: "1er_parcial",
-      render: () => "-"
+      render: () => "-",
     },
     {
       title: "2do Parcial",
       dataIndex: "2do_parcial",
       key: "2do_parcial",
-      render: () => "-"
+      render: () => "-",
     },
     {
       title: "Final",
       dataIndex: "final",
       key: "final",
-      render: () => "-"
-    }
+      render: () => "-",
+    },
   ];
 
   if (loading) {
@@ -238,10 +246,7 @@ export function CourseDetailPage() {
       <PageTemplate
         title="Cargando..."
         subtitle="Cargando información del curso"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Clases", href: "/classes" },
-        ]}
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
       >
         <div style={{ padding: "2rem", textAlign: "center" }}>
           <Text>Cargando datos del curso...</Text>
@@ -279,106 +284,149 @@ export function CourseDetailPage() {
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
-        { label: objClass.name, href: `/classes/${objClass.id}` },
+        { label: objClass.name },
       ]}
+      actions={
+        <>
+          <Button
+            type="primary"
+            icon={<FolderOutlined />}
+            onClick={() => navigate(`/curso/${id}/documents`)}
+          >
+            Documentos
+          </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => setEditModalOpen(true)}
+          >
+            Editar Curso
+          </Button>
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteCourse}
+          >
+            Eliminar Curso
+          </Button>
+        </>
+      }
     >
       <div style={{ padding: "1rem" }}>
-        <div style={{ marginBottom: 8, backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <Title level={2} style={{ margin: 0, color: '#000', fontSize: '28px' }}>
-                {objClass.name}
-              </Title>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px', marginBottom: '16px' }}>
-                <Text style={{ color: '#666', fontSize: '14px' }}>
-                  <CalendarOutlined style={{ marginRight: '4px' }} />
-                  {objClass.semester}
-                </Text>
-                <Text style={{ color: '#666', fontSize: '14px' }}>
-                  <TeamOutlined style={{ marginRight: '4px' }} />
-                  {hasStudents ? students.length : 0} estudiantes
-                </Text>
-              </div>
-            </div>
+        <div
+          style={{
+            height: "1px",
+            backgroundColor: "#e8e8e8",
+            marginBottom: "8px",
+          }}
+        ></div>
 
-            <Space>
-              <Button
-                type="primary"
-                icon={<FolderOutlined />}
-                onClick={() => navigate(`/curso/${id}/documents`)}
-              >
-                Documentos
-              </Button>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => setEditModalOpen(true)}
-              >
-                Editar Curso
-              </Button>
-              <Button
-                danger
-                type="primary"
-                icon={<DeleteOutlined />}
-                onClick={handleDeleteCourse}
-              >
-                Eliminar Curso
-              </Button>
-            </Space>
-          </div>
-        </div>
-
-        <div style={{ height: '1px', backgroundColor: '#e8e8e8', marginBottom: '8px' }}></div>
-
-        <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-          <Tabs defaultActiveKey="general" size="large" style={{ backgroundColor: '#ffffff', paddingLeft: '16px' }}>
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "12px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            overflow: "hidden",
+          }}
+        >
+          <Tabs
+            defaultActiveKey="general"
+            size="large"
+            style={{ backgroundColor: "#ffffff", paddingLeft: "16px" }}
+          >
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    color: "#000",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <FileTextOutlined
+                    style={{
+                      color: "#000",
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Información General</span>
                 </span>
               }
               key="general"
             >
-              <div style={{ padding: '32px', backgroundColor: '#ffffff' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div style={{ padding: "32px", backgroundColor: "#ffffff" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "24px",
+                  }}
+                >
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Nombre del curso:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.name}</Text>
-                    </div>
-                  </div>
-                  <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Gestión (semestre):</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.semester}</Text>
-                    </div>
-                  </div>
-                  <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha de inicio:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateBegin).format("DD/MM/YYYY")}</Text>
-                    </div>
-                  </div>
-                  <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha final:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateEnd).format("DD/MM/YYYY")}</Text>
-                    </div>
-                  </div>
-                  <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Docente asignado:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>
-                        {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : objClass.teacherId ? "Cargando..." : "No asignado"}
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Nombre del curso:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        {objClass.name}
                       </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Horarios:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>Por definir</Text>
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Gestión (semestre):
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        {objClass.semester}
+                      </Text>
+                    </div>
+                  </div>
+                  <div>
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Fecha de inicio:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        {dayjs(objClass.dateBegin).format("DD/MM/YYYY")}
+                      </Text>
+                    </div>
+                  </div>
+                  <div>
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Fecha final:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        {dayjs(objClass.dateEnd).format("DD/MM/YYYY")}
+                      </Text>
+                    </div>
+                  </div>
+                  <div>
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Docente asignado:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        {teacherInfo
+                          ? `${teacherInfo.name} ${teacherInfo.lastname}`
+                          : objClass.teacherId
+                          ? "Cargando..."
+                          : "No asignado"}
+                      </Text>
+                    </div>
+                  </div>
+                  <div>
+                    <Text strong style={{ color: "#000", fontSize: "14px" }}>
+                      Horarios:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ color: "#000", fontSize: "16px" }}>
+                        Por definir
+                      </Text>
                     </div>
                   </div>
                 </div>
@@ -387,21 +435,40 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <UserOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    color: "#000",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <UserOutlined
+                    style={{
+                      color: "#000",
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Estudiantes</span>
                 </span>
               }
               key="students"
             >
-              <div style={{ backgroundColor: '#ffffff', padding: '32px' }}>
+              <div style={{ backgroundColor: "#ffffff", padding: "32px" }}>
                 {hasStudents ? (
                   <>
-                    <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                    <div style={{ textAlign: "center", marginBottom: 24 }}>
                       <Space size="middle">
-                        <Button type="primary" size="large">1er Parcial</Button>
-                        <Button type="primary" size="large">2do Parcial</Button>
-                        <Button type="primary" size="large">Final</Button>
+                        <Button type="primary" size="large">
+                          1er Parcial
+                        </Button>
+                        <Button type="primary" size="large">
+                          2do Parcial
+                        </Button>
+                        <Button type="primary" size="large">
+                          Final
+                        </Button>
                       </Space>
                     </div>
 
@@ -411,9 +478,9 @@ export function CourseDetailPage() {
                       dataSource={students}
                       rowKey={(record) => record.code}
                       pagination={{
-                        position: ['bottomCenter'],
+                        position: ["bottomCenter"],
                         showSizeChanger: false,
-                        pageSize: 10
+                        pageSize: 10,
                       }}
                       size="middle"
                     />
@@ -428,9 +495,9 @@ export function CourseDetailPage() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ textAlign: "center", padding: "2rem" }}>
                     <Empty description="No hay estudiantes inscritos en este curso">
-                      <div style={{ marginTop: '24px' }}>
+                      <div style={{ marginTop: "24px" }}>
                         <StudentUpload
                           disabled={false}
                           onStudentsParsed={(parsed, info) => {
@@ -440,7 +507,9 @@ export function CourseDetailPage() {
                             const seen = new Set<string>();
                             const dupSet = new Set<string>();
                             for (const s of parsed) {
-                              const k = String(s.codigo || "").trim().toLowerCase();
+                              const k = String(s.codigo || "")
+                                .trim()
+                                .toLowerCase();
                               if (!k) continue;
                               if (seen.has(k)) dupSet.add(String(s.codigo));
                               else seen.add(k);
@@ -458,19 +527,38 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <InboxOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    color: "#000",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <InboxOutlined
+                    style={{
+                      color: "#000",
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Materiales</span>
                 </span>
               }
               key="materials"
             >
-              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "64px",
+                  backgroundColor: "#ffffff",
+                }}
+              >
                 <Empty description="Funcionalidad de materiales en desarrollo">
                   <Button
                     type="primary"
                     onClick={() => navigate(`/curso/${id}/documents`)}
-                    style={{ marginTop: '16px' }}
+                    style={{ marginTop: "16px" }}
                   >
                     Ir a Documentos
                   </Button>
@@ -480,20 +568,35 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    color: "#000",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <FileTextOutlined
+                    style={{
+                      color: "#000",
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Sílabo</span>
                 </span>
               }
               key="syllabus"
             >
-              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "64px",
+                  backgroundColor: "#ffffff",
+                }}
+              >
                 <Empty description="Sílabo no disponible">
-                  <Button
-                    type="primary"
-                    disabled
-                    style={{ marginTop: '16px' }}
-                  >
+                  <Button type="primary" disabled style={{ marginTop: "16px" }}>
                     Subir Sílabo
                   </Button>
                 </Empty>
