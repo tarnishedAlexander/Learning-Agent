@@ -5,5 +5,5 @@ export interface Clase {
   isActive: boolean;
   dateBegin: string;
   dateEnd: string;
-  courseid: string;
+  courseId: string;
 }
