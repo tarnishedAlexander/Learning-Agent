@@ -11,10 +11,11 @@ import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
-import PrivateRoute from "./PrivateRoute";
 import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import SettingsPage from "../pages/settings/SettingsPage";
+import { TeacherCoursePage } from "../pages/courses/TeacherCoursePage";
+import PrivateRoute from "./PrivateRoute";
 
 export const AppRoutes = () => {
   return (
@@ -26,10 +27,12 @@ export const AppRoutes = () => {
           {/* <Route path="/register" element={<Register />} /> */}
         </Route>
 
-        {/* <Route element={<PrivateRoute />}> */}
+        <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="/courses" element={<TeacherCoursePage />} />
+            <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
             <Route path="/classes/:id/students" element={<StudentsByClass />} />
@@ -42,7 +45,7 @@ export const AppRoutes = () => {
             <Route path="/upload-pdf" element={<UploadPdfPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
           </Route>
-        {/* </Route> */}
+        </Route>
       </Routes>
     </BrowserRouter>
   );

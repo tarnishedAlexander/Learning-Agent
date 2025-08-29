@@ -1,35 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import {
-  LlmPort,
-  LlmGenOptions,
-  LlmTextOutput,
-  LlmMessage,
-} from '../../domain/ports/llm.port';
-import { Ollama } from 'ollama';
+  ChatPort,
+  ChatOptions,
+  ChatTextOutput,
+  Chatmessage,
+} from '../../domain/ports/chat.port';
+import { OpenAI } from 'openai';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
 @Injectable()
-export class OllamaAdapter implements LlmPort {
+export class ChatAdapter implements ChatPort {
   private client: any;
   private templatesDir = path.resolve(process.cwd(), 'backend/templates');
 
   constructor() {
-    const host = process.env.OLLAMA_HOST ?? 'http://localhost:11434';
-    this.client = new (Ollama as any)({ host });
+    const host = process.env.Chat_HOST ?? 'http://localhost:11434';
+    this.client = new (OpenAI as any)({ host });
   }
 
   async complete(
     prompt: string,
-    options: LlmGenOptions,
-  ): Promise<LlmTextOutput> {
+    options: ChatOptions,
+  ): Promise<ChatTextOutput> {
     const res = await this.client.generate({
       model: options.model.name,
       prompt,
       options: {
         temperature: options.temperature,
-        top_p: options.topP,
-        stop: options.stop,
+        top_p: options.top_p,
       },
     });
     return {
@@ -40,16 +39,15 @@ export class OllamaAdapter implements LlmPort {
   }
 
   async chat(
-    messages: LlmMessage[],
-    options: LlmGenOptions,
-  ): Promise<LlmTextOutput> {
+    messages: Chatmessage[],
+    options: ChatOptions,
+  ): Promise<ChatTextOutput> {
     const res = await this.client.chat({
       model: options.model.name,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       options: {
         temperature: options.temperature,
-        top_p: options.topP,
-        stop: options.stop,
+        top_p: options.top_p,
       },
     });
     const last = res?.message?.content ?? '';
@@ -58,7 +56,7 @@ export class OllamaAdapter implements LlmPort {
 
   async embed(
     texts: string[],
-    options: Pick<LlmGenOptions, 'model'>,
+    options: Pick<ChatOptions, 'model'>,
   ): Promise<number[][]> {
     const res = await this.client.embeddings({
       model: options.model.name,
@@ -70,26 +68,19 @@ export class OllamaAdapter implements LlmPort {
     return vec as number[][];
   }
 
-  async stream?(
-    messages: LlmMessage[] | string,
-    options: LlmGenOptions,
-    onToken: (t: string) => void,
-  ) {
-    // const stream = await this.client.chat({ ..., stream: true });
-    // let full = '';
-    // for await (const chunk of stream) {
-    //   const piece = chunk?.message?.content ?? '';
-    //   full += piece;
-    //   onToken(piece);
-    // }
-    // return { text: full };
-    // Fallback no-stream:
-    const res = await this.chat(
-      Array.isArray(messages)
-        ? messages
-        : [{ role: 'user', content: messages }],
-      options,
-    );
+  async stream(
+    messages: string | Chatmessage | Chatmessage[],
+    options: ChatOptions,
+    onToken: (chunk: string) => void,
+  ): Promise<ChatTextOutput> {
+    // Convertimos cualquier input a array de Chatmessage
+    const chatMessages: Chatmessage[] = Array.isArray(messages)
+      ? messages
+      : typeof messages === 'string'
+      ? [{ role: 'user', content: messages }]
+      : [messages];
+
+    const res = await this.chat(chatMessages, options);
     onToken?.(res.text);
     return res;
   }
@@ -100,8 +91,9 @@ export class OllamaAdapter implements LlmPort {
     return template.replace('{{user_question}}', userQuestion);
   }
 
-  async askChatQuestion(userQuestion: string, options: LlmGenOptions) {
+  async askChatQuestion(userQuestion: string, options: ChatOptions) {
     const prompt = await this.getChatPrompt(userQuestion);
     return this.complete(prompt, options);
   }
 }
+
