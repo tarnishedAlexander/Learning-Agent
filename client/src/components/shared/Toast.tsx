@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export type ToastKind = 'success' | 'warn' | 'error';
+export type ToastKind = 'success' | 'warn' | 'error' | 'info';
 export type ToastItem = { id: string; message: string; type: ToastKind };
 
 export function useToast() {
