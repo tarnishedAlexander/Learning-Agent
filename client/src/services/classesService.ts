@@ -22,8 +22,9 @@ export const claseService = {
     }
   },
 
-  async createClase(clase: Omit<Clase, "id">): Promise<Clase> {
+  async createClase(clase: Omit<Clase, 'id' | 'isActive' | 'name'>): Promise<Clase> {
     try {
+          console.log("Valores que se envían al backend 2:", clase);
       const response = await apiClient.post("/academic/classes", clase);
       return response.data;
     } catch (error) {
@@ -54,6 +55,16 @@ export const claseService = {
       return {
         success: false
       }
+    }
+  },
+
+  async getCourseById(id: string): Promise<Clase> {
+    try {
+      const response = await apiClient.get(`/academic/classes/by-course/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch course", error);
+      throw error;
     }
   },
 };
