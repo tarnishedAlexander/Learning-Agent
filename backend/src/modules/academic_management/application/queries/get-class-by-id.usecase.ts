@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { CLASSES_REPO } from "../../tokens";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
+import { NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
 export class GetClassByIdUseCase {
@@ -10,8 +11,13 @@ export class GetClassByIdUseCase {
     ) {}
 
     async execute(classId: string): Promise<Classes | null> {
-        const ojbClass = await this.classesRepo.findById(classId);
-        if (ojbClass?.isActive) return ojbClass;
+        const objClass = await this.classesRepo.findById(classId);
+
+        if (!objClass) {
+            throw new NotFoundError(`Class not found with Id ${classId}`)
+        }
+        
+        if (objClass?.isActive) return objClass;
         return null;
     }
 }
