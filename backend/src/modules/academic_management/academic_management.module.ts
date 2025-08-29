@@ -29,6 +29,7 @@ import { IdentityModule } from '../identity/identity.module';
 import { CoursePrismaRepository } from './infrastructure/persistence/course.prisma.repository';
 import { CreateCourseUseCase } from './application/commands/create-course.usecase';
 import { GetCoursesByTeacherUseCase } from './application/queries/get-courses-by-teacher.usecase';
+import { GetCourseByIdUseCase } from './application/queries/get-course-by-id.usecase';
 
 @Module({
   imports: [PrismaModule,IdentityModule],
@@ -42,6 +43,7 @@ import { GetCoursesByTeacherUseCase } from './application/queries/get-courses-by
     {provide: ENROLLMENT_REPO, useClass: EnrollmentPrismaRepository},
     ListClassesUseCase,
     ListStudentsUseCase,
+    GetCourseByIdUseCase,
     GetCoursesByTeacherUseCase,
     GetClassByIdUseCase,
     GetClassesByStudentUseCase,

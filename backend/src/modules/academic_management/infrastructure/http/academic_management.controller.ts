@@ -26,6 +26,7 @@ import { GetCoursesByTeacherUseCase } from '../../application/queries/get-course
 import { responseAlreadyCreated, responseConflict, responseCreated, responseForbidden, responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
 import { AlreadyCreatedError, ForbiddenError, NotFoundError } from 'src/shared/handler/errors';
 import { ConflictError } from 'openai';
+import { GetCourseByIdUseCase } from '../../application/queries/get-course-by-id.usecase';
 const academicRoute = 'academic'
 
 @UseGuards(JwtAuthGuard)
@@ -34,6 +35,7 @@ export class AcademicManagementController {
   constructor(
     private readonly listClasses: ListClassesUseCase,
     private readonly listStudents: ListStudentsUseCase,
+    private readonly getCourseById: GetCourseByIdUseCase,
     private readonly getCoursesByTeacher: GetCoursesByTeacherUseCase,
     private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
@@ -74,7 +76,21 @@ export class AcademicManagementController {
     }
   }
 
-  //TODO nos falta un endpoint para get course by id
+  @Get('course/:id')
+  async getCourseByIdEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/course/${id}`
+    const description = "Get course by ID"
+    try {
+      const course = await this.getCourseById.execute(id);
+      return responseSuccess("Sin implementar", course, path, description)
+    } catch(error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
 
   @Get('course/by-teacher/:id')
   async getCourseByTeaceherEndpoint(@Param('id') id: string) {
@@ -174,7 +190,11 @@ export class AcademicManagementController {
       const classesData = await this.createClasses.execute(dto);
       return responseCreated("Sin implementar", classesData, path, description)
     } catch (error) {
-      return responseInternalServerError(error.message, "Sin implementar", description, path)
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
     }
   }
 
