@@ -8,8 +8,6 @@
 -- DropForeignKey
 ALTER TABLE "public"."Classes" DROP CONSTRAINT "Classes_teacherId_fkey";
 
--- DropIndex
-DROP INDEX "public"."RolePermission_permissionId_idx";
 
 -- AlterTable
 ALTER TABLE "public"."Classes" DROP COLUMN "teacherId",
