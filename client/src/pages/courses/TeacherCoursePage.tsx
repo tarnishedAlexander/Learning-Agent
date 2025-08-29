@@ -6,13 +6,19 @@ import type { Course } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
 import { CreateCourseForm } from "./CreateCourseForm";
 import { PlusOutlined } from "@ant-design/icons";
+import { useUserContext } from "../../context/UserContext";
 
 export function TeacherCoursePage() {
+  const { user, fetchUser } = useUserContext();
   const { courses, createCourse } = useCourses();
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   useEffect(() => {
     const lower = searchTerm.trim().toLowerCase();
@@ -177,10 +183,12 @@ export function TeacherCoursePage() {
               style={{ width: 240 }}
             />
           </Space>
-          <Button type="primary" onClick={() => setModalOpen(true)}>
-            <PlusOutlined />
-            Registrar materia
-          </Button>
+          {user?.roles.includes("docente") && (
+            <Button type="primary" onClick={() => setModalOpen(true)}>
+              <PlusOutlined />
+              Registrar materia
+            </Button>
+          )}
         </div>
 
         {renderGrid(filteredCourses)}
