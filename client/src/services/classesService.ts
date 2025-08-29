@@ -22,9 +22,9 @@ export const claseService = {
     }
   },
 
-  async createClase(clase: Omit<Clase, "id">): Promise<Clase> {
+  async createClase(course: Omit<Clase, "id" | "isActive" | "name">): Promise<Clase> {
     try {
-      const response = await apiClient.post("/academic/classes", clase);
+      const response = await apiClient.post("/academic/classes", course);
       return response.data;
     } catch (error) {
       console.error("Failed to create clase", error);
