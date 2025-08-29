@@ -73,10 +73,25 @@ export class AcademicManagementController {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
   }
+
+  //TODO nos falta un endpoint para get course by id
+
   @Get('course/by-teacher/:id')
-  getCourseByTeaceherEndpoint(@Param('id') id: string) {
-    return this.getCoursesByTeacher.execute(id)
+  async getCourseByTeaceherEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/course/by-teacher/${id}`
+    const description = "List all courses of a teacher"
+    try {
+      const courses = await this.getCoursesByTeacher.execute(id)
+      return responseSuccess("Sin implementar", courses, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
+
   @Get('classes/:id')
   async getClassByIdEndpoint(@Param('id') id: string) {
     const path = academicRoute + `/classes/${id}`
@@ -136,10 +151,21 @@ export class AcademicManagementController {
 
   //Endpoints POST
   @Post('course')
-  createCourseEndpoint(@Body() dto: CreateCourseDTO) {
-    return this.createCourse.execute(dto)
+  async createCourseEndpoint(@Body() dto: CreateCourseDTO) {
+    const path = academicRoute + `/course`
+    const description = "Create a new course"
+    try {
+      const classesData = await this.createCourse.execute(dto)
+      return responseCreated("Sin implementar", classesData, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
-  
+
   @Post('classes')
   async createClassEndpoint(@Body() dto: CreateClassDto) {
     const path = academicRoute + `/classes`

@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { COURSE_REPO, TEACHER_REPO } from "../../tokens";
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import type { ProfessorRepositoryPort } from "../../domain/ports/teacher.repository.ports";
+import { NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
 export class CreateCourseUseCase {
@@ -12,7 +13,9 @@ export class CreateCourseUseCase {
 
     async execute (input: { teacherId: string; name: string }) {
         const teacher = await this.teacherRepo.findByUserId(input.teacherId);
-        if (!teacher) throw new Error(`No Teacher with ID ${input.teacherId}`)
+        if (!teacher) {
+            throw new NotFoundError(`No Teacher with ID ${input.teacherId}`)
+        }
 
         return this.courseRepo.create(input.name, input.teacherId);
     }
