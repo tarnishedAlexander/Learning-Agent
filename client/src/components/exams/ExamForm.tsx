@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useExamForm } from '../../hooks/useExamForm.ts';
 import { createExam } from '../../services/exams.service';
+import { Button } from 'antd';
 
 import type { ToastKind } from '../shared/Toast';
 type Props = {
@@ -269,13 +270,15 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
       <div className="actions-row button-hover" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: 24, position: 'relative', minHeight: 64 }}>
         <div style={{ display: 'flex', gap: 8 }}>
           {step > 0 && (
-            <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>
+            <Button
+              type="default"
+              onClick={() => setStep(s => s - 1)}
+            >
               Anterior
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            type="default"
             onClick={onResetStep}
             disabled={
               (step === 0 && !values.subject && !values.difficulty && !values.attempts) ||
@@ -284,28 +287,29 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
             }
           >
             Limpiar
-          </button>
+          </Button>
+          {step < 2 && (
+            <Button
+              type="primary"
+              className="float-button-animation next-fixed"
+              disabled={sending || !validStep()}
+              onClick={(e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); }}
+              style={{ marginLeft: 8 }}
+            >
+              Siguiente
+            </Button>
+          )}
         </div>
         {/* Botón IA visible en el paso 2 si el prop existe */}
         {step === 2 && onGenerateAI && (
-          <button
-            type="button"
-            className="btn btn-outline next-fixed"
+          <Button
+            type="primary"
             disabled={sending || !validStep()}
             onClick={() => { if (validStep()) onGenerateAI(); }}
+            style={{ marginLeft: "auto" }}
           >
             Generar preguntas con IA
-          </button>
-        )}
-        {step < 2 && (
-          <button
-            type="button"
-            className="btn btn-primary float-button-animation next-fixed"
-            disabled={sending || !validStep()}
-            onClick={(e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); }}
-          >
-            Siguiente
-          </button>
+          </Button>
         )}
       </div>
 
