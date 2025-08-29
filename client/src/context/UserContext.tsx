@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback  } from 'react';
 import { meAPI } from '../services/authService';
 
 interface User {
@@ -19,7 +19,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
 
-    const fetchUser = async () => {
+    const fetchUser = useCallback(async () => {
         try {
             const authData = localStorage.getItem("auth");
             if (!authData) {
@@ -35,11 +35,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Error fetching user data:', error);
             setUser(null);
         }
-    };
+    },[]);
 
     useEffect(() => {
         fetchUser();
-    }, []);
+    }, [fetchUser ]);
 
     return (
         <UserContext.Provider value={{ user, fetchUser }}>

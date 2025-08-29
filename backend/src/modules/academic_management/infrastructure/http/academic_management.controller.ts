@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Put } from '@nestjs/common';
-import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
+import { CreateClassUseCase } from '../../application/commands/create-class.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
 import { ListClassesUseCase } from '../../application/queries/list-classes.usecase';
@@ -11,7 +11,7 @@ import { GetClassesByStudentUseCase } from '../../application/queries/get-classe
 import { GetStudentsByClassUseCase } from '../../application/queries/get-students-by-class.usecase';
 import { GetClassByIdUseCase } from '../../application/queries/get-class-by-id.usecase';
 import { EnrollSingleStudentDto } from './dtos/enroll-single-student.dto';
-import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-sigle-student.usecase';
+import { EnrollSingleStudentUseCase } from '../../application/commands/enroll-single-student.usecase';
 import { EnrollGroupStudentUseCase } from '../../application/commands/enroll-group-students.usecase';
 import { EnrollGroupStudentDTO } from './dtos/enroll-group-student.dto';
 import { UpdateClassUseCase } from '../../application/commands/update-class.usecase';
@@ -20,19 +20,28 @@ import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-c
 import { DeleteClassDTO } from './dtos/delete-class.dto';
 import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
-import { responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
-import { NotFoundError } from 'src/shared/handler/errors';
+import { CreateCourseUseCase } from '../../application/commands/create-course.usecase';
+import { CreateCourseDTO } from './dtos/create-course.dto';
+import { GetCoursesByTeacherUseCase } from '../../application/queries/get-courses-by-teacher.usecase';
+import { responseAlreadyCreated, responseConflict, responseCreated, responseForbidden, responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
+import { AlreadyCreatedError, ForbiddenError, NotFoundError } from 'src/shared/handler/errors';
+import { ConflictError } from 'openai';
+import { GetCourseByIdUseCase } from '../../application/queries/get-course-by-id.usecase';
+const academicRoute = 'academic'
 
 @UseGuards(JwtAuthGuard)
-@Controller('academic')
+@Controller(academicRoute)
 export class AcademicManagementController {
   constructor(
     private readonly listClasses: ListClassesUseCase,
     private readonly listStudents: ListStudentsUseCase,
+    private readonly getCourseById: GetCourseByIdUseCase,
+    private readonly getCoursesByTeacher: GetCoursesByTeacherUseCase,
     private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
     private readonly getTeacherInfoById: GetTeacherInfoByIDUseCase,
+    private readonly createCourse: CreateCourseUseCase,
     private readonly createClasses: CreateClassUseCase,
     private readonly createProfileStudent: CreateStudentProfileUseCase,
     private readonly createEnrollment: CreateEnrollmentUseCase,
@@ -42,9 +51,10 @@ export class AcademicManagementController {
     private readonly softDeleteClass: SoftDeleteClassUseCase,
   ) { }
 
+  //Endpoints GET
   @Get('classes')
   async listClassesEndPoint() {
-    const path = "academic/classes"
+    const path = academicRoute + "/classes"
     const description = "List all active classes endpoint"
     try {
       const classesData = await this.listClasses.execute();
@@ -53,31 +63,117 @@ export class AcademicManagementController {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
   }
+
   @Get('students')
-  listStudentEndPoint() {
-    return this.listStudents.execute();
+  async listStudentEndPoint() {
+    const path = academicRoute + "/students"
+    const description = "List all students endpoint"
+    try {
+      const students = await this.listStudents.execute();
+      return responseSuccess("Sin implementar", students, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
+    }
   }
+
+  @Get('course/:id')
+  async getCourseByIdEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/course/${id}`
+    const description = "Get course by ID"
+    try {
+      const course = await this.getCourseById.execute(id);
+      return responseSuccess("Sin implementar", course, path, description)
+    } catch(error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
+  @Get('course/by-teacher/:id')
+  async getCourseByTeaceherEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/course/by-teacher/${id}`
+    const description = "List all courses of a teacher"
+    try {
+      const courses = await this.getCoursesByTeacher.execute(id)
+      return responseSuccess("Sin implementar", courses, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
   @Get('classes/:id')
-  getClassByIdEndpoint(@Param('id') id: string) {
-    return this.getClassById.execute(id);
+  async getClassByIdEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/classes/${id}`
+    const description = "Get class by ID"
+    try {
+      const objClass = await this.getClassById.execute(id);
+      return responseSuccess("Sin implementar", objClass, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
+
   @Get('classes/by-student/:studentId')
-  getClassesByStudentEndpoint(@Param('studentId') studentId: string) {
-    return this.getClassesByStudent.execute(studentId);
+  async getClassesByStudentEndpoint(@Param('studentId') studentId: string) {
+    const path = academicRoute + `/classes/by-student/${studentId}`
+    const description = "Get classes by student ID"
+    try {
+      const classesData = await this.getClassesByStudent.execute(studentId);
+      return responseSuccess("Sin implementar", classesData, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
+    }
   }
+
   @Get('students/by-class/:classId')
-  getStudentsByClassEndpoint(@Param('classId') classId: string) {
-    return this.getStudentsByClass.execute(classId);
+  async getStudentsByClassEndpoint(@Param('classId') classId: string) {
+    const path = academicRoute + `/classes/by-student/${classId}`
+    const description = "Get students by class ID"
+    try {
+      const studentsData = await this.getStudentsByClass.execute(classId);
+      return responseSuccess("Sin implementar", studentsData, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
+    }
   }
+
   @Get('teacher/:id')
   async getTeacherInfoByID(@Param('id') id: string) {
-    const path = `academic/teacher/${id}`
+    const path = academicRoute + `/teacher/${id}`
     const description = "List teacher info by ID"
     try {
       const teacherInfo = await this.getTeacherInfoById.execute(id);
       return responseSuccess("Sin implementar", teacherInfo, path, description)
     } catch (error) {
-      console.log("ASDFASDF pero en controller")
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
+
+  //Endpoints POST
+  @Post('course')
+  async createCourseEndpoint(@Body() dto: CreateCourseDTO) {
+    const path = academicRoute + `/course`
+    const description = "Create a new course"
+    try {
+      const classesData = await this.createCourse.execute(dto)
+      return responseCreated("Sin implementar", classesData, path, description)
+    } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
       } else {
@@ -87,43 +183,128 @@ export class AcademicManagementController {
   }
 
   @Post('classes')
-  createClassEndpoint(@Body() dto: CreateClassDto) {
-    return this.createClasses.execute(dto);
-  }
-  @Post('students')
-  createStudentEndpoint(@Body() dto: CreateStudentProfileDto) {
-    return this.createProfileStudent.execute(dto);
-  }
-  @Post('enrollments')
-  createEnrollmentEndpoint(@Body() dto: CreateEnrollmentDto) {
-    return this.createEnrollment.execute(dto);
-  }
-  @Post('enrollments/single-student')
-  enrollSingleStudentEndpoint(@Body() dto: EnrollSingleStudentDto) {
-    return this.enrollSingle.execute(dto);
-  }
-  @Post('enrollments/group-students')
-  enrollGroupStudentEndpoint(@Body() dto: EnrollGroupStudentDTO) {
-    return this.enrollGroup.execute(dto);
+  async createClassEndpoint(@Body() dto: CreateClassDto) {
+    const path = academicRoute + `/classes`
+    const description = "Create a new Class"
+    try {
+      const classesData = await this.createClasses.execute(dto);
+      return responseCreated("Sin implementar", classesData, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
 
-  @Put('classes/:id')
-  updateClassEndpoint(@Param('id') id: string, @Body() dto: EditClassDTO) {
-    const input = {
-      teacherId: dto.teacherId,
-      classId: id,
-      name: dto.name,
-      semester: dto.semester,
-      dateBegin: dto.dateBegin,
-      dateEnd: dto.dateEnd
+  @Post('students')
+  async createStudentEndpoint(@Body() dto: CreateStudentProfileDto) {
+    const path = academicRoute + `/students`
+    const description = "Create a new student"
+    try {
+      const student = await this.createProfileStudent.execute(dto);
+      return responseCreated("Sin implementar", student, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
-    return this.updateClass.execute(input);
   }
+
+  @Post('enrollments')
+  async createEnrollmentEndpoint(@Body() dto: CreateEnrollmentDto) {
+    const path = academicRoute + `/enrollments`
+    const description = "Enroll student"
+    try {
+      const enrollment = await this.createEnrollment.execute(dto);
+      return responseCreated("Sin implementar", enrollment, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
+    }
+  }
+
+  @Post('enrollments/single-student')
+  async enrollSingleStudentEndpoint(@Body() dto: EnrollSingleStudentDto) {
+    const path = academicRoute + `/enrollments/single-student`
+    const description = "Enroll one student to a class"
+    try {
+      const enrollment = await this.enrollSingle.execute(dto);
+      return responseCreated("Sin implementar", enrollment, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else if (error instanceof AlreadyCreatedError) {
+        return responseAlreadyCreated(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
+  @Post('enrollments/group-students')
+  async enrollGroupStudentEndpoint(@Body() dto: EnrollGroupStudentDTO) {
+    const path = academicRoute + `/enrollments/group-students`
+    const description = "Enroll a group of students to a class"
+    try {
+      const enrollments = await this.enrollGroup.execute(dto);
+      return responseCreated("Sin implementar", enrollments, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
+
+  //Endpoints PUT
+  @Put('classes/:id')
+  async updateClassEndpoint(@Param('id') id: string, @Body() dto: EditClassDTO) {
+    const path = academicRoute + `/classes/${id}`
+    const description = "Update information of a class by id"
+    try {
+      const input = {
+        teacherId: dto.teacherId,
+        classId: id,
+        name: dto.name,
+        semester: dto.semester,
+        dateBegin: dto.dateBegin,
+        dateEnd: dto.dateEnd
+      }
+      const objClass = await this.updateClass.execute(input);
+      return responseCreated("Sin implementar", objClass, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else if (error instanceof ForbiddenError) {
+        return responseForbidden(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
   @Put('classes/remove/:id')
-  softDeleteEndpoint(@Param('id') id: string, @Body() dto: DeleteClassDTO) {
-    return this.softDeleteClass.execute({
-      teacherId: dto.teacherId,
-      classId: id
-    })
+  async softDeleteEndpoint(@Param('id') id: string, @Body() dto: DeleteClassDTO) {
+    const path = academicRoute + `/classes/remove/${id}`
+    const description = "Soft delete a class by id"
+    try {
+      const input = {
+        teacherId: dto.teacherId,
+        classId: id
+      }
+      const objClass = await this.softDeleteClass.execute(input)
+      return responseCreated("Sin implementar", objClass, path, description)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else if (error instanceof ForbiddenError) {
+        return responseForbidden(error.message, "Sin implementar", description, path)
+      } else if (error instanceof ConflictError) {
+        return responseConflict(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
 }
