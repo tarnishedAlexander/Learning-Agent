@@ -111,7 +111,14 @@ const useClasses = () => {
         success: true,
         message: "Clase eliminada exitosamente"
       }
+      //TODO aun falta añadir todos los errores posibles o ponerlos bien en back (?)
+    } else if (res.code == 409) {
+      return {
+        success: false,
+        message: "Esta clase aun tiene inscripciones pendientes"
+      }
     } else {
+      console.log(res)
       return {
         success: false,
         message: res.error
