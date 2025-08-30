@@ -16,9 +16,6 @@ export function ClassMenu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
-  const goToReinforcement = () => {
-    navigate("/reinforcement");
-  };
 
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),

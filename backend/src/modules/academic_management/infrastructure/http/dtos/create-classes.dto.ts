@@ -12,7 +12,7 @@ export class CreateClassDto {
 
   @IsNotEmpty()
   @IsString()
-  teacherId: string;
+  courseId: string;
 
   @IsNotEmpty()
   @IsDate()
