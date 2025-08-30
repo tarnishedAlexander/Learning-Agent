@@ -313,10 +313,10 @@ model Exam {
   trueFalseCount    Int   @default(0) // verdadero/falso
   openAnalysisCount Int   @default(0) // abiertas: análisis
   openExerciseCount Int   @default(0) // abiertas: ejercicio
-
-  createdAt      DateTime @default(now())
-
-  questions ExamQuestion[]
+  approvedAt      DateTime?  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  questions       ExamQuestion[]
 
   @@index([subject])
 }
