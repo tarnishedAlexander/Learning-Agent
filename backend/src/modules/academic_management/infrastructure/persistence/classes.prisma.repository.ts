@@ -21,7 +21,6 @@ export class ClassesPrismaRepository implements ClassesRepositoryPort {
         )
     }
 
-    //TODO cambiar teacher
     async findByCourseId(courseId: string): Promise<Classes[]> {
         const classesData = await this.prisma.classes.findMany({ where: { courseId } });
         if (!classesData) return [];
