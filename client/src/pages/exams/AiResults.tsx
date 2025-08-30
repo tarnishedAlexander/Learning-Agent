@@ -3,7 +3,7 @@ import { Alert, Button, Card, Modal, Radio, Skeleton, Space, Typography, theme }
 import { ReloadOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import QuestionCard from '../../components/ai/QuestionCard';
 import type { GeneratedQuestion } from '../../services/exams.service';
-import { palette } from '../../theme';
+import { useExamsStore } from '../../store/examsStore';
 
 const { Title, Text } = Typography;
 
@@ -39,6 +39,7 @@ export default function AiResults({
   const [saveLoading, setSaveLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);
   const [typeChoice, setTypeChoice] = useState<GeneratedQuestion['type']>('multiple_choice');
+  const addFromQuestions = useExamsStore((s) => s.addFromQuestions);
 
   const total = questions.length;
   const selected = questions.filter(q => q.include).length;
@@ -66,6 +67,8 @@ export default function AiResults({
     setSaveLoading(true);
     try {
       await onSave();
+      addFromQuestions({ title: subject || 'Examen', questions, publish: true });
+      window.location.href = '/exam';
     } finally {
       setSaveLoading(false);
     }
@@ -85,13 +88,13 @@ export default function AiResults({
     <div className="ai-results-wrap">
       <div className="ai-results card-like">
         <Title level={3} className="!mb-4" style={{ color: token.colorPrimary }}>
-          Revisar Examen: <span style={{ color: palette.P0 }}>{subject}</span>
+          Revisar Examen: <span style={{ color: token.colorPrimary }}>{subject}</span>
         </Title>
 
         <div className="flex flex-wrap gap-6 p-4 rounded-md mb-4" style={examInfoStyle}>
           <div className="flex flex-col">
             <Text type="secondary">Materia</Text>
-            <Text strong style={{ color: palette.P0 }}>{subject}</Text>
+            <Text strong style={{ color: token.colorPrimary }}>{subject}</Text>
           </div>
           <div className="flex flex-col">
             <Text type="secondary">Total</Text>
