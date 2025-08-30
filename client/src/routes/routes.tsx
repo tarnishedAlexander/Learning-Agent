@@ -10,7 +10,6 @@ import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
-import CoursePeriodsPage from "../pages/courses/CoursePeriodsPage";
 import PublicRoute from "./PublicRoute";
 import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
