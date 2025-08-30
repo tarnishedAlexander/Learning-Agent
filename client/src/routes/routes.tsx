@@ -34,10 +34,8 @@ export const AppRoutes = () => {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="/courses" element={<TeacherCoursePage />} />
             <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
-            <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
-            <Route path="/classes/:id/students" element={<StudentsByClass />} />
             <Route path="/reinforcement" element={<StudentProfile />} />
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />

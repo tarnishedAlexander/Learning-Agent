@@ -32,6 +32,7 @@ import type { TeacherInfo } from "../../interfaces/teacherInterface";
 import type { createEnrollmentInterface, EnrollGroupRow } from "../../interfaces/enrollmentInterface";
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
+import useStudents from "../../hooks/useStudents";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -39,7 +40,8 @@ const { TabPane } = Tabs;
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchClase, students, objClass, updateClass, softDeleteClass } = useClasses();
+  const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
+  const { students, fetchStudentsByClass } = useStudents();
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
   const { getTeacherInfoById } = useTeacher();
 
@@ -66,7 +68,8 @@ export function CourseDetailPage() {
       }
       setLoading(true);
       try {
-        await fetchClase(id);
+        await fetchClassById(id);
+        await fetchStudentsByClass(id);
       } catch (error) {
         message.error("Error al cargar los datos del curso");
       } finally {
@@ -79,9 +82,9 @@ export function CourseDetailPage() {
   // Efecto para cargar información del docente cuando objClass cambia
   useEffect(() => {
     const loadTeacherInfo = async () => {
-      if (objClass?.teacherId) {
+      if (actualClass?.teacherId) {
         try {
-          const teacher = await getTeacherInfoById(objClass.teacherId);
+          const teacher = await getTeacherInfoById(actualClass.teacherId);
           if (teacher) {
             setTeacherInfo(teacher);
           }
@@ -94,7 +97,7 @@ export function CourseDetailPage() {
     };
 
     loadTeacherInfo();
-  }, [objClass, getTeacherInfoById]);
+  }, [actualClass, getTeacherInfoById]);
 
   const handleEditCourse = async (values: Clase) => {
     if (!values.id) return;
@@ -105,7 +108,7 @@ export function CourseDetailPage() {
         return
       }
       setEditModalOpen(false);
-      if (id) await fetchClase(id);
+      if (id) await fetchClassById(id);
     } catch {
       message.error("Error al actualizar el curso");
     }
@@ -139,7 +142,7 @@ export function CourseDetailPage() {
     try {
       await enrollSingleStudent(values);
       message.success("Estudiante inscrito correctamente");
-      if (id) fetchClase(id);
+      if (id) fetchClassById(id);
       setSingleStudentFormOpen(false);
     } catch {
       message.error("Error al inscribir al estudiante");
@@ -183,7 +186,7 @@ export function CourseDetailPage() {
       setPreviewModalOpen(false);
       setParsedStudents([]);
       setDuplicates([]);
-      fetchClase(id);
+      fetchClassById(id);
     } catch (error: any) {
       message.error(error?.message || "Error al inscribir el grupo de estudiantes");
     } finally {
@@ -250,7 +253,7 @@ export function CourseDetailPage() {
     );
   }
 
-  if (!objClass) {
+  if (!actualClass) {
     return (
       <PageTemplate
         title="Curso no encontrado"
@@ -274,27 +277,27 @@ export function CourseDetailPage() {
 
   return (
     <PageTemplate
-      title={objClass.name}
+      title={actualClass.name}
       subtitle={dayjs().format("DD [de] MMMM [de] YYYY")}
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
-        { label: objClass.name, href: `/classes/${objClass.id}` },
+        { label: actualClass.name, href: `/classes/${actualClass.id}` },
       ]}
     >
       <div style={{ padding: "1rem" }}>
-        <div style={{ marginBottom: 8, backgroundColor: '#ffffff', padding: '16px', borderRadius: '12px' }}>
+        <div style={{ marginBottom: 8, padding: '16px', borderRadius: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <Title level={2} style={{ margin: 0, color: '#000', fontSize: '28px' }}>
-                {objClass.name}
+              <Title level={2} style={{ margin: 0, fontSize: '28px' }}>
+                {actualClass.name}
               </Title>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px', marginBottom: '16px' }}>
-                <Text style={{ color: '#666', fontSize: '14px' }}>
+                <Text style={{ fontSize: '14px' }}>
                   <CalendarOutlined style={{ marginRight: '4px' }} />
-                  {objClass.semester}
+                  {actualClass.semester}
                 </Text>
-                <Text style={{ color: '#666', fontSize: '14px' }}>
+                <Text style={{ fontSize: '14px' }}>
                   <TeamOutlined style={{ marginRight: '4px' }} />
                   {hasStudents ? students.length : 0} estudiantes
                 </Text>
@@ -328,57 +331,57 @@ export function CourseDetailPage() {
           </div>
         </div>
 
-        <div style={{ height: '1px', backgroundColor: '#e8e8e8', marginBottom: '8px' }}></div>
+        <div style={{ height: '1px', marginBottom: '8px' }}></div>
 
-        <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-          <Tabs defaultActiveKey="general" size="large" style={{ backgroundColor: '#ffffff', paddingLeft: '16px' }}>
+        <div style={{ borderRadius: '12px', overflow: 'hidden' }}>
+          <Tabs defaultActiveKey="general" size="large" style={{ paddingLeft: '16px' }}>
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <FileTextOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
                   <span>Información General</span>
                 </span>
               }
               key="general"
             >
-              <div style={{ padding: '32px', backgroundColor: '#ffffff' }}>
+              <div style={{ padding: '32px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Nombre del curso:</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Nombre del curso:</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.name}</Text>
+                      <Text style={{ fontSize: '16px' }}>{actualClass.name}</Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Gestión (semestre):</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Gestión (semestre):</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{objClass.semester}</Text>
+                      <Text style={{ fontSize: '16px' }}>{actualClass.semester}</Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha de inicio:</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Fecha de inicio:</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateBegin).format("DD/MM/YYYY")}</Text>
+                      <Text style={{ fontSize: '16px' }}>{dayjs(actualClass.dateBegin).format("DD/MM/YYYY")}</Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Fecha final:</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Fecha final:</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>{dayjs(objClass.dateEnd).format("DD/MM/YYYY")}</Text>
+                      <Text style={{ fontSize: '16px' }}>{dayjs(actualClass.dateEnd).format("DD/MM/YYYY")}</Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Docente asignado:</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Docente asignado:</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>
-                        {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : objClass.teacherId ? "Cargando..." : "No asignado"}
+                      <Text style={{ fontSize: '16px' }}>
+                        {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : actualClass.teacherId ? "Cargando..." : "No asignado"}
                       </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ color: '#000', fontSize: '14px' }}>Horarios:</Text>
+                    <Text strong style={{ fontSize: '14px' }}>Horarios:</Text>
                     <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ color: '#000', fontSize: '16px' }}>Por definir</Text>
+                      <Text style={{ fontSize: '16px' }}>Por definir</Text>
                     </div>
                   </div>
                 </div>
@@ -387,14 +390,14 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <UserOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span style={{display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <UserOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
                   <span>Estudiantes</span>
                 </span>
               }
               key="students"
             >
-              <div style={{ backgroundColor: '#ffffff', padding: '32px' }}>
+              <div style={{ padding: '32px' }}>
                 {hasStudents ? (
                   <>
                     <div style={{ textAlign: 'center', marginBottom: 24 }}>
@@ -458,14 +461,14 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <InboxOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <InboxOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
                   <span>Materiales</span>
                 </span>
               }
               key="materials"
             >
-              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+              <div style={{ textAlign: 'center', padding: '64px' }}>
                 <Empty description="Funcionalidad de materiales en desarrollo">
                   <Button
                     type="primary"
@@ -480,14 +483,14 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <FileTextOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
                   <span>Sílabo</span>
                 </span>
               }
               key="syllabus"
             >
-              <div style={{ textAlign: 'center', padding: '64px', backgroundColor: '#ffffff' }}>
+              <div style={{ textAlign: 'center', padding: '64px' }}>
                 <Empty description="Sílabo no disponible">
                   <Button
                     type="primary"
@@ -507,7 +510,7 @@ export function CourseDetailPage() {
           open={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleEditCourse}
-          clase={objClass}
+          clase={actualClass}
         />
 
         <SafetyModal
@@ -515,7 +518,7 @@ export function CourseDetailPage() {
           onCancel={() => setSafetyModalOpen(false)}
           onConfirm={confirmDeleteCourse}
           title="¿Eliminar curso?"
-          message={`¿Estás seguro de que quieres eliminar el curso "${objClass.name}"? Esta acción no se puede deshacer.`}
+          message={`¿Estás seguro de que quieres eliminar el curso "${actualClass.name}"? Esta acción no se puede deshacer.`}
           confirmText="Sí, eliminar"
           cancelText="Cancelar"
           danger

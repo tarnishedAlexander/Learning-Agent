@@ -61,12 +61,11 @@ const useClasses = () => {
 
   const fetchClassById = async (classId: string) => {
     const res = await classService.getClassById(classId);
-    if (res.code == 201) {
-      console.log("Clase recuperada:", res.data)
+    if (res.code == 200) {
       setActualClass(res.data)
       return {
         success: true,
-        message: "Período creado exitosamente"
+        message: "Clase recuperada exitosamente"
       }
     } else {
       return {
