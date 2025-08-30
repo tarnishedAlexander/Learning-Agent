@@ -91,4 +91,35 @@ export interface DocumentChunkRepositoryPort {
     maxChunkSize: number;
     totalContentLength: number;
   }>;
+
+  /**
+   * Actualiza el embedding de un chunk específico
+   * @param chunkId ID del chunk a actualizar
+   * @param embedding Vector de embedding
+   */
+  updateChunkEmbedding(chunkId: string, embedding: number[]): Promise<void>;
+
+  /**
+   * Actualiza embeddings de múltiples chunks en lote
+   * @param updates Array de actualizaciones con chunkId y embedding
+   */
+  updateBatchEmbeddings(
+    updates: Array<{ chunkId: string; embedding: number[] }>,
+  ): Promise<void>;
+
+  /**
+   * Verifica si un chunk tiene embedding generado
+   * @param chunkId ID del chunk a verificar
+   */
+  hasEmbedding(chunkId: string): Promise<boolean>;
+
+  /**
+   * Busca chunks que no tienen embeddings generados para un documento
+   * @param documentId ID del documento
+   * @param options Opciones de búsqueda
+   */
+  findChunksWithoutEmbeddings(
+    documentId: string,
+    options?: FindChunksOptions,
+  ): Promise<FindChunksResult>;
 }
