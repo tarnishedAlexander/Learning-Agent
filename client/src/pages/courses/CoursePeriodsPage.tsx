@@ -1,23 +1,29 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Empty, Spin, Card, Row, Col } from "antd";
+import { Empty, Spin, Card, Row, Col, Button } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import PageTemplate from "../../components/PageTemplate";
 import useCourses from "../../hooks/useCourses";
 import useClasses from "../../hooks/useClasses";
+import { CreatePeriodForm } from "../../components/CreatePeriodForm";
 import type { Course } from "../../interfaces/courseInterface";
 import type { Clase } from "../../interfaces/claseInterface";
+import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 
 export default function CoursePeriodsPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const { courses } = useCourses();
-  const { clases } = useClasses();
+  const { clases, createClass } = useClasses();
+  const { user } = useUserContext();
   const navigate = useNavigate();
   
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [periodsLoading, setPeriodsLoading] = useState(true);
   const [coursePeriods, setCoursePeriods] = useState<Clase[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [creatingPeriod, setCreatingPeriod] = useState(false);
 
   useEffect(() => {
     if (!courseId) {
@@ -52,6 +58,25 @@ export default function CoursePeriodsPage() {
 
   const goToPeriod = (periodId: string) => {
     navigate(`/classes/${periodId}`);
+  };
+
+  const handleCreatePeriod = async (periodData: Omit<Clase, "id">) => {
+    setCreatingPeriod(true);
+    try {
+      await createClass(periodData);
+      setModalOpen(false);
+      const safeClases = Array.isArray(clases) ? clases : [];
+      const filteredPeriods = safeClases.filter((clase) => clase.courseId === courseId);
+      setCoursePeriods(filteredPeriods);
+    } catch (error) {
+      console.error("Error creating period:", error);
+    } finally {
+      setCreatingPeriod(false);
+    }
+  };
+
+  const handleModalCancel = () => {
+    setModalOpen(false);
   };
 
   const renderPeriodCards = (items: Clase[]) => {
@@ -169,6 +194,31 @@ export default function CoursePeriodsPage() {
           padding: "24px",
         }}
       >
+        {/* Header con botón crear período */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: 24,
+          }}
+        >
+          {user?.roles.includes("docente") && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setModalOpen(true)}
+              style={{ 
+                display: "flex", 
+                alignItems: "center",
+                height: "40px"
+              }}
+            >
+              Crear Período
+            </Button>
+          )}
+        </div>
+
+        {/* Contenido de períodos */}
         {periodsLoading ? (
           <div style={{ textAlign: "center", padding: "50px" }}>
             <Spin size="large" />
@@ -177,6 +227,15 @@ export default function CoursePeriodsPage() {
         ) : (
           renderPeriodCards(coursePeriods)
         )}
+
+        {/* Modal para crear período */}
+        <CreatePeriodForm
+          open={modalOpen}
+          onClose={handleModalCancel}
+          onSubmit={handleCreatePeriod}
+          course={course}
+          loading={creatingPeriod}
+        />
       </div>
     </PageTemplate>
   );
