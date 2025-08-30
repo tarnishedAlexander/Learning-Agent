@@ -37,18 +37,8 @@ export default function CoursePeriodsPage() {
       
       setPeriodsLoading(true);
       try {
-        // Asegurar que clases sea siempre un array
         const safeClases = Array.isArray(clases) ? clases : [];
-        
-        // Debug: Ver todas las clases disponibles
-        console.log("📚 Todas las clases disponibles:", safeClases);
-        console.log("🎯 Buscando clases para courseId:", courseId);
-        console.log("🔍 Tipo de clases:", typeof safeClases, Array.isArray(safeClases));
-        
-        // Filtrar las clases que pertenecen al curso actual
         const filteredPeriods = safeClases.filter((clase) => clase.courseId === courseId);
-        console.log("✅ Clases filtradas para este curso:", filteredPeriods);
-        
         setCoursePeriods(filteredPeriods);
       } catch (error) {
         console.error("Error loading periods:", error);
@@ -65,8 +55,6 @@ export default function CoursePeriodsPage() {
   };
 
   const renderPeriodCards = (items: Clase[]) => {
-    console.log("🎨 Renderizando cards para:", items);
-    
     return items.length ? (
       <Row gutter={[16, 16]}>
         {items.map((period) => (
@@ -122,7 +110,7 @@ export default function CoursePeriodsPage() {
       </Row>
     ) : (
       <Empty 
-        description={`No hay períodos creados para esta materia (${items.length} encontrados)`}
+        description="No hay períodos creados para esta materia"
         style={{ 
           margin: "40px 0",
           padding: "20px",
