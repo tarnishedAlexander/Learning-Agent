@@ -79,6 +79,17 @@ export const responseAlreadyCreated = (errorMsg: string, correlation_id: string,
     }
 }
 
+export const responseConflict = (errorMsg: string, correlation_id: string, description: string, path: string): httpDTO => {
+    return {
+        code: 409,
+        error: errorMsg,
+        correlation_id,
+        data: [],
+        description,
+        path
+    }
+}
+
 export const responseTooManyRequest = (errorMsg: string, correlation_id: string, description: string, path: string): httpDTO => {
     return {
         code: 429,

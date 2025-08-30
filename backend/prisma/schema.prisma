@@ -96,7 +96,7 @@ model TeacherProfile {
   academicUnit String?  // departamento/escuela
 
   // relation 1:N
-  classes      Classes[]
+  courses      Course[]
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -322,6 +322,19 @@ model Exam {
    Academic Management (classes and enrollment)
    =========================== */
 
+model Course {
+  id            String            @id @default(uuid())
+  name          String
+  isActive      Boolean           @default(true)
+
+  teacherId     String
+  teacher       TeacherProfile    @relation(fields: [teacherId], references: [userId])
+  classes       Classes[]
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
 model Classes {
   id            String            @id @default(uuid())
   name          String
@@ -333,8 +346,11 @@ model Classes {
   // relation 1:N
   enrollment    Enrollment[]
 
-  teacherId     String
-  teacher       TeacherProfile    @relation(fields: [teacherId], references: [userId])
+  courseId      String            
+  course        Course            @relation(fields: [courseId], references: [id])
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt @default(now())
 }
 
 // relation N:N - StudentProfile-Classes

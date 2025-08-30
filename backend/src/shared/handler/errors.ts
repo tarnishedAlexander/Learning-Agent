@@ -33,10 +33,17 @@ export class AlreadyCreatedError extends Error {
     }
 }
 
-export class TooManuRequestError extends Error {
+export class ConflictError extends Error {
+    constructor(message: string){
+        super(message)
+        this.name = "ConflictError";
+    }
+}
+
+export class TooManyRequestError extends Error {
     constructor(message: string) {
         super(message)
-        this.name = "TooManuRequestError";
+        this.name = "TooManyRequestError";
     }
 }
 
