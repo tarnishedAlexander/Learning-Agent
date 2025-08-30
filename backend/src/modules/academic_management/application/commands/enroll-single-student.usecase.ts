@@ -4,6 +4,7 @@ import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.rep
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import type { UserRepositoryPort } from "../../domain/ports/user.repository.ports";
+import { AlreadyCreatedError, InternalServerError, NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
 export class EnrollSingleStudentUseCase {
@@ -15,18 +16,21 @@ export class EnrollSingleStudentUseCase {
     ) {}
 
     async execute(input: { studentName: string; studentLastname: string; studentCode: string; classId: string }) {
+        const ojbClass = await this.classesRepo.findById(input.classId);
+        if (!ojbClass) {
+            throw new NotFoundError(`Class not found with ID ${input.classId}`)
+        }
+        
         let student = await this.studentRepo.findByCode(input.studentCode);
         if (!student) {
             console.log(`Student not found with code ${input.studentCode}, creating new user:`);
             student = await this.handleNewUser(input.studentName, input.studentLastname, input.studentCode);
+            console.log(student)
         }
-
-        const ojbClass = await this.classesRepo.findById(input.classId);
-        if (!ojbClass) throw new Error("Class not found");
 
         const existingEnrollments = await this.enrollmentRepo.findByStudentId(student.userId);
         if (existingEnrollments.some(enrollment => enrollment.classId === input.classId)) {
-            throw new Error("Student is already enrolled in this class");
+            throw new AlreadyCreatedError(`Student is already enrolled in this class`)
         }
 
         const enrollment = await this.enrollmentRepo.create(student.userId, input.classId);
@@ -40,10 +44,16 @@ export class EnrollSingleStudentUseCase {
             `${this.fixedString(studentName)+this.fixedString(studentLastname)}.${studentCode}@upb.edu`,
             `${this.fixedString(studentLastname)+studentCode}`
         );
-        if (!newUser) throw new Error("Error creating user");
+        if (!newUser) {
+            console.error("Error creating new user on single enrollment endpoint")
+            throw new InternalServerError("Error creating user");
+        }
 
         const newStudent = await this.studentRepo.create(newUser.id, studentCode);
-        if (!newStudent) throw new Error("Error creating student");
+        if (!newStudent) {
+            console.error("Error creating new student on single enrollment endpoint")
+            throw new InternalServerError("Error creating student");
+        }
         return newStudent;
     }
 

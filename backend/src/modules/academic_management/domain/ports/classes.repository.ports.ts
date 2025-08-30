@@ -1,17 +1,17 @@
 import { Classes } from "../entities/classes.entity";
 export interface ClassesRepositoryPort {
     findById(id: string): Promise<Classes | null>;
-    findByTeacherId(teacherId: string): Promise<Classes[]>;
+    findByCourseId(courseId: string): Promise<Classes[]>;
     create(
         name: string, 
         semester: string, 
-        teacherId: string,
+        courseId: string,
         dateBegin: Date,
         dateEnd: Date
     ): Promise<Classes>;
     updateInfo(
         id: string,
-        name: string, 
+        name: string,
         semester: string, 
         dateBegin: Date,
         dateEnd: Date

@@ -8,6 +8,8 @@ import {
   InboxOutlined,
   UserOutlined,
   FolderOutlined,
+  BookOutlined,
+  BarChartOutlined
 } from "@ant-design/icons";
 import useClasses from "../../hooks/useClasses";
 import useTeacher from "../../hooks/useTeacher";
@@ -26,7 +28,7 @@ import type {
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export function CourseDetailPage() {
@@ -222,23 +224,22 @@ export function CourseDetailPage() {
       render: () => "-",
     },
     {
-      title: "1er Parcial",
-      dataIndex: "1er_parcial",
-      key: "1er_parcial",
-      render: () => "-",
-    },
-    {
-      title: "2do Parcial",
-      dataIndex: "2do_parcial",
-      key: "2do_parcial",
-      render: () => "-",
-    },
-    {
-      title: "Final",
-      dataIndex: "final",
-      key: "final",
-      render: () => "-",
-    },
+      title: "Acciones",
+      key: "actions",
+      render: () => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<BarChartOutlined />}
+          onClick={() => {
+            // Sin acción - será implementado por el equipo de Ángela
+            message.info("Funcionalidad en desarrollo");
+          }}
+        >
+          Ver progreso
+        </Button>
+      )
+    }
   ];
 
   if (loading) {
@@ -458,20 +459,6 @@ export function CourseDetailPage() {
               <div style={{ backgroundColor: "#ffffff", padding: "32px" }}>
                 {hasStudents ? (
                   <>
-                    <div style={{ textAlign: "center", marginBottom: 24 }}>
-                      <Space size="middle">
-                        <Button type="primary" size="large">
-                          1er Parcial
-                        </Button>
-                        <Button type="primary" size="large">
-                          2do Parcial
-                        </Button>
-                        <Button type="primary" size="large">
-                          Final
-                        </Button>
-                      </Space>
-                    </div>
-
                     {/* Tabla de estudiantes */}
                     <Table
                       columns={studentsColumns}
@@ -568,6 +555,26 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
+                <span style={{ color: '#000', display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                  <BookOutlined style={{ color: '#000', marginRight: '6px', fontSize: '14px' }} />
+                  <span>Gestión de Exámenes</span>
+                </span>
+              }
+              key="exams"
+            >
+              <div style={{ backgroundColor: '#ffffff', padding: '32px' }}>
+                <div style={{ textAlign: 'center', padding: '64px 0' }}>
+                  <Empty description="No hay exámenes creados para este curso">
+                    <Text style={{ color: '#666', fontSize: '14px' }}>
+                      Los exámenes creados aparecerán aquí para su gestión
+                    </Text>
+                  </Empty>
+                </div>
+              </div>
+            </TabPane>
+
+            <TabPane
+              tab={
                 <span
                   style={{
                     color: "#000",
@@ -581,7 +588,7 @@ export function CourseDetailPage() {
                       color: "#000",
                       marginRight: "6px",
                       fontSize: "14px",
-                    }}
+                    }} 
                   />
                   <span>Sílabo</span>
                 </span>
