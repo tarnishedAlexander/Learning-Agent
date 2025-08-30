@@ -1,14 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Space,
-  message,
-  Typography,
-  Empty,
-  Tabs
-} from "antd";
+import { Table, Button, Space, message, Typography, Empty, Tabs } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -16,8 +8,8 @@ import {
   InboxOutlined,
   UserOutlined,
   FolderOutlined,
-  CalendarOutlined,
-  TeamOutlined
+  BookOutlined,
+  BarChartOutlined
 } from "@ant-design/icons";
 import useClasses from "../../hooks/useClasses";
 import useTeacher from "../../hooks/useTeacher";
@@ -29,13 +21,16 @@ import { StudentUpload } from "../../components/studentUpload";
 import StudentPreviewModal from "../../components/StudentPreviewModal";
 import type { Clase } from "../../interfaces/claseInterface";
 import type { TeacherInfo } from "../../interfaces/teacherInterface";
-import type { createEnrollmentInterface, EnrollGroupRow } from "../../interfaces/enrollmentInterface";
+import type {
+  createEnrollmentInterface,
+  EnrollGroupRow,
+} from "../../interfaces/enrollmentInterface";
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 import useStudents from "../../hooks/useStudents";
 import { useUserContext } from "../../context/UserContext";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export function CourseDetailPage() {
@@ -54,7 +49,15 @@ export function CourseDetailPage() {
 
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
 
-  const [parsedStudents, setParsedStudents] = useState<Array<Record<string, any> & { nombres: string; apellidos: string; codigo: number }>>([]);
+  const [parsedStudents, setParsedStudents] = useState<
+    Array<
+      Record<string, any> & {
+        nombres: string;
+        apellidos: string;
+        codigo: number;
+      }
+    >
+  >([]);
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("archivo.xlsx");
   const [sending, setSending] = useState(false);
@@ -78,7 +81,9 @@ export function CourseDetailPage() {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   // Efecto para cargar información del docente cuando objClass cambia
@@ -158,7 +163,9 @@ export function CourseDetailPage() {
 
     const seen = new Set<string>();
     const filtered = parsedStudents.filter((r) => {
-      const k = String(r.codigo || "").trim().toLowerCase();
+      const k = String(r.codigo || "")
+        .trim()
+        .toLowerCase();
       if (!k) return false;
       if (seen.has(k)) return false;
       seen.add(k);
@@ -192,7 +199,9 @@ export function CourseDetailPage() {
       setDuplicates([]);
       fetchClassById(id);
     } catch (error: any) {
-      message.error(error?.message || "Error al inscribir el grupo de estudiantes");
+      message.error(
+        error?.message || "Error al inscribir el grupo de estudiantes"
+      );
     } finally {
       setSending(false);
     }
@@ -202,41 +211,40 @@ export function CourseDetailPage() {
     {
       title: "Nombres",
       dataIndex: "name",
-      key: "name"
+      key: "name",
     },
     {
       title: "Apellidos",
       dataIndex: "lastname",
-      key: "lastname"
+      key: "lastname",
     },
     {
       title: "Código",
       dataIndex: "code",
-      key: "code"
+      key: "code",
     },
     {
       title: "Asistencia",
       dataIndex: "asistencia",
       key: "asistencia",
-      render: () => "-"
+      render: () => "-",
     },
     {
-      title: "1er Parcial",
-      dataIndex: "1er_parcial",
-      key: "1er_parcial",
-      render: () => "-"
-    },
-    {
-      title: "2do Parcial",
-      dataIndex: "2do_parcial",
-      key: "2do_parcial",
-      render: () => "-"
-    },
-    {
-      title: "Final",
-      dataIndex: "final",
-      key: "final",
-      render: () => "-"
+      title: "Acciones",
+      key: "actions",
+      render: () => (
+        <Button
+          type="primary"
+          size="small"
+          icon={<BarChartOutlined />}
+          onClick={() => {
+            // Sin acción - será implementado por el equipo de Ángela
+            message.info("Funcionalidad en desarrollo");
+          }}
+        >
+          Ver progreso
+        </Button>
+      )
     }
   ];
 
@@ -245,10 +253,7 @@ export function CourseDetailPage() {
       <PageTemplate
         title="Cargando..."
         subtitle="Cargando información del curso"
-        breadcrumbs={[
-          { label: "Home", href: "/" },
-          { label: "Clases", href: "/classes" },
-        ]}
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
       >
         <div style={{ padding: "2rem", textAlign: "center" }}>
           <Text>Cargando datos del curso...</Text>
@@ -289,61 +294,67 @@ export function CourseDetailPage() {
         { label: "Clases", href: "/classes" },
         { label: actualClass.name, href: `/classes/${actualClass.id}` },
       ]}
+      actions={
+        <>
+          <Button
+            type="primary"
+            icon={<FolderOutlined />}
+            onClick={() => navigate(`/curso/${id}/documents`)}
+          >
+            Documentos
+          </Button>
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => setEditModalOpen(true)}
+          >
+            Editar Curso
+          </Button>
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={handleDeleteCourse}
+          >
+            Eliminar Curso
+          </Button>
+        </>
+      }
     >
       <div style={{ padding: "1rem" }}>
-        <div style={{ marginBottom: 8, padding: '16px', borderRadius: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <Title level={2} style={{ margin: 0, fontSize: '28px' }}>
-                {actualClass.name}
-              </Title>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px', marginBottom: '16px' }}>
-                <Text style={{ fontSize: '14px' }}>
-                  <CalendarOutlined style={{ marginRight: '4px' }} />
-                  {actualClass.semester}
-                </Text>
-                <Text style={{ fontSize: '14px' }}>
-                  <TeamOutlined style={{ marginRight: '4px' }} />
-                  {hasStudents ? students.length : 0} estudiantes
-                </Text>
-              </div>
-            </div>
+        <div
+          style={{
+            height: "1px",
+            marginBottom: "8px",
+          }}
+        ></div>
 
-            <Space>
-              <Button
-                type="primary"
-                icon={<FolderOutlined />}
-                onClick={() => navigate(`/curso/${id}/documents`)}
-              >
-                Documentos
-              </Button>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => setEditModalOpen(true)}
-              >
-                Editar Curso
-              </Button>
-              <Button
-                danger
-                type="primary"
-                icon={<DeleteOutlined />}
-                onClick={handleDeleteCourse}
-              >
-                Eliminar Curso
-              </Button>
-            </Space>
-          </div>
-        </div>
-
-        <div style={{ height: '1px', marginBottom: '8px' }}></div>
-
-        <div style={{ borderRadius: '12px', overflow: 'hidden' }}>
-          <Tabs defaultActiveKey="general" size="large" style={{ paddingLeft: '16px' }}>
+        <div
+          style={{
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
+          <Tabs
+            defaultActiveKey="general"
+            size="large"
+            style={{ paddingLeft: "16px" }}
+          >
             <TabPane
               tab={
-                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <FileTextOutlined
+                    style={{
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Información General</span>
                 </span>
               }
@@ -384,9 +395,13 @@ export function CourseDetailPage() {
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Horarios:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>Por definir</Text>
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Horarios:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        Por definir
+                      </Text>
                     </div>
                   </div>
                 </div>
@@ -395,33 +410,36 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <UserOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <UserOutlined
+                    style={{
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }}
+                  />
                   <span>Estudiantes</span>
                 </span>
               }
               key="students"
             >
-              <div style={{ padding: '32px' }}>
+              <div style={{ padding: "32px" }}>
                 {hasStudents ? (
                   <>
-                    <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                      <Space size="middle">
-                        <Button type="primary" size="large">1er Parcial</Button>
-                        <Button type="primary" size="large">2do Parcial</Button>
-                        <Button type="primary" size="large">Final</Button>
-                      </Space>
-                    </div>
-
                     {/* Tabla de estudiantes */}
                     <Table
                       columns={studentsColumns}
                       dataSource={students}
                       rowKey={(record) => record.code}
                       pagination={{
-                        position: ['bottomCenter'],
+                        position: ["bottomCenter"],
                         showSizeChanger: false,
-                        pageSize: 10
+                        pageSize: 10,
                       }}
                       size="middle"
                     />
@@ -436,9 +454,9 @@ export function CourseDetailPage() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ textAlign: "center", padding: "2rem" }}>
                     <Empty description="No hay estudiantes inscritos en este curso">
-                      <div style={{ marginTop: '24px' }}>
+                      <div style={{ marginTop: "24px" }}>
                         <StudentUpload
                           disabled={false}
                           onStudentsParsed={(parsed, info) => {
@@ -448,7 +466,9 @@ export function CourseDetailPage() {
                             const seen = new Set<string>();
                             const dupSet = new Set<string>();
                             for (const s of parsed) {
-                              const k = String(s.codigo || "").trim().toLowerCase();
+                              const k = String(s.codigo || "")
+                                .trim()
+                                .toLowerCase();
                               if (!k) continue;
                               if (seen.has(k)) dupSet.add(String(s.codigo));
                               else seen.add(k);
@@ -478,7 +498,7 @@ export function CourseDetailPage() {
                   <Button
                     type="primary"
                     onClick={() => navigate(`/curso/${id}/documents`)}
-                    style={{ marginTop: '16px' }}
+                    style={{ marginTop: "16px" }}
                   >
                     Ir a Documentos
                   </Button>
@@ -489,7 +509,38 @@ export function CourseDetailPage() {
             <TabPane
               tab={
                 <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <FileTextOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                  <BookOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                  <span>Gestión de Exámenes</span>
+                </span>
+              }
+              key="exams"
+            >
+              <div style={{ padding: '32px' }}>
+                <div style={{ textAlign: 'center', padding: '64px 0' }}>
+                  <Empty description="No hay exámenes creados para este curso">
+                    <Text style={{ fontSize: '14px' }}>
+                      Los exámenes creados aparecerán aquí para su gestión
+                    </Text>
+                  </Empty>
+                </div>
+              </div>
+            </TabPane>
+
+            <TabPane
+              tab={
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <FileTextOutlined
+                    style={{
+                      marginRight: "6px",
+                      fontSize: "14px",
+                    }} 
+                  />
                   <span>Sílabo</span>
                 </span>
               }
@@ -497,11 +548,7 @@ export function CourseDetailPage() {
             >
               <div style={{ textAlign: 'center', padding: '64px' }}>
                 <Empty description="Sílabo no disponible">
-                  <Button
-                    type="primary"
-                    disabled
-                    style={{ marginTop: '16px' }}
-                  >
+                  <Button type="primary" disabled style={{ marginTop: "16px" }}>
                     Subir Sílabo
                   </Button>
                 </Empty>

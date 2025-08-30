@@ -16,9 +16,6 @@ export function ClassMenu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
-  const goToReinforcement = () => {
-    navigate("/reinforcement");
-  };
 
   const clasesSafe = useMemo<Clase[]>(
     () => (Array.isArray(clases) ? clases : []),
@@ -90,16 +87,7 @@ export function ClassMenu() {
         role: "Sales Manager",
         avatarUrl: "https://i.pravatar.cc/128?img=5",
       }}
-      actions={
-        <div className="flex gap-2">
-          <Button>Export</Button>
-          <Button type="primary">Upgrade</Button>
-        </div>
-      }
-      breadcrumbs={[
-        { label: "Home", href: "/" },
-        { label: "Clases", href: "/classes" },
-      ]}
+      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
     >
       <div
         className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
