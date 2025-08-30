@@ -20,7 +20,7 @@ export function TeacherCoursePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [periodModalOpen, setPeriodModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>(courses || []);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [coursePeriods, setCoursePeriods] = useState<Clase[]>([]);
   const navigate = useNavigate();
@@ -32,9 +32,11 @@ export function TeacherCoursePage() {
   useEffect(() => {
     const lower = searchTerm.trim().toLowerCase();
     if (lower == "") {
-      setFilteredCourses(courses);
+      setFilteredCourses(courses || []);
       return;
     }
+
+    if (!courses) return;
 
     const words = lower.split(" ");
     const specialChars = /[!@#$%^&*?:{}|<>]/;
@@ -108,7 +110,7 @@ export function TeacherCoursePage() {
   };
 
   const renderGrid = (items: Course[]) =>
-    items.length ? (
+    items?.length ? (
       <Row gutter={[16, 16]}>
         {items.map((course) => (
           <Col xs={24} sm={12} md={8} lg={8} key={course.id}>
