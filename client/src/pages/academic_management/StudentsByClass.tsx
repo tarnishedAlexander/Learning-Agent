@@ -18,6 +18,7 @@ import type { Clase } from "../../interfaces/claseInterface";
 import { SafetyModal } from "../../components/safetyModal";
 import StudentPreviewModal from "../../components/StudentPreviewModal";
 import type { EnrollGroupRow } from "../../interfaces/enrollmentInterface";
+import useStudents from "../../hooks/useStudents";
 
 export function StudentsByClass() {
   const navigate = useNavigate();
@@ -25,8 +26,9 @@ export function StudentsByClass() {
   const [safetyOpen, setSafetyOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const { fetchClase, students, objClass, updateClass, softDeleteClass } = useClasses();
+  const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
+  const { students, fetchStudentsByClass } = useStudents();
 
   const [formOpen, setFormOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>();
@@ -42,7 +44,8 @@ export function StudentsByClass() {
     (async () => {
       if (!id) { setReady(true); return; }
       setReady(false);
-      await fetchClase(id);
+      await fetchClassById(id);
+      await fetchStudentsByClass(id);
       if (active) setReady(true);
     })();
     return () => { active = false; };
@@ -52,7 +55,7 @@ export function StudentsByClass() {
     try {
       await enrollSingleStudent(values);
       message.success("Estudiante inscrito");
-      if (id) fetchClase(id);
+      if (id) fetchClassById(id);
     } catch {
       message.error("No se pudo inscribir al estudiante");
     }
@@ -132,7 +135,7 @@ export function StudentsByClass() {
       setPreviewOpen(false);
       setParsed([]);
       setDups([]);
-      fetchClase(id);
+      fetchClassById(id);
     } catch (e: any) {
       message.error(e?.message || "No se pudo inscribir el grupo.");
     } finally {
@@ -187,12 +190,12 @@ export function StudentsByClass() {
 
   return (
     <PageTemplate
-      title={`Curso: ${objClass?.name}`}
-      subtitle={`Lista de datos del curso ${objClass?.name}`}
+      title={`Curso: ${actualClass?.name}`}
+      subtitle={`Lista de datos del curso ${actualClass?.name}`}
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
-        { label: `${objClass?.name}`, href: `/classes/${objClass?.id}` },
+        { label: `${actualClass?.name}`, href: `/classes/${actualClass?.id}` },
       ]}
     >
       <div style={{ padding: "1rem" }}>
@@ -226,7 +229,7 @@ export function StudentsByClass() {
             open={modalOpen}
             onClose={() => setModalOpen(false)}
             onSubmit={handleUpdateClase}
-            clase={objClass}
+            clase={actualClass}
           />
 
           <Button
@@ -350,7 +353,7 @@ export function StudentsByClass() {
         onCancel={() => setSafetyOpen(false)}
         onConfirm={confirmDeleteClase}
         title="¿Eliminar curso?"
-        message={`¿Estás seguro de que quieres eliminar el curso "${objClass?.name}"? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que quieres eliminar el curso "${actualClass?.name}"? Esta acción no se puede deshacer.`}
         confirmText="Sí, eliminar"
         cancelText="Cancelar"
         danger

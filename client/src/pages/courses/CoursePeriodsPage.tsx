@@ -5,9 +5,9 @@ import { PlusOutlined } from "@ant-design/icons";
 import { courseService } from "../../services/course.service";
 import PageTemplate from "../../components/PageTemplate";
 import { CreatePeriodForm } from "../../components/CreatePeriodForm";
-import usePeriods from "../../hooks/usePeriods";
+import useClasses from "../../hooks/useClasses";
 import type { Course } from "../../interfaces/courseInterface";
-import type { Clase } from "../../interfaces/claseInterface";
+import type { Clase, CreateClassDTO } from "../../interfaces/claseInterface";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
 
@@ -23,7 +23,7 @@ export function CoursePeriodsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPeriods, setFilteredPeriods] = useState<Clase[]>([]);
 
-  const { periods, createPeriod, fetchPeriodsByCourse } = usePeriods();
+  const { classes, createClass, fetchClassesByCourse } = useClasses();
 
   const loadCourseAndPeriods = useCallback(async () => {
     if (!courseId) return;
@@ -35,14 +35,14 @@ export function CoursePeriodsPage() {
       setCourse(courseResponse);
 
       // Cargar períodos del curso - esto actualizará el estado del hook
-      await fetchPeriodsByCourse(courseId);
+      await fetchClassesByCourse(courseId);
     } catch (error) {
       message.error("Error al cargar la información del curso");
       console.error("Error loading course and periods:", error);
     } finally {
       setLoading(false);
     }
-  }, [courseId, fetchPeriodsByCourse]);
+  }, [courseId]);
 
   useEffect(() => {
     if (courseId) {
@@ -53,23 +53,23 @@ export function CoursePeriodsPage() {
   useEffect(() => {
     const lower = searchTerm.trim().toLowerCase();
     if (lower === "") {
-      setFilteredPeriods(periods);
+      setFilteredPeriods(classes);
       return;
     }
 
-    const filtered = periods.filter((period) =>
+    const filtered = classes.filter((period) =>
       period.semester.toLowerCase().includes(lower) ||
       period.name.toLowerCase().includes(lower)
     );
     setFilteredPeriods(filtered);
-  }, [searchTerm, periods]);
+  }, [searchTerm, classes]);
 
-  const handleCreatePeriod = async (periodData: Omit<Clase, "id">) => {
+  const handleCreatePeriod = async (periodData: CreateClassDTO) => {
     setCreatingPeriod(true);
     try {
-      await createPeriod(periodData);
+      await createClass(periodData);
       if (courseId) {
-        await fetchPeriodsByCourse(courseId);
+        await fetchClassesByCourse(courseId);
       }
     } catch (error) {
       // El error ya se maneja en el hook
@@ -100,8 +100,6 @@ export function CoursePeriodsPage() {
                 textAlign: "center",
                 cursor: "pointer",
                 borderRadius: 8,
-                border: "1px solid #e8e8e8",
-                backgroundColor: "#ffffff",
               }}
               styles={{
                 body: {
@@ -118,7 +116,6 @@ export function CoursePeriodsPage() {
                   fontSize: "18px", 
                   fontWeight: "bold", 
                   margin: 0,
-                  color: "#1A2A80",
                   lineHeight: "1.2"
                 }}>
                   {period.semester}
@@ -126,8 +123,7 @@ export function CoursePeriodsPage() {
               </div>
               
               <div style={{ 
-                fontSize: "13px", 
-                color: "#666",
+                fontSize: "13px",
                 lineHeight: "1.4"
               }}>
                 <div style={{ marginBottom: "2px" }}>
