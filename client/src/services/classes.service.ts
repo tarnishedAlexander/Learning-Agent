@@ -32,7 +32,7 @@ export const classService = {
     }
   },
 
-  async updateClass(id: string, claseData: Partial<Clase>): Promise<Clase> {
+  async updateClass(id: string, claseData: Partial<Clase>) {
     try {
       const response = await apiClient.put(`/academic/classes/${id}`, claseData);
       return response.data;
@@ -45,15 +45,10 @@ export const classService = {
   async softDeleteClase(id: string, teacherId: string) {
     try {
       const response = await apiClient.put(`/academic/classes/remove/${id}`, {teacherId});
-      return {
-        success: true,
-        data: response.data
-      }
+      return response.data
     } catch (error) {
       console.error("Failed to soft-delete clase", error);
-      return {
-        success: false
-      }
+      throw error;
     }
   },
 

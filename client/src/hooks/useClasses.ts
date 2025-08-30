@@ -74,28 +74,48 @@ const useClasses = () => {
       }
     }
   }
-  
-  //TODO - Revisar esta funcionalidad
+
   const updateClass = async (values: Clase) => {
-    try {
-      if (!values.id) return;
-      const updatedClass = await classService.updateClass(values.id, values);
-      setActualClass(updatedClass);
-      return updatedClass;
-    } catch (error) {
-      console.error("Error updating class", error);
-      throw error;
+    if (!values.id || !user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+    const res = await classService.updateClass(values.id, values);
+    if (res.code == 201) {
+      setActualClass(res.data)
+      return {
+        success: true,
+        message: "Clase actualizada exitosamente"
+      }
+    } else {
+      return {
+        success: false,
+        message: res.error
+      }
     }
   }
 
-  //TODO - Revisar esta también 
   const softDeleteClass = async (classId: string) => {
-    try {
-      const deleteResult = await classService.softDeleteClase(classId, user?.id || "")
-      return deleteResult;
-    } catch (error) {
-      console.error(`Error soft deleting class with id ${classId}`, error);
-      throw error;
+    if (!classId || !user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+    const res = await classService.softDeleteClase(classId, user.id);
+    if (res.code == 201) {
+      setActualClass(res.data)
+      return {
+        success: true,
+        message: "Clase eliminada exitosamente"
+      }
+    } else {
+      return {
+        success: false,
+        message: res.error
+      }
     }
   }
 

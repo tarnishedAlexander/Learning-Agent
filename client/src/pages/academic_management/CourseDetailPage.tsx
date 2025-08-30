@@ -33,6 +33,7 @@ import type { createEnrollmentInterface, EnrollGroupRow } from "../../interfaces
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 import useStudents from "../../hooks/useStudents";
+import { useUserContext } from "../../context/UserContext";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -44,6 +45,7 @@ export function CourseDetailPage() {
   const { students, fetchStudentsByClass } = useStudents();
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
   const { getTeacherInfoById } = useTeacher();
+  const { user, fetchUser } = useUserContext();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
@@ -99,19 +101,17 @@ export function CourseDetailPage() {
     loadTeacherInfo();
   }, [actualClass, getTeacherInfoById]);
 
-  const handleEditCourse = async (values: Clase) => {
-    if (!values.id) return;
-    try {
-      const data = await updateClass(values);
-      if (!data.success) {
-        message.error("Error al actualizar el curso");
-        return
-      }
-      setEditModalOpen(false);
-      if (id) await fetchClassById(id);
-    } catch {
+  const handleEditClass = async (values: Clase) => {
+    const data = await updateClass(values);
+    if (data.success) {
+      message.success(data.message)
+    } else {
       message.error("Error al actualizar el curso");
+      return
     }
+
+    setEditModalOpen(false);
+    if (id) await fetchClassById(id);
   };
 
   const handleDeleteCourse = () => setSafetyModalOpen(true);
@@ -122,14 +122,18 @@ export function CourseDetailPage() {
         message.error("ID del curso no encontrado");
         return;
       }
-      const result = await softDeleteClass(id);
-      if (result && !result.success) {
+      const res = await softDeleteClass(id);
+      if (!res.success) {
         message.error("Error al eliminar el curso");
         return;
       }
-      message.success("Curso eliminado correctamente");
+      message.success(res.message);
       setTimeout(() => {
-        navigate("/classes");
+        if (user?.roles.includes("docente")) {
+          navigate("/courses")
+        } else {
+          navigate("/")
+        }
       }, 2000);
     } catch {
       message.error("Error al eliminar el curso");
@@ -279,6 +283,7 @@ export function CourseDetailPage() {
     <PageTemplate
       title={actualClass.name}
       subtitle={dayjs().format("DD [de] MMMM [de] YYYY")}
+      //TODO Hay que cambiar los Breadcrumbs para que se mantengan con el formato del usuario actual (docente o estudiante)
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Clases", href: "/classes" },
@@ -390,7 +395,7 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
                   <UserOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
                   <span>Estudiantes</span>
                 </span>
@@ -509,7 +514,7 @@ export function CourseDetailPage() {
         <CursosForm
           open={editModalOpen}
           onClose={() => setEditModalOpen(false)}
-          onSubmit={handleEditCourse}
+          onSubmit={handleEditClass}
           clase={actualClass}
         />
 
