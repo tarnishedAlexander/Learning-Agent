@@ -29,7 +29,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({ isChatOpen, onClose }) => 
       width={400}
       style={{ bottom: "20px", right: "20px", position: "fixed" }}
       closable={false}
+
       styles={{ body: { padding: 0 } }}
+
       className="simple-chat-modal"
     >
       <div className="simple-chat-container">
