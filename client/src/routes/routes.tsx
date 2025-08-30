@@ -10,6 +10,7 @@ import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { DocumentsPage } from "../pages/repository/DocumentsPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
+import CoursePeriodsPage from "../pages/courses/CoursePeriodsPage";
 import PublicRoute from "./PublicRoute";
 import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
@@ -32,6 +33,7 @@ export const AppRoutes = () => {
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="/courses" element={<TeacherCoursePage />} />
+            <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
