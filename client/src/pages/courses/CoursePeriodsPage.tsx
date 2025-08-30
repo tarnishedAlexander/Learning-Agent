@@ -1,16 +1,23 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Empty, Spin } from "antd";
+import { Empty, Spin, Card, Row, Col } from "antd";
 import PageTemplate from "../../components/PageTemplate";
 import useCourses from "../../hooks/useCourses";
+import useClasses from "../../hooks/useClasses";
 import type { Course } from "../../interfaces/courseInterface";
+import type { Clase } from "../../interfaces/claseInterface";
+import dayjs from "dayjs";
 
 export default function CoursePeriodsPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const { courses } = useCourses();
+  const { clases } = useClasses();
+  const navigate = useNavigate();
   
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [periodsLoading, setPeriodsLoading] = useState(true);
+  const [coursePeriods, setCoursePeriods] = useState<Clase[]>([]);
 
   useEffect(() => {
     if (!courseId) {
@@ -23,6 +30,106 @@ export default function CoursePeriodsPage() {
     setCourse(foundCourse || null);
     setLoading(false);
   }, [courseId, courses]);
+
+  useEffect(() => {
+    const loadPeriods = async () => {
+      if (!courseId) return;
+      
+      setPeriodsLoading(true);
+      try {
+        // Asegurar que clases sea siempre un array
+        const safeClases = Array.isArray(clases) ? clases : [];
+        
+        // Debug: Ver todas las clases disponibles
+        console.log("📚 Todas las clases disponibles:", safeClases);
+        console.log("🎯 Buscando clases para courseId:", courseId);
+        console.log("🔍 Tipo de clases:", typeof safeClases, Array.isArray(safeClases));
+        
+        // Filtrar las clases que pertenecen al curso actual
+        const filteredPeriods = safeClases.filter((clase) => clase.courseId === courseId);
+        console.log("✅ Clases filtradas para este curso:", filteredPeriods);
+        
+        setCoursePeriods(filteredPeriods);
+      } catch (error) {
+        console.error("Error loading periods:", error);
+      } finally {
+        setPeriodsLoading(false);
+      }
+    };
+
+    loadPeriods();
+  }, [courseId, clases]);
+
+  const goToPeriod = (periodId: string) => {
+    navigate(`/classes/${periodId}`);
+  };
+
+  const renderPeriodCards = (items: Clase[]) => {
+    console.log("🎨 Renderizando cards para:", items);
+    
+    return items.length ? (
+      <Row gutter={[16, 16]}>
+        {items.map((period) => (
+          <Col xs={24} sm={12} md={8} lg={6} key={period.id}>
+            <Card
+              hoverable
+              onClick={() => goToPeriod(period.id)}
+              style={{
+                height: 160,
+                textAlign: "center",
+                cursor: "pointer",
+                borderRadius: 8,
+                border: "1px solid #e8e8e8",
+                backgroundColor: "#ffffff",
+              }}
+              styles={{
+                body: {
+                  padding: "20px 16px",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }
+              }}
+            >
+              <div style={{ marginBottom: "8px" }}>
+                <h2 style={{ 
+                  fontSize: "18px", 
+                  fontWeight: "bold", 
+                  margin: 0,
+                  color: "#1A2A80",
+                  lineHeight: "1.2"
+                }}>
+                  {period.semester}
+                </h2>
+              </div>
+              
+              <div style={{ 
+                fontSize: "13px", 
+                color: "#666",
+                lineHeight: "1.4"
+              }}>
+                <div style={{ marginBottom: "2px" }}>
+                  Inicio: {dayjs(period.dateBegin).format("DD/MM/YYYY")}
+                </div>
+                <div>
+                  Fin: {dayjs(period.dateEnd).format("DD/MM/YYYY")}
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    ) : (
+      <Empty 
+        description={`No hay períodos creados para esta materia (${items.length} encontrados)`}
+        style={{ 
+          margin: "40px 0",
+          padding: "20px",
+        }}
+      />
+    );
+  };
 
   if (loading) {
     return (
@@ -74,11 +181,14 @@ export default function CoursePeriodsPage() {
           padding: "24px",
         }}
       >
-        {/* Contenido de períodos se agregará en las siguientes tasks */}
-        <Empty 
-          description="Vista de períodos - Funcionalidad en desarrollo" 
-          style={{ margin: "50px 0" }}
-        />
+        {periodsLoading ? (
+          <div style={{ textAlign: "center", padding: "50px" }}>
+            <Spin size="large" />
+            <div style={{ marginTop: "16px" }}>Cargando períodos...</div>
+          </div>
+        ) : (
+          renderPeriodCards(coursePeriods)
+        )}
       </div>
     </PageTemplate>
   );
