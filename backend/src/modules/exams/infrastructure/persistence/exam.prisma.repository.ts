@@ -27,6 +27,7 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
         openExerciseCount: exam.distribution?.value.open_exercise ?? 0,
 
         createdAt: exam.createdAt,
+        approvedAt: exam.approvedAt ?? null,
       },
     });
 
@@ -59,6 +60,8 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
       row.reference ?? null,
       distVO,     
       row.createdAt,
+      row.updatedAt,
+      row.approvedAt ?? undefined,
     );
   }
 
@@ -95,6 +98,19 @@ export class ExamPrismaRepository implements ExamRepositoryPort {
       row.reference ?? null,
       distVO,
       row.createdAt,
+      row.updatedAt,
+      row.approvedAt ?? undefined, 
     );
   }
+
+  async approve(id: string): Promise<void> {
+    const row = await this.prisma.exam.findUnique({ where: { id } });
+    if (!row) throw new Error('Exam not found');
+    if (row.approvedAt) throw new Error('Exam already approved');
+    await this.prisma.exam.update({
+      where: { id },
+      data: { approvedAt: new Date() },
+    });
+  }
+
 }
