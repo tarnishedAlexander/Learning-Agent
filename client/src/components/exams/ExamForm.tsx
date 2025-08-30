@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useExamForm } from '../../hooks/useExamForm.ts';
 import { createExam } from '../../services/exams.service';
+import { Button } from 'antd';
 
 import type { ToastKind } from '../shared/Toast';
 type Props = {
@@ -33,7 +34,6 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     useImperativeHandle(ref, () => ({ getSnapshot }), [getSnapshot]);
 
   useEffect(() => {
-    // No validar al cargar, solo limpiar valores
     return () => {
       setValues({
         subject: '',
@@ -145,7 +145,7 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
 
 
   return (
-    <form id="exam-form" onSubmit={onSubmit} noValidate className="card card-hover">
+    <form id="exam-form" onSubmit={onSubmit} noValidate className="card">
       <div className="card-content">
         <div style={{marginBottom: 16}}>
           <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:8}}>
@@ -199,52 +199,51 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
             </div>
           </>}
 
-          {step === 1 && <>
+          {step === 1 && (
             <div className="form-group" style={{gridColumn:'1/3', display:'flex', flexDirection:'column', alignItems:'center', width:'100%'}}>
-              <label style={{ fontWeight: 700, textAlign: 'center', width:'100%' }}>Cantidad de preguntas por tipo *</label>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '20px',
-                background: '#f6f9ff',
-                borderRadius: '8px',
-                border: '1px dashed #7A85C1',
-                width: '100%',
-                maxWidth: 600,
-                margin: '0 auto'
-              }}>
-                <div style={{background:'#fff', border:'1px solid #e0e7ff', borderRadius:8, padding:'16px 12px'}}>
-                  <label htmlFor="multipleChoice" style={{display:'block', marginBottom:10}}>Opción Múltiple</label>
-                  <input id="multipleChoice" name="multipleChoice" type="number" min={0} step={1} placeholder="0"
-                    className="input-hover"
-                    value={values.multipleChoice || ''} onChange={e=>onChange('multipleChoice', e.target.value)} />
-                </div>
-                <div style={{background:'#fff', border:'1px solid #e0e7ff', borderRadius:8, padding:'16px 12px'}}>
-                  <label htmlFor="trueFalse" style={{display:'block', marginBottom:10}}>Verdadero o Falso</label>
-                  <input id="trueFalse" name="trueFalse" type="number" min={0} step={1} placeholder="0"
-                    className="input-hover"
-                    value={values.trueFalse || ''} onChange={e=>onChange('trueFalse', e.target.value)} />
-                </div>
-                <div style={{background:'#fff', border:'1px solid #e0e7ff', borderRadius:8, padding:'16px 12px'}}>
-                  <label htmlFor="analysis" style={{display:'block', marginBottom:10}}>Análisis</label>
-                  <input id="analysis" name="analysis" type="number" min={0} step={1} placeholder="0"
-                    className="input-hover"
-                    value={values.analysis || ''} onChange={e=>onChange('analysis', e.target.value)} />
-                </div>
-                <div style={{background:'#fff', border:'1px solid #e0e7ff', borderRadius:8}}>
-                  <label htmlFor="openEnded" style={{display:'block', marginBottom:10}}>Ejercicio Abierto</label>
-                  <input id="openEnded" name="openEnded" type="number" min={0} step={1} placeholder="0"
-                    className="input-hover"
-                    value={values.openEnded || ''} onChange={e=>onChange('openEnded', e.target.value)} />
-                </div>
-                <div style={{ width: '100%', marginTop: 16, fontWeight: 600, textAlign: 'center' }}>
-                  Total de preguntas: <span>{totalQuestions}</span>
-                </div>
-              </div>
-            </div>
-          </>}
+    <label style={{ fontWeight: 700, textAlign: 'center', width:'100%' }}>Cantidad de preguntas por tipo *</label>
+    <div
+      className="question-types-grid"
+      style={{
+        background: '#f6f9ff',
+        borderRadius: '8px',
+        border: '1px dashed #7A85C1',
+        width: '100%',
+        maxWidth: 600,
+        margin: '0 auto',
+        padding: '12px 0'
+      }}
+    >
+      <div className="question-type-box">
+        <label htmlFor="multipleChoice" style={{display:'block', marginBottom:10}}>Opción Múltiple</label>
+        <input id="multipleChoice" name="multipleChoice" type="number" min={0} step={1} placeholder="0"
+          className="input-hover"
+          value={values.multipleChoice || ''} onChange={e=>onChange('multipleChoice', e.target.value)} />
+      </div>
+      <div className="question-type-box">
+        <label htmlFor="trueFalse" style={{display:'block', marginBottom:10}}>Verdadero o Falso</label>
+        <input id="trueFalse" name="trueFalse" type="number" min={0} step={1} placeholder="0"
+          className="input-hover"
+          value={values.trueFalse || ''} onChange={e=>onChange('trueFalse', e.target.value)} />
+      </div>
+      <div className="question-type-box">
+        <label htmlFor="analysis" style={{display:'block', marginBottom:10}}>Análisis</label>
+        <input id="analysis" name="analysis" type="number" min={0} step={1} placeholder="0"
+          className="input-hover"
+          value={values.analysis || ''} onChange={e=>onChange('analysis', e.target.value)} />
+      </div>
+      <div className="question-type-box">
+        <label htmlFor="openEnded" style={{display:'block', marginBottom:10}}>Ejercicio Abierto</label>
+        <input id="openEnded" name="openEnded" type="number" min={0} step={1} placeholder="0"
+          className="input-hover"
+          value={values.openEnded || ''} onChange={e=>onChange('openEnded', e.target.value)} />
+      </div>
+    </div>
+    <div style={{ width: '100%', marginTop: 16, fontWeight: 600, textAlign: 'center' }}>
+      Total de preguntas: <span>{totalQuestions}</span>
+    </div>
+  </div>
+          )}
 
           {step === 2 && <>
             <div className="form-group">
@@ -271,13 +270,15 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
       <div className="actions-row button-hover" style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: 24, position: 'relative', minHeight: 64 }}>
         <div style={{ display: 'flex', gap: 8 }}>
           {step > 0 && (
-            <button type="button" className="btn btn-secondary" onClick={() => setStep(s => s - 1)}>
+            <Button
+              type="default"
+              onClick={() => setStep(s => s - 1)}
+            >
               Anterior
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            type="default"
             onClick={onResetStep}
             disabled={
               (step === 0 && !values.subject && !values.difficulty && !values.attempts) ||
@@ -286,28 +287,29 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
             }
           >
             Limpiar
-          </button>
+          </Button>
+          {step < 2 && (
+            <Button
+              type="primary"
+              className="float-button-animation next-fixed"
+              disabled={sending || !validStep()}
+              onClick={(e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); }}
+              style={{ marginLeft: 8 }}
+            >
+              Siguiente
+            </Button>
+          )}
         </div>
         {/* Botón IA visible en el paso 2 si el prop existe */}
         {step === 2 && onGenerateAI && (
-          <button
-            type="button"
-            className="btn btn-outline next-fixed"
+          <Button
+            type="primary"
             disabled={sending || !validStep()}
             onClick={() => { if (validStep()) onGenerateAI(); }}
+            style={{ marginLeft: "auto" }}
           >
             Generar preguntas con IA
-          </button>
-        )}
-        {step < 2 && (
-          <button
-            type="button"
-            className="btn btn-primary float-button-animation next-fixed"
-            disabled={sending || !validStep()}
-            onClick={(e) => { e.preventDefault(); if (validStep()) setStep(s => s + 1); }}
-          >
-            Siguiente
-          </button>
+          </Button>
         )}
       </div>
 
