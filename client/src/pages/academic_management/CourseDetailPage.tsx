@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Table, Button, Space, message, Typography, Empty, Tabs } from "antd";
+import { Table, Button, message, Typography, Empty, Tabs } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -29,6 +29,7 @@ import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 import useStudents from "../../hooks/useStudents";
 import { useUserContext } from "../../context/UserContext";
+import useCourses from "../../hooks/useCourses";
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -39,8 +40,9 @@ export function CourseDetailPage() {
   const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
   const { students, fetchStudentsByClass } = useStudents();
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
+  const { getCourseByID } = useCourses();
   const { getTeacherInfoById } = useTeacher();
-  const { user, fetchUser } = useUserContext();
+  const { user } = useUserContext();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
@@ -86,25 +88,32 @@ export function CourseDetailPage() {
     };
   }, [id]);
 
-  // Efecto para cargar información del docente cuando objClass cambia
   useEffect(() => {
     const loadTeacherInfo = async () => {
-      if (actualClass?.teacherId) {
+      if (actualClass?.courseId) {
         try {
-          const teacher = await getTeacherInfoById(actualClass.teacherId);
-          if (teacher) {
-            setTeacherInfo(teacher);
+          const courseID = actualClass.courseId;
+          const courseRes = await getCourseByID(courseID);
+          if (!courseRes.success) return
+
+          const teacherId = courseRes.data.teacherId;
+          if (!teacherId) return;
+
+          const teacherRes = await getTeacherInfoById(teacherId);
+          if (teacherRes && teacherRes.success) {
+            const teacher = teacherRes.data
+            if (teacher) setTeacherInfo(teacher);
           }
         } catch (error) {
           console.error("Error al obtener información del docente:", error);
+          setTeacherInfo(null);
         }
       } else {
         setTeacherInfo(null);
       }
     };
-
     loadTeacherInfo();
-  }, [actualClass, getTeacherInfoById]);
+  }, [actualClass]);
 
   const handleEditClass = async (values: Clase) => {
     const data = await updateClass(values);
@@ -129,7 +138,7 @@ export function CourseDetailPage() {
       }
       const res = await softDeleteClass(id);
       if (!res.success) {
-        message.error("Error al eliminar el curso");
+        message.error(res.message);//AQUI
         return;
       }
       message.success(res.message);
@@ -189,7 +198,6 @@ export function CourseDetailPage() {
         classId: id,
         studentRows: payloadRows,
       });
-
       message.success(
         `Procesado: ${result.totalRows} · Éxito: ${result.successRows} · Ya inscritos: ${result.existingRows} · Errores: ${result.errorRows}`
       );
@@ -539,7 +547,7 @@ export function CourseDetailPage() {
                     style={{
                       marginRight: "6px",
                       fontSize: "14px",
-                    }} 
+                    }}
                   />
                   <span>Sílabo</span>
                 </span>

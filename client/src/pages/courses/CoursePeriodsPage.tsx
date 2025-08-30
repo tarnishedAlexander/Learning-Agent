@@ -32,7 +32,7 @@ export function CoursePeriodsPage() {
     try {
       // Cargar información del curso
       const courseResponse = await courseService.getCourseById(courseId);
-      setCourse(courseResponse);
+      setCourse(courseResponse.data);
 
       // Cargar períodos del curso - esto actualizará el estado del hook
       await fetchClassesByCourse(courseId);
