@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import dayjs, { Dayjs } from "dayjs";
 import type { Course } from "../interfaces/courseInterface";
-import type { Clase } from "../interfaces/claseInterface";
+import type { CreateClassDTO } from "../interfaces/claseInterface";
 
 const { Option } = Select;
 
@@ -28,7 +28,7 @@ interface PeriodFormValues {
 interface CreatePeriodFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (periodData: Omit<Clase, "id">) => Promise<void>;
+  onSubmit: (periodData: CreateClassDTO) => Promise<void>;
   course: Course;
   loading?: boolean;
 }
@@ -49,8 +49,7 @@ export function CreatePeriodForm({
     validationSchema: periodValidationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        const periodData: Omit<Clase, "id"> = {
-          name: course.name,
+        const periodData: CreateClassDTO = {
           semester: values.semester,
           teacherId: course.teacherId,
           courseId: course.id,
