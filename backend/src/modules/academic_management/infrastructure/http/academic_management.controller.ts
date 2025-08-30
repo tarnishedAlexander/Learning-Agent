@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards, Put} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Put } from '@nestjs/common';
 import { CreateClassUseCase } from '../../application/commands/create-clase.usecase';
 import { CreateStudentProfileDto } from './dtos/create-studentProfile.dto';
 import { CreateClassDto } from './dtos/create-classes.dto';
@@ -20,8 +20,10 @@ import { SoftDeleteClassUseCase } from '../../application/commands/soft-delete-c
 import { DeleteClassDTO } from './dtos/delete-class.dto';
 import { GetTeacherInfoByIDUseCase } from '../../application/queries/get-teacher-info-by-id.usecase';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
+import { NotFoundError } from 'src/shared/handler/errors';
 
-@UseGuards(JwtAuthGuard)  
+@UseGuards(JwtAuthGuard)
 @Controller('academic')
 export class AcademicManagementController {
   constructor(
@@ -39,9 +41,17 @@ export class AcademicManagementController {
     private readonly updateClass: UpdateClassUseCase,
     private readonly softDeleteClass: SoftDeleteClassUseCase,
   ) { }
+
   @Get('classes')
-  listClassesEndPoint() {
-    return this.listClasses.execute();
+  async listClassesEndPoint() {
+    const path = "academic/classes"
+    const description = "List all active classes endpoint"
+    try {
+      const classesData = await this.listClasses.execute();
+      return responseSuccess("Sin implementar", classesData, path, description)
+    } catch (error) {
+      return responseInternalServerError(error.message, "Sin implementar", description, path)
+    }
   }
   @Get('students')
   listStudentEndPoint() {
@@ -60,8 +70,20 @@ export class AcademicManagementController {
     return this.getStudentsByClass.execute(classId);
   }
   @Get('teacher/:id')
-  getTeacherInfoByID(@Param('id') id: string) {
-    return this.getTeacherInfoById.execute(id);
+  async getTeacherInfoByID(@Param('id') id: string) {
+    const path = `academic/teacher/${id}`
+    const description = "List teacher info by ID"
+    try {
+      const teacherInfo = await this.getTeacherInfoById.execute(id);
+      return responseSuccess("Sin implementar", teacherInfo, path, description)
+    } catch (error) {
+      console.log("ASDFASDF pero en controller")
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
   }
 
   @Post('classes')
