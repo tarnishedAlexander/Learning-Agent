@@ -3,6 +3,7 @@ export interface Clase {
   name: string;
   semester: string;
   teacherId: string;
+  courseId?: string;
   dateBegin: string;
   dateEnd: string;
 }

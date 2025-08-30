@@ -15,6 +15,7 @@ import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import { TeacherCoursePage } from "../pages/courses/TeacherCoursePage";
+import { CoursePeriodsPage } from "../pages/courses/CoursePeriodsPage";
 import PrivateRoute from "./PrivateRoute";
 
 export const AppRoutes = () => {
@@ -32,6 +33,7 @@ export const AppRoutes = () => {
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="/courses" element={<TeacherCoursePage />} />
+            <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
             <Route path="/courses/:id" element={<CourseDetailPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
