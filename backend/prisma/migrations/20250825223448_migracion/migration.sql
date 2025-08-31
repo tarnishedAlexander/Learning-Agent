@@ -1,2 +1,2 @@
 -- DropIndex
-DROP INDEX "public"."RolePermission_permissionId_idx";
+DROP INDEX IF EXISTS "public"."RolePermission_permissionId_idx";
