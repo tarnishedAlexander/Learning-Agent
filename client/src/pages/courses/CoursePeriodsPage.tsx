@@ -10,12 +10,13 @@ import type { Course } from "../../interfaces/courseInterface";
 import type { Clase, CreateClassDTO } from "../../interfaces/claseInterface";
 import { useUserContext } from "../../context/UserContext";
 import dayjs from "dayjs";
+import AccessDenied from "../../components/shared/AccessDenied";
 
 export function CoursePeriodsPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const { user } = useUserContext();
-  
+
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,7 +28,7 @@ export function CoursePeriodsPage() {
 
   const loadCourseAndPeriods = useCallback(async () => {
     if (!courseId) return;
-    
+
     setLoading(true);
     try {
       // Cargar información del curso
@@ -112,17 +113,17 @@ export function CoursePeriodsPage() {
               }}
             >
               <div style={{ marginBottom: "8px" }}>
-                <h2 style={{ 
-                  fontSize: "18px", 
-                  fontWeight: "bold", 
+                <h2 style={{
+                  fontSize: "18px",
+                  fontWeight: "bold",
                   margin: 0,
                   lineHeight: "1.2"
                 }}>
                   {period.semester}
                 </h2>
               </div>
-              
-              <div style={{ 
+
+              <div style={{
                 fontSize: "13px",
                 lineHeight: "1.4"
               }}>
@@ -138,9 +139,9 @@ export function CoursePeriodsPage() {
         ))}
       </Row>
     ) : (
-      <Empty 
+      <Empty
         description="No hay períodos creados para esta materia"
-        style={{ 
+        style={{
           margin: "40px 0",
           padding: "20px",
         }}
@@ -188,74 +189,80 @@ export function CoursePeriodsPage() {
   }
 
   return (
-    <PageTemplate
-      title={course.name}
-      subtitle="Períodos en los que se dictó esta materia"
-      breadcrumbs={[
-        { label: "Home", href: "/" },
-        { label: "Materias", href: "/courses" },
-        { label: course.name }
-      ]}
-    >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "24px",
-        }}
-      >
-        {/* Header con búsqueda y botón crear */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 24,
-            flexWrap: "wrap",
-            gap: "12px"
-          }}
+    <>
+      {user?.roles.includes("docente") ? (
+        <PageTemplate
+          title={course.name}
+          subtitle="Períodos en los que se dictó esta materia"
+          breadcrumbs={[
+            { label: "Home", href: "/" },
+            { label: "Materias", href: "/courses" },
+            { label: course.name }
+          ]}
         >
-          <div>
-            <Input
-              placeholder="Buscar período..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              allowClear
-              style={{ 
-                width: 240,
-                borderRadius: 8
-              }}
-            />
-          </div>
-          {user?.roles.includes("docente") && (
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />}
-              onClick={() => setModalOpen(true)}
-              style={{ 
-                borderRadius: 8,
-                fontWeight: "500"
+          <div
+            style={{
+              maxWidth: 1200,
+              margin: "0 auto",
+              padding: "24px",
+            }}
+          >
+            {/* Header con búsqueda y botón crear */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 24,
+                flexWrap: "wrap",
+                gap: "12px"
               }}
             >
-              Crear Período
-            </Button>
-          )}
-        </div>
+              <div>
+                <Input
+                  placeholder="Buscar período..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  allowClear
+                  style={{
+                    width: 240,
+                    borderRadius: 8
+                  }}
+                />
+              </div>
+              {user?.roles.includes("docente") && (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setModalOpen(true)}
+                  style={{
+                    borderRadius: 8,
+                    fontWeight: "500"
+                  }}
+                >
+                  Crear Período
+                </Button>
+              )}
+            </div>
 
-        {/* Grid de períodos */}
-        {renderPeriodCards(filteredPeriods)}
+            {/* Grid de períodos */}
+            {renderPeriodCards(filteredPeriods)}
 
-        {/* Modal para crear período */}
-        {course && (
-          <CreatePeriodForm
-            open={modalOpen}
-            onClose={handleModalCancel}
-            onSubmit={handleCreatePeriod}
-            course={course}
-            loading={creatingPeriod}
-          />
-        )}
-      </div>
-    </PageTemplate>
+            {/* Modal para crear período */}
+            {course && (
+              <CreatePeriodForm
+                open={modalOpen}
+                onClose={handleModalCancel}
+                onSubmit={handleCreatePeriod}
+                course={course}
+                loading={creatingPeriod}
+              />
+            )}
+          </div>
+        </PageTemplate>
+      ) : (
+        <AccessDenied />
+      )}
+    </>
   );
 }
