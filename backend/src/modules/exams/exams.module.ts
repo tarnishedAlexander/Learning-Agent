@@ -13,7 +13,8 @@ import { GenerateExamUseCase } from './application/commands/generate-exam.usecas
 import { ExamQuestionPrismaRepository } from './infrastructure/persistence/exam-question.prisma.repository';
 import { EXAM_QUESTION_REPO } from './tokens';
 import { AddExamQuestionCommandHandler } from './application/commands/add-exam-question.handler';
-
+import { UpdateExamQuestionCommandHandler } from './application/commands/update-exam-question.handler';
+import { ApproveExamCommandHandler } from './application/commands/approve-exam.handler';
 
 @Module({
   imports: [PrismaModule, LlmModule, PromptTemplateModule],
@@ -29,6 +30,8 @@ import { AddExamQuestionCommandHandler } from './application/commands/add-exam-q
     GenerateQuestionsCommandHandler,
     { provide: EXAM_QUESTION_REPO, useClass: ExamQuestionPrismaRepository },
     AddExamQuestionCommandHandler,
+    UpdateExamQuestionCommandHandler,
+    ApproveExamCommandHandler,
   ],
 })
 export class ExamsModule {}

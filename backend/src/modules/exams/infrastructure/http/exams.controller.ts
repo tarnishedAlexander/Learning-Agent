@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { BadRequestException, Put, Post as HttpPost, Param as HttpParam, Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { CreateExamDto } from './dtos/create-exam.dto';
 import { GenerateQuestionsDto } from './dtos/generate-questions.dto';
 import {
@@ -15,13 +15,18 @@ import { Param } from '@nestjs/common';
 import { AddExamQuestionDto } from './dtos/add-exam-question.dto';
 import { AddExamQuestionCommand } from '../../application/commands/add-exam-question.command';
 import { AddExamQuestionCommandHandler } from '../../application/commands/add-exam-question.handler';
+import { UpdateExamQuestionDto } from './dtos/update-exam-question.dto';
+import { UpdateExamQuestionCommand } from '../../application/commands/update-exam-question.command';
+import { UpdateExamQuestionCommandHandler } from '../../application/commands/update-exam-question.handler';
+import { ApproveExamCommand } from '../../application/commands/approve-exam.command';
+import { ApproveExamCommandHandler } from '../../application/commands/approve-exam.handler';
 
 function sumDistribution(d?: { multiple_choice: number; true_false: number; open_analysis: number; open_exercise: number; }) {
   if (!d) return 0;
   return (d.multiple_choice ?? 0)
-       + (d.true_false ?? 0)
-       + (d.open_analysis ?? 0)
-       + (d.open_exercise ?? 0);
+      + (d.true_false ?? 0)
+      + (d.open_analysis ?? 0)
+      + (d.open_exercise ?? 0);
 }
 
 @Controller('exams')
@@ -31,6 +36,8 @@ export class ExamsController {
     private readonly generateQuestionsHandler: GenerateQuestionsCommandHandler,
     private readonly generateExamHandler: GenerateExamUseCase,
     private readonly addExamQuestionHandler: AddExamQuestionCommandHandler,
+    private readonly updateExamQuestionHandler: UpdateExamQuestionCommandHandler,
+    private readonly approveExamHandler: ApproveExamCommandHandler,
   ) {}
 
   @Post(':id/questions')
@@ -102,4 +109,20 @@ export class ExamsController {
   async generateExam(@Body() dto: GenerateExamInput) {
     return await this.generateExamHandler.execute(dto);
   }
+
+  @Put('questions/:id')
+    async updateQuestion(@Param('id') id: string, @Body() dto: UpdateExamQuestionDto) {
+      const updated = await this.updateExamQuestionHandler.execute(
+        new UpdateExamQuestionCommand(id, dto),
+      );
+      return { ok: true, data: updated };
+  }
+
+  @HttpPost(':id/approve')
+    @HttpCode(200)
+    async approveExam(@HttpParam('id') id: string) {
+      const res = await this.approveExamHandler.execute(new ApproveExamCommand(id));
+      return res; 
+  }
+
 }
