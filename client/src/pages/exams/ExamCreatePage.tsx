@@ -14,16 +14,12 @@ import AiResults from './AiResults';
 const layoutStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 16,
-  alignItems: 'center',
-  padding: '24px 16px',
+  padding: '5px 100px',
 };
 
-// Normaliza distintos formatos de respuesta del backend a un array de GeneratedQuestion
 function normalizeToQuestions(res: any): GeneratedQuestion[] {
   if (Array.isArray(res)) return res as GeneratedQuestion[];
 
-  // Por compatibilidad con forma { ok, data: { questions: { multiple_choice:[], ... } } }
   const buckets = res?.data?.questions;
   if (res?.ok && buckets && typeof buckets === 'object') {
     const types = ['multiple_choice', 'true_false', 'open_analysis', 'open_exercise'] as const;
@@ -48,7 +44,6 @@ function normalizeToQuestions(res: any): GeneratedQuestion[] {
 
 export default function ExamsCreatePage() {
   const { toasts, pushToast, removeToast } = useToast();
-  // Ref compatible con ExamFormHandle ({ getSnapshot: () => any })
   const formRef = useRef<ExamFormHandle>(null!);
 
   const [aiOpen, setAiOpen] = useState(false);
@@ -219,20 +214,14 @@ export default function ExamsCreatePage() {
         role: 'Sales Manager',
         avatarUrl: 'https://i.pravatar.cc/128?img=5',
       }}
-      
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Exámenes', href: '/exam' },
         { label: 'Crear', href: '/exams/create' },
       ]}
     >
-      <div
-        className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-        style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px' }}
-      >
-        {/* Formulario + botón de IA */}
-        <section className="card" style={{ width: '100%', maxWidth: 1000, margin: '0 auto' }}>
-          <h2>Crear nuevo examen</h2>
+      <div className="pantalla-scroll">
+        <section className="card subtle">
           <div style={layoutStyle}>
             <ExamForm
               ref={formRef}
@@ -242,9 +231,8 @@ export default function ExamsCreatePage() {
           </div>
         </section>
 
-        {/* Resultados IA */}
         {aiOpen && (
-          <section className="card" style={{ width: '100%', maxWidth: 1000, margin: '0 auto' }}>
+          <section className="card subtle " style={{ width: '100%', margin: '0 auto' }}>
             <AiResults
               subject={aiMeta.subject}
               difficulty={aiMeta.difficulty}
