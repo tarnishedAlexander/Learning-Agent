@@ -217,7 +217,7 @@ export default function ExamsCreatePage() {
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Exámenes', href: '/exam' },
-        { label: 'Crear', href: '/exams/create' },
+        { label: 'Crear' },
       ]}
     >
       <div className="pantalla-scroll">
