@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { CreateCourseForm } from "./CreateCourseForm";
 import { PlusOutlined } from "@ant-design/icons";
 import { useUserContext } from "../../context/UserContext";
+import AccessDenied from "../../components/shared/AccessDenied";
 
 export function TeacherCoursePage() {
   const { user, fetchUser } = useUserContext();
@@ -149,50 +150,56 @@ export function TeacherCoursePage() {
     );
 
   return (
-    <PageTemplate
-      title="Materias"
-      subtitle="Revisa a detalle las materias que dictaste en algún momento."
-      breadcrumbs={[{ label: "Home", href: "/" }, { label: "Materias" }]}
-    >
-      <div
-        className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "24px 24px",
-        }}
-      >
-        <CreateCourseForm
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onSubmit={handleAddCourse}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 24,
-          }}
+    <>
+      {user?.roles.includes("docente") ? (
+        <PageTemplate
+          title="Materias"
+          subtitle="Revisa a detalle las materias que dictaste en algún momento."
+          breadcrumbs={[{ label: "Home", href: "/" }, { label: "Materias" }]}
         >
-          <Space>
-            <Input
-              placeholder="Buscar materia"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              allowClear
-              style={{ width: 240 }}
+          <div
+            className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+            style={{
+              maxWidth: 1200,
+              margin: "0 auto",
+              padding: "24px 24px",
+            }}
+          >
+            <CreateCourseForm
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSubmit={handleAddCourse}
             />
-          </Space>
-          {user?.roles.includes("docente") && (
-            <Button type="primary" onClick={() => setModalOpen(true)}>
-              <PlusOutlined />
-              Registrar materia
-            </Button>
-          )}
-        </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 24,
+              }}
+            >
+              <Space>
+                <Input
+                  placeholder="Buscar materia"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  allowClear
+                  style={{ width: 240 }}
+                />
+              </Space>
+              {user?.roles.includes("docente") && (
+                <Button type="primary" onClick={() => setModalOpen(true)}>
+                  <PlusOutlined />
+                  Registrar materia
+                </Button>
+              )}
+            </div>
 
-        {renderGrid(filteredCourses)}
-      </div>
-    </PageTemplate>
+            {renderGrid(filteredCourses)}
+          </div>
+        </PageTemplate>
+      ) : (
+        <AccessDenied />
+      )}
+    </>
   );
 }

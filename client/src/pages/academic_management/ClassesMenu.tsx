@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import useClasses from "../../hooks/useClasses";
 import { Card, Row, Col, Input, Space, Empty } from "antd";
 import type { Clase } from "../../interfaces/claseInterface";
@@ -7,10 +7,6 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { useUserContext } from "../../context/UserContext";
 import AccessDenied from "../../components/shared/AccessDenied";
-
-function parseISO(d: string | Date): Date {
-  return d instanceof Date ? d : new Date(d);
-}
 
 export function ClassMenu() {
   const { user, fetchUser } = useUserContext();
