@@ -36,7 +36,7 @@ export class ExamQuestionPrismaRepository implements ExamQuestionRepositoryPort 
       const created = await tx.examQuestion.create({
         data: {
           examId,
-          kind: q.kind as any, // Prisma enum coincide con los strings
+          kind: q.kind as any, 
           text: q.text,
           options: q.options ? (q.options as unknown as Prisma.InputJsonValue) : undefined,
           correctOptionIndex: q.correctOptionIndex ?? null,
@@ -69,5 +69,48 @@ export class ExamQuestionPrismaRepository implements ExamQuestionRepositoryPort 
         updatedAt: created.updatedAt,
       };
     });
+  }
+
+    async findById(id: string) {
+    const row = await this.prisma.examQuestion.findUnique({ where: { id } });
+    if (!row) return null;
+    return {
+      id: row.id,
+      examId: row.examId,
+      kind: row.kind as any,
+      text: row.text,
+      options: (row as any).options ?? undefined,
+      correctOptionIndex: row.correctOptionIndex ?? undefined,
+      correctBoolean: row.correctBoolean ?? undefined,
+      expectedAnswer: row.expectedAnswer ?? undefined,
+      order: row.order,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  async update(id: string, patch: { text?: string; options?: string[]; correctOptionIndex?: number; correctBoolean?: boolean; expectedAnswer?: string; }) {
+    const data: any = {};
+    if (patch.text != null) data.text = patch.text;
+    if (patch.options != null) (data as any).options = patch.options as any; // JSON
+    if (patch.correctOptionIndex != null) data.correctOptionIndex = patch.correctOptionIndex;
+    if (patch.correctBoolean != null) data.correctBoolean = patch.correctBoolean;
+    if (patch.expectedAnswer != null) data.expectedAnswer = patch.expectedAnswer;
+
+    const updated = await this.prisma.examQuestion.update({ where: { id }, data });
+
+    return {
+      id: updated.id,
+      examId: updated.examId,
+      kind: updated.kind as any,
+      text: updated.text,
+      options: (updated as any).options ?? undefined,
+      correctOptionIndex: updated.correctOptionIndex ?? undefined,
+      correctBoolean: updated.correctBoolean ?? undefined,
+      expectedAnswer: updated.expectedAnswer ?? undefined,
+      order: updated.order,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    };
   }
 }
