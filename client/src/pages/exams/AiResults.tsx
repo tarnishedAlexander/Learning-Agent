@@ -85,9 +85,9 @@ export default function AiResults({
   };
 
   return (
-    <div className="ai-results-wrap">
-      <div className="ai-results card-like">
-        <Title level={3} className="!mb-4" style={{ color: token.colorPrimary }}>
+    <div className="ai-results-wrap" style={{ background: token.colorBgContainer, borderRadius: token.borderRadiusLG }}>
+      <div className="ai-results card-like" style={{ color: token.colorText }}>
+        <Title level={3} className="!mb-4" style={{ color: token.colorTextHeading }}>
           Revisar Examen: <span style={{ color: token.colorPrimary }}>{subject}</span>
         </Title>
 
@@ -117,15 +117,15 @@ export default function AiResults({
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6">
-          <Card size="small"><Text strong>MC:</Text> <Text>{mc}</Text></Card>
-          <Card size="small"><Text strong>VF:</Text> <Text>{tf}</Text></Card>
-          <Card size="small"><Text strong>AN:</Text> <Text>{an}</Text></Card>
-          <Card size="small"><Text strong>EJ:</Text> <Text>{ej}</Text></Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}><Text strong>MC:</Text> <Text>{mc}</Text></Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}><Text strong>VF:</Text> <Text>{tf}</Text></Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}><Text strong>AN:</Text> <Text>{an}</Text></Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}><Text strong>EJ:</Text> <Text>{ej}</Text></Card>
         </div>
 
         {error && <Alert type="error" showIcon className="mb-4" message={error} />}
         {loading ? (
-          <Card><Skeleton active paragraph={{ rows: 4 }} /></Card>
+          <Card style={{ background: token.colorBgElevated, borderColor: token.colorBorderSecondary }}><Skeleton active paragraph={{ rows: 4 }} /></Card>
         ) : (
           <Space direction="vertical" className="w-full">
             {questions.map((q, i) => (

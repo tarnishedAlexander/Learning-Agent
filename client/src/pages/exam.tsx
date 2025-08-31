@@ -42,8 +42,7 @@ export default function Exam() {
 
         <ExamTable
           data={exams}
-          onView={() => {}}
-          onEdit={() => (window.location.href = '/exams/create')}
+          onEdit={() => { window.location.href = '/exams/create'; }}
         />
       </div>
     </PageTemplate>

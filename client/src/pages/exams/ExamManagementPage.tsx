@@ -1,4 +1,3 @@
-// client/src/pages/exams/ExamManagementPage.tsx
 import { Card, Typography, theme } from 'antd';
 import ExamTable from '../../components/exams/ExamTable';
 import { useExamsStore } from '../../store/examsStore';
@@ -40,8 +39,7 @@ export default function ExamManagementPage() {
 
         <ExamTable
           data={exams}
-          onView={(exam) => console.log('Ver examen', exam.id)}
-          onEdit={() => (window.location.href = '/exams/create')}
+          onEdit={() => { window.location.href = '/exams/create'; }}
         />
       </div>
     </div>

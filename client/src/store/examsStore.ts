@@ -34,7 +34,9 @@ export interface ExamsState {
   exams: ExamSummary[];
   addFromQuestions: (args: AddFromQuestionsArgs) => ExamSummary;
   toggleVisibility: (id: string) => void;
+  setVisibility: (id: string, v: ExamVisibility) => void;
   setStatus: (id: string, status: ExamStatus, publishedAt?: string) => void;
+  removeExam: (id: string) => void;
 }
 
 function buildSummary({ title, className, questions, publish, scheduleAt }: AddFromQuestionsArgs): ExamSummary {
@@ -46,10 +48,8 @@ function buildSummary({ title, className, questions, publish, scheduleAt }: AddF
   };
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const now = new Date().toISOString();
-
   let status: ExamStatus = 'draft';
   let publishedAt: string | undefined = undefined;
-
   if (publish) {
     status = 'published';
     publishedAt = now;
@@ -57,7 +57,6 @@ function buildSummary({ title, className, questions, publish, scheduleAt }: AddF
     status = 'scheduled';
     publishedAt = scheduleAt;
   }
-
   return {
     id: `exam_${Date.now()}`,
     title: title || 'Examen sin título',
@@ -87,12 +86,22 @@ export const useExamsStore = create(
           ),
         });
       },
+      setVisibility: (id, v) => {
+        set({
+          exams: get().exams.map(e =>
+            e.id === id ? { ...e, visibility: v } : e
+          ),
+        });
+      },
       setStatus: (id, status, publishedAt) => {
         set({
           exams: get().exams.map(e =>
             e.id === id ? { ...e, status, publishedAt } : e
           ),
         });
+      },
+      removeExam: (id) => {
+        set({ exams: get().exams.filter(e => e.id !== id) });
       },
     }),
     { name: 'exams-storage' }
