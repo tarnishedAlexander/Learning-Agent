@@ -113,8 +113,7 @@ export class DocumentEmbeddingService {
 
       // 3. Filtrar chunks que ya tienen embeddings (si no se debe reemplazar)
       if (!options.replaceExisting) {
-        chunks = this.filterChunksWithoutEmbeddings(chunks);
-        // chunks = await this.filterChunksWithoutEmbeddings(chunks);
+        chunks = await this.filterChunksWithoutEmbeddings(chunks);
       }
 
       // 4. Validar textos antes de procesar
@@ -145,8 +144,7 @@ export class DocumentEmbeddingService {
             );
 
           // 6. Almacenar embeddings en la base de datos
-          this.storeEmbeddings(batch);
-          // await this.storeEmbeddings(batch, batchResult);
+          await this.storeEmbeddings(batch, batchResult);
 
           batchResults.push(batchResult);
           totalChunksProcessed += batchResult.totalEmbeddings;
@@ -276,26 +274,44 @@ export class DocumentEmbeddingService {
 
   /**
    * Filtra chunks que ya tienen embeddings
-   * TODO: Implementar verificación real con pgvector
    */
-  private filterChunksWithoutEmbeddings(
+  private async filterChunksWithoutEmbeddings(
     chunks: DocumentChunk[],
-  ): DocumentChunk[] {
-    // Por ahora retornamos todos los chunks
-    // En la implementación real, verificaríamos si ya tienen embeddings en la BD
-    return chunks;
+  ): Promise<DocumentChunk[]> {
+    // Verificar cada chunk individualmente
+    const chunksWithoutEmbeddings: DocumentChunk[] = [];
+
+    for (const chunk of chunks) {
+      const hasEmbedding = await this.chunkRepository.hasEmbedding(chunk.id);
+      if (!hasEmbedding) {
+        chunksWithoutEmbeddings.push(chunk);
+      }
+    }
+
+    return chunksWithoutEmbeddings;
   }
 
   /**
-   * Almacena embeddings en la base de datos
-   * TODO: Implementar actualización real con pgvector
+   * Almacena embeddings en la base de datos usando pgvector
    */
-  private storeEmbeddings(
+  private async storeEmbeddings(
     chunks: DocumentChunk[],
-    // batchResult: BatchEmbeddingResult,
-  ): void {
-    // Por ahora no hacemos nada
-    // En la implementación real, actualizaríamos la columna embedding de cada chunk
-    console.log(`📊 Almacenando ${chunks.length} embeddings...`);
+    batchResult: BatchEmbeddingResult,
+  ): Promise<void> {
+    try {
+      // Preparar actualizaciones para el lote
+      const updates = chunks.map((chunk, index) => ({
+        chunkId: chunk.id,
+        embedding: batchResult.embeddings[index],
+      }));
+
+      // Actualizar embeddings en lote
+      await this.chunkRepository.updateBatchEmbeddings(updates);
+
+      console.log(`${chunks.length} embeddings almacenados en pgvector`);
+    } catch (error) {
+      console.error('Error almacenando embeddings:', error);
+      throw new Error(`Error almacenando embeddings: ${error}`);
+    }
   }
 }
