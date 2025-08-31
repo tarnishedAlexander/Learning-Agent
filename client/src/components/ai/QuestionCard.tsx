@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState , type DragEvent} from 'react';
 import { Card, Typography, Space, Radio, Checkbox, Button, Image, Tag, Divider, theme } from 'antd';
-import { EditOutlined, SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, ReloadOutlined, MenuOutlined } from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
 import type { GeneratedQuestion } from '../../services/exams.service';
 import { palette } from '../../theme';
@@ -12,9 +12,14 @@ export type QuestionCardProps = {
   question: GeneratedQuestion;
   onChange: (q: GeneratedQuestion) => void;
   onRegenerate?: (q: GeneratedQuestion) => void;
+  draggable?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: (e: DragEvent<HTMLDivElement>) => void;
+  onDrop?: () => void;
+  isDragging?: boolean;
 };
 
-export default function QuestionCard({ index, question, onChange, onRegenerate }: QuestionCardProps) {
+export default function QuestionCard({ index, question, onChange, onRegenerate, draggable, onDragStart, onDragOver, onDrop, isDragging }: QuestionCardProps) {
   const { token } = theme.useToken();
   const [editing, setEditing] = useState(false);
   const [draftText, setDraftText] = useState(question.text);
@@ -39,12 +44,17 @@ export default function QuestionCard({ index, question, onChange, onRegenerate }
   return (
     <Card
       className="transition-all duration-300 hover:-translate-y-[3px] shadow-sm"
-      style={{ borderLeft: `4px solid ${typeAccent}` }}
+      style={{ borderLeft: `4px solid ${typeAccent}` , opacity: isDragging ? 0.5 : 1 }}
       bodyStyle={{ padding: 20 }}
+      draggable={draggable && !editing}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
     >
-      {/* Header */}
+
       <div className="flex items-center justify-between mb-3">
         <Space size={8} align="center">
+          <MenuOutlined style={{ cursor: 'grab', color: token.colorTextSecondary }} />
           <Tag color={palette.P0} style={{ color: '#fff', fontWeight: 600 }}>
             Pregunta {index + 1}
           </Tag>

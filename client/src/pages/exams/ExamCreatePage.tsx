@@ -137,6 +137,15 @@ export default function ExamsCreatePage() {
     setAiQuestions((prev) => prev.map((x) => (x.id === q.id ? q : x)));
   };
 
+  const onReorderQuestion = (from: number, to: number) => {
+    setAiQuestions((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(from, 1);
+      updated.splice(to, 0, moved);
+      return updated;
+    });
+  };
+
   const onRegenerateAll = async () => {
     const snap = formRef.current?.getSnapshot?.();
     const data = snap?.values ?? {};
@@ -231,20 +240,22 @@ export default function ExamsCreatePage() {
         style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px' }}
       >
         {/* Formulario + botón de IA */}
-        <section className="card" style={{ width: '100%', maxWidth: 1000, margin: '0 auto' }}>
-          <h2>Crear nuevo examen</h2>
-          <div style={layoutStyle}>
-            <ExamForm
-              ref={formRef}
-              onToast={pushToast}
-              onGenerateAI={handleAIPropose}
-            />
-          </div>
-        </section>
+        {!aiOpen && (
+          <section className="card" style={{ width: '100%', maxWidth: 1000, margin: '0 auto' }}>
+            <h2>Crear nuevo examen</h2>
+            <div style={layoutStyle}>
+              <ExamForm
+                ref={formRef}
+                onToast={pushToast}
+                onGenerateAI={handleAIPropose}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Resultados IA */}
         {aiOpen && (
-          <section className="card" style={{ width: '100%', maxWidth: 1000, margin: '0 auto' }}>
+          <section className="card" style={{ width: '100%', maxWidth: 1000 ,margin: '0 auto' }}>
             <AiResults
               subject={aiMeta.subject}
               difficulty={aiMeta.difficulty}
@@ -257,6 +268,7 @@ export default function ExamsCreatePage() {
               onRegenerateOne={onRegenerateOne}
               onAddManual={onAddManual}
               onSave={onSave}
+              onReorder={onReorderQuestion}
             />
           </section>
         )}

@@ -19,6 +19,7 @@ export type AiResultsProps = {
   onRegenerateOne?: (q: GeneratedQuestion) => Promise<void> | void;
   onAddManual: (type: GeneratedQuestion['type']) => void;
   onSave: () => Promise<void> | void;
+  onReorder: (from: number, to: number) => void;
 };
 
 export default function AiResults({
@@ -33,12 +34,14 @@ export default function AiResults({
   onRegenerateOne,
   onAddManual,
   onSave,
+  onReorder,
 }: AiResultsProps) {
   const { token } = theme.useToken();
   const [regenLoading, setRegenLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);
   const [typeChoice, setTypeChoice] = useState<GeneratedQuestion['type']>('multiple_choice');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const total = questions.length;
   const selected = questions.filter(q => q.include).length;
@@ -82,7 +85,7 @@ export default function AiResults({
   };
 
   return (
-    <div className="ai-results-wrap">
+    <div className="ai-results-wrap" style={{ margin: 0, padding: 0 }}>
       <div className="ai-results card-like">
         <Title level={3} className="!mb-4" style={{ color: token.colorPrimary }}>
           Revisar Examen: <span style={{ color: palette.P0 }}>{subject}</span>
@@ -132,6 +135,15 @@ export default function AiResults({
                 question={q}
                 onChange={onChange}
                 onRegenerate={onRegenerateOne}
+                draggable
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragIndex === null) return;
+                  onReorder(dragIndex, i);
+                  setDragIndex(null);
+                }}
+                isDragging={dragIndex === i}
               />
             ))}
           </Space>
