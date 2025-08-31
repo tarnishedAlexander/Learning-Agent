@@ -17,6 +17,7 @@ import {
   DocumentListItem,
 } from '../../domain/value-objects/upload-document.vo';
 import { minioConfig } from '../config/minio.config';
+import { Console } from 'console';
 
 @Injectable()
 export class S3StorageAdapter implements DocumentStoragePort {
@@ -61,12 +62,10 @@ export class S3StorageAdapter implements DocumentStoragePort {
           uploadDate: new Date().toISOString(),
         },
       });
-
       // Subir archivo a MinIO
       await this.s3Client.send(putObjectCommand);
-
       const url = `${this.endpoint}/${this.bucketName}/${fileName}`;
-
+      console.log(`Documento subido exitosamente a ${url}`);
       // Crear entidad Document (versión simple para compatibilidad)
       const document = new Document(
         '', // id - será asignado por el caso de uso

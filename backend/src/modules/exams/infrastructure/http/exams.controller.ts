@@ -11,6 +11,10 @@ import {
 } from '../../application/commands/generate-questions.command';
 import type { GenerateExamInput } from './dtos/exam.types';
 import { GenerateExamUseCase } from '../../application/commands/generate-exam.usecase';
+import { Param } from '@nestjs/common';
+import { AddExamQuestionDto } from './dtos/add-exam-question.dto';
+import { AddExamQuestionCommand } from '../../application/commands/add-exam-question.command';
+import { AddExamQuestionCommandHandler } from '../../application/commands/add-exam-question.handler';
 
 function sumDistribution(d?: { multiple_choice: number; true_false: number; open_analysis: number; open_exercise: number; }) {
   if (!d) return 0;
@@ -26,7 +30,25 @@ export class ExamsController {
     private readonly createExamHandler: CreateExamCommandHandler,
     private readonly generateQuestionsHandler: GenerateQuestionsCommandHandler,
     private readonly generateExamHandler: GenerateExamUseCase,
+    private readonly addExamQuestionHandler: AddExamQuestionCommandHandler,
   ) {}
+
+  @Post(':id/questions')
+  async addQuestion(
+    @Param('id') id: string,
+    @Body() dto: AddExamQuestionDto,
+  ) {
+    const cmd = new AddExamQuestionCommand(id, dto.position, {
+      kind: dto.kind,
+      text: dto.text,
+      options: dto.options,
+      correctOptionIndex: dto.correctOptionIndex,
+      correctBoolean: dto.correctBoolean,
+      expectedAnswer: dto.expectedAnswer,
+    });
+    const created = await this.addExamQuestionHandler.execute(cmd);
+    return { ok: true, data: created, message: 'Question added to exam' };
+  }
 
   @Post()
   @HttpCode(200)
