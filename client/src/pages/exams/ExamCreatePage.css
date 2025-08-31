@@ -1,14 +1,23 @@
 
 
 .ai-results {
-  max-height: 350px;
-  overflow-y: auto;
-  border: 0px solid #eee;
-  padding: 50px;
+  
+  padding: 12px;
   background: #fafbfc;
+  max-height: none;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
 }
 
-.ai-results-wrap {
-  margin: 0 !important;
-  padding: 0 !important;
+.question-header {
+  min-height: 60px;
+  padding: 12px;
+  background: #fafbfc; 
+}
+
+@media (prefers-color-scheme: dark) {
+  .question-header {
+    background: #1f1f1f; 
+  }
 }

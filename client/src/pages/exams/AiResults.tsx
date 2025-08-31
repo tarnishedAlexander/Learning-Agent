@@ -85,8 +85,8 @@ export default function AiResults({
   };
 
   return (
-    <div className="ai-results-wrap" style={{ margin: 0, padding: 0 }}>
-      <div className="ai-results card-like">
+    <div className="ai-results-wrap">
+      <div className="ai-results card-like" > 
         <Title level={3} className="!mb-4" style={{ color: token.colorPrimary }}>
           Revisar Examen: <span style={{ color: palette.P0 }}>{subject}</span>
         </Title>
@@ -127,7 +127,7 @@ export default function AiResults({
         {loading ? (
           <Card><Skeleton active paragraph={{ rows: 4 }} /></Card>
         ) : (
-          <Space direction="vertical" className="w-full">
+          <Space direction="vertical" className="w-full" size={0}>
             {questions.map((q, i) => (
               <QuestionCard
                 key={q.id}
@@ -149,8 +149,8 @@ export default function AiResults({
           </Space>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between gap-3 mt-8">
-          <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row justify-between gap-1 mt-8">
+          <div className="flex gap-1">
             <Button icon={<ReloadOutlined />} loading={regenLoading} onClick={handleRegenerateAll} aria-label="Regenerar Preguntas">
               Regenerar
             </Button>

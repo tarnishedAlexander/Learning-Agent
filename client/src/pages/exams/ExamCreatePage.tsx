@@ -10,6 +10,7 @@ import PageTemplate from '../../components/PageTemplate';
 import './ExamCreatePage.css';
 import { generateQuestions, type GeneratedQuestion } from '../../services/exams.service';
 import AiResults from './AiResults';
+import { theme } from 'antd';
 
 const layoutStyle: CSSProperties = {
   display: 'flex',
@@ -51,6 +52,7 @@ export default function ExamsCreatePage() {
   // Ref compatible con ExamFormHandle ({ getSnapshot: () => any })
   const formRef = useRef<ExamFormHandle>(null!);
 
+  const { token } = theme.useToken();
   const [aiOpen, setAiOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -255,7 +257,25 @@ export default function ExamsCreatePage() {
 
         {/* Resultados IA */}
         {aiOpen && (
-          <section className="card" style={{ width: '100%', maxWidth: 1000 ,margin: '0 auto' }}>
+  <section
+    className="card"
+    style={{
+      position: 'sticky',
+      top: 0,
+      width: '90%',
+      maxWidth: 900,
+      height: 'calc(100vh - 120px)',
+      overflowY: 'auto',
+      background: token.colorBgElevated,
+      border: `1px solid ${token.colorBorderSecondary}`,
+      borderRadius: 12,
+      margin: 0,
+      outline: 'none',
+      zIndex: 10,
+      boxShadow: token.boxShadowTertiary,
+      ['--ai-bg' as any]: token.colorBgContainer,
+    }}
+          >
             <AiResults
               subject={aiMeta.subject}
               difficulty={aiMeta.difficulty}

@@ -13,7 +13,6 @@ export default function AiQuestionsPage() {
   const [meta] = useState({ subject: 'Tema general', difficulty: 'medio' });
 
   useEffect(() => {
-    // puedes precargar preguntas aquí si lo deseas
   }, []);
 
   const onChangeQuestion = (q: GeneratedQuestion) => {
@@ -127,7 +126,6 @@ export default function AiQuestionsPage() {
     alert(`Guardado (simulado). Preguntas incluidas: ${totalIncluidas}`);
   };
 
-  // NUEVO: handler requerido por AiResults
   const onReorder = (from: number, to: number) => {
     setQuestions(prev => {
       if (
@@ -177,7 +175,7 @@ export default function AiQuestionsPage() {
         onRegenerateOne={onRegenerateOne}
         onAddManual={onAddManual}
         onSave={onSave}
-        onReorder={onReorder} // <- agregado para corregir TS2741
+        onReorder={onReorder} 
       />
     </PageTemplate>
   );
