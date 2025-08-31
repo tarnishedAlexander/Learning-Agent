@@ -45,7 +45,7 @@ export function TeacherCoursePage() {
   }, [searchTerm, courses]);
 
   const goToCourse = (id: string) => {
-    navigate(`/courses/${id}`);
+    navigate(`/courses/${id}/periods`);
   };
 
   const goToExams = (id: string, e: React.MouseEvent) => {

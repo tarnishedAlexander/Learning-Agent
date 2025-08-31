@@ -18,6 +18,20 @@ const useCourses = () => {
         prepareHook();
     }, [user]);
 
+    const getCourseByID = async (courseId: string) => {
+        const res = await courseService.getCourseById(courseId);
+        if (res.code == 200) {
+            return {
+                success: true,
+                data: res.data
+            }
+        } else {
+            return {
+                sucess: false
+            }
+        }
+    }
+
     const fetchCourses = async () => {
         if (!user) return
         const data = await courseService.getCourseByTeacher(user.id)
@@ -36,6 +50,7 @@ const useCourses = () => {
 
     return {
         courses,
+        getCourseByID,
         fetchCourses,
         createCourse,
     }

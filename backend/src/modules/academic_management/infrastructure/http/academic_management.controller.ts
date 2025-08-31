@@ -23,9 +23,9 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { CreateCourseUseCase } from '../../application/commands/create-course.usecase';
 import { CreateCourseDTO } from './dtos/create-course.dto';
 import { GetCoursesByTeacherUseCase } from '../../application/queries/get-courses-by-teacher.usecase';
+import { GetClassesByCourseUseCase } from '../../application/queries/get-classes-by-course.usecase';
 import { responseAlreadyCreated, responseConflict, responseCreated, responseForbidden, responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
-import { AlreadyCreatedError, ForbiddenError, NotFoundError } from 'src/shared/handler/errors';
-import { ConflictError } from 'openai';
+import { AlreadyCreatedError, ForbiddenError, NotFoundError,ConflictError } from 'src/shared/handler/errors';
 import { GetCourseByIdUseCase } from '../../application/queries/get-course-by-id.usecase';
 const academicRoute = 'academic'
 
@@ -37,6 +37,7 @@ export class AcademicManagementController {
     private readonly listStudents: ListStudentsUseCase,
     private readonly getCourseById: GetCourseByIdUseCase,
     private readonly getCoursesByTeacher: GetCoursesByTeacherUseCase,
+    private readonly getClassesByCourse: GetClassesByCourseUseCase,
     private readonly getClassById: GetClassByIdUseCase,
     private readonly getClassesByStudent: GetClassesByStudentUseCase,
     private readonly getStudentsByClass: GetStudentsByClassUseCase,
@@ -58,7 +59,7 @@ export class AcademicManagementController {
     const description = "List all active classes endpoint"
     try {
       const classesData = await this.listClasses.execute();
-      return responseSuccess("Sin implementar", classesData, path, description)
+      return responseSuccess("Sin implementar", classesData, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -70,7 +71,7 @@ export class AcademicManagementController {
     const description = "List all students endpoint"
     try {
       const students = await this.listStudents.execute();
-      return responseSuccess("Sin implementar", students, path, description)
+      return responseSuccess("Sin implementar", students, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -82,7 +83,7 @@ export class AcademicManagementController {
     const description = "Get course by ID"
     try {
       const course = await this.getCourseById.execute(id);
-      return responseSuccess("Sin implementar", course, path, description)
+      return responseSuccess("Sin implementar", course, description, path)
     } catch(error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -98,7 +99,23 @@ export class AcademicManagementController {
     const description = "List all courses of a teacher"
     try {
       const courses = await this.getCoursesByTeacher.execute(id)
-      return responseSuccess("Sin implementar", courses, path, description)
+      return responseSuccess("Sin implementar", courses, description, path)
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return responseNotFound(error.message, "Sin implementar", description, path)
+      } else {
+        return responseInternalServerError(error.message, "Sin implementar", description, path)
+      }
+    }
+  }
+
+  @Get('classes/by-course/:id')
+  async getClassesByCourseEndpoint(@Param('id') id: string) {
+    const path = academicRoute + `/classes/by-course/${id}`
+    const description = "List all classes of a course"
+    try {
+      const classes = await this.getClassesByCourse.execute(id)
+      return responseSuccess("Sin implementar", classes, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -114,7 +131,7 @@ export class AcademicManagementController {
     const description = "Get class by ID"
     try {
       const objClass = await this.getClassById.execute(id);
-      return responseSuccess("Sin implementar", objClass, path, description)
+      return responseSuccess("Sin implementar", objClass, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -130,7 +147,7 @@ export class AcademicManagementController {
     const description = "Get classes by student ID"
     try {
       const classesData = await this.getClassesByStudent.execute(studentId);
-      return responseSuccess("Sin implementar", classesData, path, description)
+      return responseSuccess("Sin implementar", classesData, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -142,7 +159,7 @@ export class AcademicManagementController {
     const description = "Get students by class ID"
     try {
       const studentsData = await this.getStudentsByClass.execute(classId);
-      return responseSuccess("Sin implementar", studentsData, path, description)
+      return responseSuccess("Sin implementar", studentsData, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -154,7 +171,7 @@ export class AcademicManagementController {
     const description = "List teacher info by ID"
     try {
       const teacherInfo = await this.getTeacherInfoById.execute(id);
-      return responseSuccess("Sin implementar", teacherInfo, path, description)
+      return responseSuccess("Sin implementar", teacherInfo, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -172,7 +189,7 @@ export class AcademicManagementController {
     const description = "Create a new course"
     try {
       const classesData = await this.createCourse.execute(dto)
-      return responseCreated("Sin implementar", classesData, path, description)
+      return responseCreated("Sin implementar", classesData, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -188,11 +205,13 @@ export class AcademicManagementController {
     const description = "Create a new Class"
     try {
       const classesData = await this.createClasses.execute(dto);
-      return responseCreated("Sin implementar", classesData, path, description)
+      return responseCreated("Sin implementar", classesData, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
-      } else {
+      } else if (error instanceof ForbiddenError) {
+        return responseForbidden(error.message, "Sin implementar", description, path)
+      } else{
         return responseInternalServerError(error.message, "Sin implementar", description, path)
       }
     }
@@ -204,7 +223,7 @@ export class AcademicManagementController {
     const description = "Create a new student"
     try {
       const student = await this.createProfileStudent.execute(dto);
-      return responseCreated("Sin implementar", student, path, description)
+      return responseCreated("Sin implementar", student, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -216,7 +235,7 @@ export class AcademicManagementController {
     const description = "Enroll student"
     try {
       const enrollment = await this.createEnrollment.execute(dto);
-      return responseCreated("Sin implementar", enrollment, path, description)
+      return responseCreated("Sin implementar", enrollment, description, path)
     } catch (error) {
       return responseInternalServerError(error.message, "Sin implementar", description, path)
     }
@@ -228,7 +247,7 @@ export class AcademicManagementController {
     const description = "Enroll one student to a class"
     try {
       const enrollment = await this.enrollSingle.execute(dto);
-      return responseCreated("Sin implementar", enrollment, path, description)
+      return responseCreated("Sin implementar", enrollment, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -246,7 +265,7 @@ export class AcademicManagementController {
     const description = "Enroll a group of students to a class"
     try {
       const enrollments = await this.enrollGroup.execute(dto);
-      return responseCreated("Sin implementar", enrollments, path, description)
+      return responseCreated("Sin implementar", enrollments, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -272,7 +291,7 @@ export class AcademicManagementController {
         dateEnd: dto.dateEnd
       }
       const objClass = await this.updateClass.execute(input);
-      return responseCreated("Sin implementar", objClass, path, description)
+      return responseCreated("Sin implementar", objClass, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
@@ -294,7 +313,7 @@ export class AcademicManagementController {
         classId: id
       }
       const objClass = await this.softDeleteClass.execute(input)
-      return responseCreated("Sin implementar", objClass, path, description)
+      return responseCreated("Sin implementar", objClass, description, path)
     } catch (error) {
       if (error instanceof NotFoundError) {
         return responseNotFound(error.message, "Sin implementar", description, path)
