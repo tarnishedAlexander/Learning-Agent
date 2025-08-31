@@ -35,6 +35,24 @@ const useClasses = () => {
     }
   };
 
+  const fetchClassesByStudent = async (studentId: string) => {
+    if (!user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+
+    const res = await classService.getClassesByStudentId(studentId);
+    if (res.code == 200) {
+      setClasses(res.data)
+      return {
+        success: true,
+        message: "Clases recuperados exitosamente"
+      }
+    }
+  }
+
   const createClass = async (data: Omit<CreateClassDTO, 'teacherId'>) => {
     if (!user) {
       return {
@@ -130,6 +148,7 @@ const useClasses = () => {
     actualClass,
     classes,
     fetchClassesByCourse,
+    fetchClassesByStudent,
     createClass,
     fetchClassById,
     updateClass,
