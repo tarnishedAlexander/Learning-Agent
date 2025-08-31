@@ -1,9 +1,9 @@
 import apiClient from "../api/apiClient";
-import type { StudentInfo, StudentGroup } from "../interfaces/studentInterface";
+import type { StudentGroup } from "../interfaces/studentInterface";
 
 export const studentService = {
 
-  async getStudentsByClassId(classId: string): Promise<StudentInfo[]> {
+  async getStudentsByClassId(classId: string) {
     try {
       const response = await apiClient.get(`/academic/students/by-class/${classId}`);
       return response.data;

@@ -30,10 +30,12 @@ export class UpdateClassUseCase {
         if (course.teacherId != input.teacherId) {
             throw new ForbiddenError(`Class ${objClass.id}-${objClass.name} doesnt belongs to teacher ${input.teacherId}`)
         }
+
+        const className = `${course.name}-${input.semester}`
         
         return this.classRepo.updateInfo(
             input.classId,
-            input.name,
+            className,
             input.semester,
             input.dateBegin,
             input.dateEnd
