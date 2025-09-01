@@ -22,6 +22,16 @@ export const classService = {
     }
   },
 
+  async getClassesByStudentId(id: string) {
+    try {
+      const response = await apiClient.get(`/academic/classes/by-student/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch classes", error);
+      throw error;
+    }
+  },
+
   async createClass(newClass: CreateClassDTO) {
     try {
       const response = await apiClient.post("/academic/classes", newClass);
