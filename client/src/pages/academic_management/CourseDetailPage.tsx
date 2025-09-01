@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Table, Button, Space, message, Typography, Empty, Tabs } from "antd";
+import { Table, Button, message, Typography, Empty, Tabs } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,

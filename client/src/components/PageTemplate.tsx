@@ -18,7 +18,6 @@ type Props = {
   breadcrumbs?: { label: ReactNode; href?: string }[];
   actions?: ReactNode;
   children: ReactNode;
-  alwaysShowActions?: boolean;
 };
 
 export default function PageTemplate({
@@ -28,7 +27,6 @@ export default function PageTemplate({
   breadcrumbs,
   actions,
   children,
-  alwaysShowActions = false,
 }: Props) {
   const { theme, setTheme } = useThemeStore();
   const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");

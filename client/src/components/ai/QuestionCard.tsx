@@ -1,6 +1,6 @@
 import { useState , type DragEvent} from 'react';
 import { Card, Typography, Space, Radio, Checkbox, Button, Image, Tag, Divider, theme } from 'antd';
-import { EditOutlined, SaveOutlined, ReloadOutlined, MenuOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, ReloadOutlined} from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
 import type { GeneratedQuestion } from '../../services/exams.service';
 import { palette } from '../../theme';
@@ -79,23 +79,14 @@ export default function QuestionCard({
         className="transition-all duration-300 hover:-translate-y-[3px] shadow-sm"
         style={{
           borderLeft: `4px solid ${typeAccent}`,
-          minHeight: 160}}
-          bodyStyle={{ padding: 10 }}
+          minHeight: 160,
+          padding: 0,
+          margin:0,
+        }}
       >
         <div
           className="flex items-center justify-between mb-3 py-3"
-          style={{ minHeight: 40 , padding:2 }}
-        >
-          <Space size={8} align="center">
-            <MenuOutlined style={{ cursor: draggable ? 'grab' as const : 'default', color: token.colorTextSecondary }} />
-            <Tag color={palette.P0} style={{ color: '#fff', fontWeight: 600 }}>
-              Pregunta {index + 1}
-            </Tag>
-            <Tag color={typeAccent} style={{ color: '#fff', fontWeight: 600 }}>
-              {typeLabel}
-            </Tag>
-          </Space>
-
+          style={{ minHeight: 5 , padding:0 }}>
           <Space>
             {onRegenerate && (
               <Button
@@ -131,14 +122,16 @@ export default function QuestionCard({
               </Button>
             )}
 
-            <div className="inline-flex items-center gap-2">
+            <div className="inline-flex items-center">
               <Checkbox
                 checked={question.include}
                 onChange={(e) => handleInclude(e.target.checked)}
                 aria-label={`Incluir pregunta ${index + 1} en el examen final`}
+                style={{padding:1}}
               />
-              <Text className="text-[13px]" style={{ color: token.colorTextSecondary }}>Incluir</Text>
+              <Text className="text-[15px]" style={{ color: token.colorTextSecondary }}> Incluir</Text>
             </div>
+            
           </Space>
         </div>
 

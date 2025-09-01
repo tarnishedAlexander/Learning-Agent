@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Button, Space, Typography } from 'antd';
 import PageTemplate from '../../components/PageTemplate';
 import AiResults from './AiResults';
@@ -12,11 +12,25 @@ export default function AiQuestionsPage() {
   const [questions, setQuestions] = useState<GeneratedQuestion[]>([]);
   const [meta] = useState({ subject: 'Tema general', difficulty: 'medio' });
 
-  useEffect(() => {
-  }, []);
-
   const onChangeQuestion = (q: GeneratedQuestion) => {
     setQuestions(prev => prev.map(x => (x.id === q.id ? q : x)));
+  };
+
+  const onReorder = (from: number, to: number) => {
+    setQuestions(prev => {
+      if (
+        from === to ||
+        from < 0 ||
+        to < 0 ||
+        from >= prev.length ||
+        to >= prev.length
+      ) return prev;
+
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
   };
 
   const onRegenerateAll = async () => {
@@ -126,23 +140,6 @@ export default function AiQuestionsPage() {
     alert(`Guardado (simulado). Preguntas incluidas: ${totalIncluidas}`);
   };
 
-  const onReorder = (from: number, to: number) => {
-    setQuestions(prev => {
-      if (
-        from === to ||
-        from < 0 ||
-        to < 0 ||
-        from >= prev.length ||
-        to >= prev.length
-      )
-        return prev;
-      const next = [...prev];
-      const [moved] = next.splice(from, 1);
-      next.splice(to, 0, moved);
-      return next;
-    });
-  };
-
   return (
     <PageTemplate title="Preguntas IA">
       <Space
@@ -175,7 +172,7 @@ export default function AiQuestionsPage() {
         onRegenerateOne={onRegenerateOne}
         onAddManual={onAddManual}
         onSave={onSave}
-        onReorder={onReorder} 
+        onReorder={onReorder}
       />
     </PageTemplate>
   );

@@ -140,7 +140,7 @@ export default function ExamsCreatePage() {
   };
 
   const onReorderQuestion = (from: number, to: number) => {
-    setAiQuestions((prev) => {
+    setAiQuestions(prev => {
       const updated = [...prev];
       const [moved] = updated.splice(from, 1);
       updated.splice(to, 0, moved);
@@ -262,16 +262,16 @@ export default function ExamsCreatePage() {
     style={{
       position: 'sticky',
       top: 0,
-      width: '90%',
-      maxWidth: 900,
+      width: '80%',
+      maxWidth: 700,
       height: 'calc(100vh - 120px)',
       overflowY: 'auto',
       background: token.colorBgElevated,
       border: `1px solid ${token.colorBorderSecondary}`,
       borderRadius: 12,
-      margin: 0,
       outline: 'none',
       zIndex: 10,
+      margin: "auto",    
       boxShadow: token.boxShadowTertiary,
       ['--ai-bg' as any]: token.colorBgContainer,
     }}

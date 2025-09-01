@@ -1,5 +1,5 @@
 // src/services/documents.service.ts
-import { api } from "./api/instance";
+import  api  from "./api/instance";
 import type { Document, DocumentListResponse, UploadResponse } from "../interfaces/documentInterface";
 
 // Tipos para el mock server

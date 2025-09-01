@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { Alert, Button, Card, Modal, Radio, Skeleton, Space, Typography, theme } from 'antd';
 import { ReloadOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import QuestionCard from '../../components/ai/QuestionCard';
@@ -84,6 +84,15 @@ export default function AiResults({
     setTypeModalOpen(false);
   };
 
+const handleDragStart = (index: number) => () => setDragIndex(index);
+  const handleDragOver = (index: number) => (e: DragEvent) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    onReorder(dragIndex, index);
+    setDragIndex(index);
+  };
+  const handleDragEnd = () => setDragIndex(null);
+
   return (
     <div className="ai-results-wrap">
       <div className="ai-results card-like" > 
@@ -116,7 +125,7 @@ export default function AiResults({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="flex flex-nowrap gap-8 mb-2">
           <Card size="small"><Text strong>MC:</Text> <Text>{mc}</Text></Card>
           <Card size="small"><Text strong>VF:</Text> <Text>{tf}</Text></Card>
           <Card size="small"><Text strong>AN:</Text> <Text>{an}</Text></Card>
@@ -129,27 +138,26 @@ export default function AiResults({
         ) : (
           <Space direction="vertical" className="w-full" size={0}>
             {questions.map((q, i) => (
-              <QuestionCard
+              <div
                 key={q.id}
-                index={i}
-                question={q}
-                onChange={onChange}
-                onRegenerate={onRegenerateOne}
                 draggable
-                onDragStart={() => setDragIndex(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  if (dragIndex === null) return;
-                  onReorder(dragIndex, i);
-                  setDragIndex(null);
-                }}
-                isDragging={dragIndex === i}
-              />
+                onDragStart={handleDragStart(i)}
+                onDragOver={handleDragOver(i)}
+                onDragEnd={handleDragEnd}
+                style={{ cursor: 'move' }}
+              >
+                <QuestionCard
+                  index={i}
+                  question={q}
+                  onChange={onChange}
+                  onRegenerate={onRegenerateOne}
+                />
+              </div>
             ))}
           </Space>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between gap-1 mt-8">
+        <div className="flex flex-col md:flex-row justify-between gap-1 mt-3">
           <div className="flex gap-1">
             <Button icon={<ReloadOutlined />} loading={regenLoading} onClick={handleRegenerateAll} aria-label="Regenerar Preguntas">
               Regenerar
