@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Modal, Upload, Progress, Typography, Steps, Alert, message } from 'antd';
+import { Button, Modal, Upload, Progress, Typography, Steps, Alert, message, Grid } from 'antd';
 import { 
   CloudUploadOutlined, 
   PlusOutlined, 
@@ -15,6 +15,7 @@ import type { ButtonProps } from 'antd';
 const { Dragger } = Upload;
 const { Text, Title } = Typography;
 const { Step } = Steps;
+const { useBreakpoint } = Grid;
 
 /**
  * Configuración de un paso del procesamiento
@@ -99,7 +100,7 @@ interface UploadButtonProps {
   onUpload: (
     file: File, 
     onProgress?: (step: string, progress: number, message: string) => void
-  ) => Promise<any>;
+  ) => Promise<unknown>;
   /** Configuración de archivos aceptados */
   fileConfig: FileConfig;
   /** Configuración del procesamiento */
@@ -111,7 +112,7 @@ interface UploadButtonProps {
   /** Callback que se ejecuta antes de mostrar el modal */
   onUploadStart?: (file: File) => void;
   /** Callback que se ejecuta después de procesar exitosamente */
-  onUploadSuccess?: (result: any) => void;
+  onUploadSuccess?: (result: unknown) => void;
   /** Callback que se ejecuta si hay error en el procesamiento */
   onUploadError?: (error: Error) => void;
   /** Callback que se ejecuta cuando se cierra el modal */
@@ -194,6 +195,10 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   const [currentStep, setCurrentStep] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [processingSteps, setProcessingSteps] = useState<ProcessingStepState[]>([]);
+  
+  // Hook de responsividad
+  const screens = useBreakpoint();
+  const isSmallScreen = !screens.lg;
 
   // Configuración por defecto del botón
   const {
@@ -401,19 +406,30 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 
     return (
       <div style={{ marginTop: '24px' }}>
-        <Title level={5} style={{ color: '#1A2A80', marginBottom: '16px' }}>
+        <Title 
+          level={5} 
+          style={{ 
+            color: '#1A2A80', 
+            marginBottom: '16px',
+            fontSize: isSmallScreen ? '14px' : '16px'
+          }}
+        >
           Progreso del Procesamiento
         </Title>
         <Steps 
-          direction="vertical" 
-          size="small"
+          direction={isSmallScreen ? "vertical" : "vertical"}
+          size={isSmallScreen ? "small" : "default"}
           current={processingSteps.findIndex(s => s.status === 'process')}
         >
           {processingSteps.map((step) => (
             <Step
               key={step.key}
-              title={step.title}
-              description={step.description}
+              title={<span style={{ fontSize: isSmallScreen ? '12px' : '14px' }}>{step.title}</span>}
+              description={
+                <span style={{ fontSize: isSmallScreen ? '11px' : '12px' }}>
+                  {step.description}
+                </span>
+              }
               status={step.status}
               icon={
                 step.status === 'process' ? <LoadingOutlined /> :
@@ -429,7 +445,10 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             message={currentStep}
             type="info"
             showIcon
-            style={{ marginTop: '16px' }}
+            style={{ 
+              marginTop: '16px',
+              fontSize: isSmallScreen ? '12px' : '14px'
+            }}
           />
         )}
       </div>
@@ -469,10 +488,13 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           header: {
             backgroundColor: '#f8f9ff',
             borderBottom: '1px solid #e8eaed'
+          },
+          body: {
+            padding: isSmallScreen ? '16px' : '24px'
           }
         }}
       >
-        <div style={{ padding: '24px 0' }}>
+        <div style={{ padding: isSmallScreen ? '16px 0' : '24px 0' }}>
           {!uploading && !uploadSuccess ? (
             <>
               {/* Zona de arrastre */}
@@ -486,25 +508,29 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   border: '2px dashed #7A85C1',
                   borderRadius: '8px',
                   backgroundColor: '#F8F9FB',
-                  padding: '40px 20px',
+                  padding: isSmallScreen ? '20px 16px' : '40px 20px',
                   cursor: 'pointer'
                 }}
               >
                 <p className="ant-upload-drag-icon">
-                  <CloudUploadOutlined style={{ fontSize: '48px', color: '#3B38A0' }} />
+                  <CloudUploadOutlined style={{ 
+                    fontSize: isSmallScreen ? '36px' : '48px', 
+                    color: '#3B38A0' 
+                  }} />
                 </p>
                 <p className="ant-upload-text" style={{ 
                   color: '#1A2A80', 
-                  fontSize: '16px', 
+                  fontSize: isSmallScreen ? '14px' : '16px', 
                   fontWeight: '500',
-                  margin: '16px 0 8px 0'
+                  margin: isSmallScreen ? '12px 0 6px 0' : '16px 0 8px 0'
                 }}>
-                  Haz clic o arrastra el archivo aquí
+                  {isSmallScreen ? 'Toca o arrastra aquí' : 'Haz clic o arrastra el archivo aquí'}
                 </p>
                 <p className="ant-upload-hint" style={{ 
                   color: '#7A85C1',
-                  fontSize: '14px',
-                  margin: '0'
+                  fontSize: isSmallScreen ? '12px' : '14px',
+                  margin: '0',
+                  padding: isSmallScreen ? '0 8px' : '0'
                 }}>
                   {fileConfig.validationMessage || 
                    `Archivos aceptados: ${fileConfig.accept}. Tamaño máximo: ${(fileConfig.maxSize / 1024 / 1024).toFixed(1)}MB`}
@@ -522,30 +548,30 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                     borderRadius: '6px',
                     fontWeight: '500'
                   }}
-                  size="large"
+                  size={isSmallScreen ? "middle" : "large"}
                 >
-                  Seleccionar Archivo
+                  {isSmallScreen ? 'Seleccionar' : 'Seleccionar Archivo'}
                 </Button>
               </div>
             </>
           ) : uploadSuccess ? (
             <div style={{ 
               textAlign: 'center', 
-              padding: '40px 20px',
+              padding: isSmallScreen ? '30px 16px' : '40px 20px',
               backgroundColor: '#f6ffed',
               borderRadius: '8px',
               border: '2px solid #52c41a'
             }}>
               <CheckCircleOutlined style={{ 
-                fontSize: '64px', 
+                fontSize: isSmallScreen ? '48px' : '64px', 
                 color: '#52c41a', 
-                marginBottom: '16px',
+                marginBottom: isSmallScreen ? '12px' : '16px',
                 display: 'block'
               }} />
               
               <Text style={{ 
                 color: '#389e0d', 
-                fontSize: '18px', 
+                fontSize: isSmallScreen ? '16px' : '18px', 
                 fontWeight: '600',
                 display: 'block',
                 marginBottom: '8px'
@@ -556,7 +582,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
               {selectedFile && (
                 <Text style={{ 
                   color: '#666', 
-                  fontSize: '14px',
+                  fontSize: isSmallScreen ? '12px' : '14px',
                   display: 'block',
                   marginBottom: '16px'
                 }}>
@@ -572,6 +598,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   borderColor: '#52c41a',
                   marginTop: '16px'
                 }}
+                size={isSmallScreen ? "middle" : "large"}
               >
                 Cerrar
               </Button>
@@ -579,22 +606,41 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           ) : (
             <div style={{ 
               textAlign: 'center', 
-              padding: '40px 20px',
+              padding: isSmallScreen ? '30px 16px' : '40px 20px',
               backgroundColor: '#F8F9FB',
               borderRadius: '8px',
               border: '2px solid #7A85C1'
             }}>
-              <FileAddOutlined style={{ fontSize: '48px', color: '#3B38A0', marginBottom: '16px' }} />
+              <FileAddOutlined style={{ 
+                fontSize: isSmallScreen ? '36px' : '48px', 
+                color: '#3B38A0', 
+                marginBottom: isSmallScreen ? '12px' : '16px' 
+              }} />
               
               {selectedFile && (
                 <div style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                    <FileTextOutlined style={{ color: '#1A2A80', marginRight: '8px', fontSize: '16px' }} />
-                    <Text strong style={{ color: '#1A2A80' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    marginBottom: '4px',
+                    flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
+                  }}>
+                    <FileTextOutlined style={{ 
+                      color: '#1A2A80', 
+                      marginRight: '8px', 
+                      fontSize: isSmallScreen ? '14px' : '16px' 
+                    }} />
+                    <Text strong style={{ 
+                      color: '#1A2A80',
+                      fontSize: isSmallScreen ? '12px' : '14px',
+                      wordBreak: 'break-word',
+                      textAlign: 'center'
+                    }}>
                       {selectedFile.name}
                     </Text>
                   </div>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                  <Text type="secondary" style={{ fontSize: isSmallScreen ? '11px' : '12px' }}>
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </Text>
                 </div>
@@ -602,7 +648,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 
               <Text style={{ 
                 color: '#1A2A80', 
-                fontSize: '16px', 
+                fontSize: isSmallScreen ? '14px' : '16px', 
                 fontWeight: '500',
                 display: 'block',
                 marginBottom: '16px'
@@ -614,7 +660,11 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 percent={progress}
                 strokeColor="#3B38A0"
                 trailColor="#E6E6E6"
-                style={{ maxWidth: '300px', margin: '0 auto 24px auto' }}
+                style={{ 
+                  maxWidth: isSmallScreen ? '250px' : '300px', 
+                  margin: '0 auto 24px auto' 
+                }}
+                size={isSmallScreen ? "small" : "default"}
               />
 
               {renderProcessingSteps()}
@@ -625,9 +675,16 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   description={error}
                   type="error"
                   showIcon
-                  style={{ marginTop: '16px', textAlign: 'left' }}
+                  style={{ 
+                    marginTop: '16px', 
+                    textAlign: 'left',
+                    fontSize: isSmallScreen ? '12px' : '14px'
+                  }}
                   action={
-                    <Button size="small" onClick={resetUploader}>
+                    <Button 
+                      size={isSmallScreen ? "small" : "middle"} 
+                      onClick={resetUploader}
+                    >
                       Reintentar
                     </Button>
                   }
