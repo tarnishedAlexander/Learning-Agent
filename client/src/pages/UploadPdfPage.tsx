@@ -1,20 +1,23 @@
 import React, { useCallback, useState } from "react";
-import { Card, message, Typography, Row, Col, Grid } from "antd";
+import { Card, message, Typography, Row, Grid, Col } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import UploadButton from "../components/shared/UploadButton";
 import { DocumentTable } from "../components/documents/DocumentTable";
 import { PdfPreviewSidebar } from "../components/documents/PdfPreviewSidebar";
 import { DocumentDataSidebar } from "../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../hooks/useDocuments";
+import { useThemeStore } from "../store/themeStore";
 import type { Document } from "../interfaces/documentInterface";
    
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 const UploadPdfPage: React.FC = () => {
-  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
+  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, uploadDocument } = useDocuments();
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   
   // Estados para el sidebar de previsualización
   const [previewSidebarVisible, setPreviewSidebarVisible] = useState<boolean>(false);
@@ -27,7 +30,6 @@ const UploadPdfPage: React.FC = () => {
   // Configuración responsiva
   const isSmallScreen = !screens.lg;
   const sidebarWidth = isSmallScreen ? '100%' : '50%';
-  const pageMarginRight = previewSidebarVisible ? (isSmallScreen ? '0' : '50%') : '0';
 
   const handleUploadSuccess = useCallback(async () => {
     setRefreshing(true);
@@ -91,9 +93,7 @@ const UploadPdfPage: React.FC = () => {
 
   return (
     <div style={{ 
-      padding: isSmallScreen ? "16px" : "32px", 
-
-      padding: "32px", 
+      padding: isSmallScreen ? "16px" : "32px",
       backgroundColor: "#f5f7fa",
       minHeight: "100vh",
       marginRight: (previewSidebarVisible || dataSidebarVisible) 
@@ -103,43 +103,29 @@ const UploadPdfPage: React.FC = () => {
     }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header Section */}
-        <div style={{ marginBottom: isSmallScreen ? "24px" : "32px", textAlign: "center" }}>
-        <div style={{ marginBottom: "24px" }}>
-          <Title 
-            level={isSmallScreen ? 2 : 1} 
-            level={2}
-            style={{ 
-              color: "#1A2A80", 
-              marginBottom: "8px",
-              fontSize: isSmallScreen ? "24px" : "32px",
-              fontWeight: "600"
-              fontWeight: "500",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px"
-            }}
-          >
-            <FileTextOutlined style={{ marginRight: "12px" }} />
-            {isSmallScreen ? "Documentos Académicos" : "Gestión de Documentos Académicos"}
-            <FileTextOutlined />
-            Gestión de Documentos Académicos
-          </Title>
-          <Text 
-            style={{ 
-              color: "#7A85C1", 
-              fontSize: isSmallScreen ? "14px" : "16px",
-              fontWeight: "400",
-              display: "block",
-              maxWidth: isSmallScreen ? "100%" : "80%",
-              margin: "0 auto"
-
-              color: "var(--subtitle-color, #bfc7ff)", 
-              fontSize: "16px",
-              fontWeight: "400"
-            }}
-          >
-            Sistema de carga y administración de material educativo en formato PDF
-          </Text>
+        <div>
+          <div>
+            <Title 
+              level={1}
+              style={{ 
+                color: isDark ? "#ffffff" : "#141d47",
+                marginBottom: "8px",
+                fontSize: "32px",
+                fontWeight: "600"
+              }}
+            >
+              Gestión de Documentos Académicos
+            </Title>
+            <Text 
+              style={{ 
+                color: isDark ? "#bfc7ff" : "#666666",
+                fontSize: "14px",
+                opacity: 0.65
+              }}
+            >
+              Sistema de carga y administración de material educativo en formato PDF
+            </Text>
+          </div>
         </div>
 
         {/* Documents Table Section */}
