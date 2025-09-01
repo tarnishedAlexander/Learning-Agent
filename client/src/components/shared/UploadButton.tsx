@@ -94,6 +94,16 @@ interface ProcessingStepState extends ProcessingStep {
 }
 
 /**
+ * Resultado de la subida de archivo
+ */
+interface UploadResult {
+  success: boolean;
+  fileUrl?: string;
+  fileId?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Props del componente UploadButton
  */
 interface UploadButtonProps {
@@ -251,13 +261,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
       className,
       style: {
         width,
-        height,
-        color: variant === 'fill' ? '#ffffff' : FIXED_COLOR,
-        backgroundColor: variant === 'fill' ? FIXED_COLOR : 'transparent',
-        borderColor: FIXED_COLOR,
-        ...(['ghost', 'text', 'link'].includes(variant) && {
-          backgroundColor: 'transparent'
-        })
+        height
       }
     };
 
@@ -547,8 +551,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   icon={<PlusOutlined />}
                   onClick={handleManualSelect}
                   style={{
-                    backgroundColor: '#3B38A0',
-                    borderColor: '#3B38A0',
+                    backgroundColor: 'var(--ant-color-primary)',
+                    borderColor: 'var(--ant-color-primary)',
                     borderRadius: '6px',
                     fontWeight: '500'
                   }}
@@ -564,7 +568,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
               padding: isSmallScreen ? '30px 16px' : '40px 20px',
               backgroundColor: '#f6ffed',
               borderRadius: '8px',
-              border: '2px solid #52c41a'
+              border: '2px solid var(--ant-color-success)'
             }}>
               <CheckCircleOutlined style={{ 
                 fontSize: isSmallScreen ? '48px' : '64px', 
@@ -598,8 +602,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 type="primary"
                 onClick={handleCloseModal}
                 style={{
-                  backgroundColor: '#52c41a',
-                  borderColor: '#52c41a',
+                  backgroundColor: 'var(--ant-color-success)',
+                  borderColor: 'var(--ant-color-success)',
                   marginTop: '16px'
                 }}
                 size={isSmallScreen ? "middle" : "large"}
@@ -711,5 +715,6 @@ export type {
   ProcessingConfig, 
   ProcessingStep, 
   ButtonConfig, 
-  ModalConfig 
+  ModalConfig,
+  UploadResult 
 };

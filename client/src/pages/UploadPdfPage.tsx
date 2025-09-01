@@ -29,6 +29,9 @@ const UploadPdfPage: React.FC = () => {
   const isSmallScreen = !screens.lg;
   const sidebarWidth = isSmallScreen ? '100%' : '50%';
 
+  const theme = useThemeStore(state => state.theme);
+  const isDark = theme === "dark";
+
   const handleUploadSuccess = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -89,9 +92,6 @@ const UploadPdfPage: React.FC = () => {
     setPreviewSidebarVisible(true);
   }, [dataSidebarVisible]);
 
-  const theme = useThemeStore(state => state.theme);
-  const isDark = theme === "dark";
-
   return (
     <div style={{ 
       padding: isSmallScreen ? "16px" : "32px", 
@@ -108,8 +108,8 @@ const UploadPdfPage: React.FC = () => {
           <Title 
             level={isSmallScreen ? 2 : 1} 
             style={{ 
-              color: isDark ? "#5b6ef0" : "#1A2A80",
-              marginBottom: "8px",
+              color: isDark ? "#ffffff" : "#1A2A80",
+              marginBottom: "8px", 
               fontSize: isSmallScreen ? "24px" : "32px",
               fontWeight: "600"
             }}
@@ -125,6 +125,7 @@ const UploadPdfPage: React.FC = () => {
               display: "block",
               maxWidth: isSmallScreen ? "100%" : "80%",
               margin: "0 auto"
+
             }}
           >
             Sistema de carga y administración de material educativo en formato PDF
@@ -175,6 +176,7 @@ const UploadPdfPage: React.FC = () => {
                       padding: "4px 10px",
                       borderRadius: "12px",
                       fontSize: "11px",
+
                       fontWeight: "500",
                       transition: "all 0.3s ease"
                     }}>
@@ -344,6 +346,7 @@ const UploadPdfPage: React.FC = () => {
                       />
                     </div>
                   </div>
+
                 )
               }
               style={{
