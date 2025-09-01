@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Table, Button, Space, Radio, Tooltip } from 'antd';
 import type { Key } from 'react';
+import type { TablePaginationConfig, SorterResult, FilterValue } from 'antd/es/table/interface';
 import { DownloadOutlined, EyeOutlined, FileTextOutlined, FilterOutlined, FilterFilled } from '@ant-design/icons';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
@@ -78,24 +79,61 @@ export const DocumentTable = ({
       </div>
     );
   };
+    // sorter state to drive dynamic tooltip for the 'Tamaño' column only
+    const [sorterState, setSorterState] = useState<{
+      columnKey?: Key;
+      order?: 'ascend' | 'descend' | null;
+    } | null>(null);
+
+    const getSortTooltip = (columnKey: string) => {
+      if (!sorterState || sorterState.columnKey !== columnKey) {
+        return 'Haz clic para ordenar de forma ascendente';
+      }
+      if (sorterState.order === 'ascend') return 'Haz clic para ordenar de forma descendente';
+      if (sorterState.order === 'descend') return 'Haz clic para cancelar el orden';
+      return 'Haz clic para ordenar de forma ascendente';
+    };
+
+    const handleTableChange = (
+      _pagination: TablePaginationConfig,
+      _filters: Record<string, FilterValue | null>,
+      sorter: SorterResult<Document> | SorterResult<Document>[]
+    ) => {
+      const s = Array.isArray(sorter) ? sorter[0] : sorter;
+      setSorterState({ columnKey: s?.columnKey as Key, order: s?.order ?? null });
+    };
   const columns = [
     {
-      title: 'Nombre del archivo',
+      title: (
+        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+          <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
+            <span style={{ display: 'inline-block' }}>Nombre del archivo</span>
+          </div>
+        </Tooltip>
+      ),
       dataIndex: 'originalName',
       key: 'originalName',
+      showSorterTooltip: false,
       sorter: (a: Document, b: Document) => a.originalName.localeCompare(b.originalName),
     },
     {
-      title: 'Fecha de subida',
+      title: (
+        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+          <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
+            <span style={{ display: 'inline-block' }}>Fecha de subida</span>
+          </div>
+        </Tooltip>
+      ),
       dataIndex: 'uploadedAt',
       key: 'uploadedAt',
+      showSorterTooltip: false,
       sorter: (a: Document, b: Document) =>
         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime(),
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
     },
     {
       title: (
-        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+        <Tooltip title={getSortTooltip('size')}>
           <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
             <span style={{ display: 'inline-block' }}>Tamaño</span>
           </div>
@@ -197,6 +235,7 @@ export const DocumentTable = ({
       columns={columns}
       dataSource={documents}
       loading={loading}
+  onChange={handleTableChange}
       rowKey="fileName"
       pagination={{ 
         pageSize: 10,
