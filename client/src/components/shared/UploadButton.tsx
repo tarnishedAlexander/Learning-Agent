@@ -92,6 +92,16 @@ interface ProcessingStepState extends ProcessingStep {
 }
 
 /**
+ * Resultado de la subida de archivo
+ */
+interface UploadResult {
+  success: boolean;
+  fileUrl?: string;
+  fileId?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Props del componente UploadButton
  */
 interface UploadButtonProps {
@@ -99,7 +109,7 @@ interface UploadButtonProps {
   onUpload: (
     file: File, 
     onProgress?: (step: string, progress: number, message: string) => void
-  ) => Promise<any>;
+  ) => Promise<UploadResult>;
   /** Configuración de archivos aceptados */
   fileConfig: FileConfig;
   /** Configuración del procesamiento */
@@ -111,7 +121,7 @@ interface UploadButtonProps {
   /** Callback que se ejecuta antes de mostrar el modal */
   onUploadStart?: (file: File) => void;
   /** Callback que se ejecuta después de procesar exitosamente */
-  onUploadSuccess?: (result: any) => void;
+  onUploadSuccess?: (result: UploadResult) => void;
   /** Callback que se ejecuta si hay error en el procesamiento */
   onUploadError?: (error: Error) => void;
   /** Callback que se ejecuta cuando se cierra el modal */
@@ -219,9 +229,6 @@ const UploadButton: React.FC<UploadButtonProps> = ({
     successText = '¡Archivo procesado exitosamente!'
   } = processingConfig;
 
-  // Color fijo del componente
-  const FIXED_COLOR = '#1A2A80';
-
   // Inicializar pasos de procesamiento
   React.useEffect(() => {
     setProcessingSteps(
@@ -242,13 +249,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
       className,
       style: {
         width,
-        height,
-        color: variant === 'fill' ? '#ffffff' : FIXED_COLOR,
-        backgroundColor: variant === 'fill' ? FIXED_COLOR : 'transparent',
-        borderColor: FIXED_COLOR,
-        ...(['ghost', 'text', 'link'].includes(variant) && {
-          backgroundColor: 'transparent'
-        })
+        height
       }
     };
 
@@ -401,7 +402,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 
     return (
       <div style={{ marginTop: '24px' }}>
-        <Title level={5} style={{ color: '#1A2A80', marginBottom: '16px' }}>
+        <Title level={5} style={{ color: 'var(--ant-color-text)', marginBottom: '16px' }}>
           Progreso del Procesamiento
         </Title>
         <Steps 
@@ -452,7 +453,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            color: '#1A2A80',
+            color: 'var(--ant-color-text)',
             fontSize: '18px',
             fontWeight: '600'
           }}>
@@ -467,8 +468,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
         destroyOnClose={false}
         styles={{
           header: {
-            backgroundColor: '#f8f9ff',
-            borderBottom: '1px solid #e8eaed'
+            borderBottom: '1px solid var(--ant-color-border)'
           }
         }}
       >
@@ -483,18 +483,18 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 beforeUpload={handleFileSelect}
                 showUploadList={false}
                 style={{
-                  border: '2px dashed #7A85C1',
+                  border: '2px dashed var(--ant-color-border)',
                   borderRadius: '8px',
-                  backgroundColor: '#F8F9FB',
+                  backgroundColor: 'var(--ant-color-bg-container)',
                   padding: '40px 20px',
                   cursor: 'pointer'
                 }}
               >
                 <p className="ant-upload-drag-icon">
-                  <CloudUploadOutlined style={{ fontSize: '48px', color: '#3B38A0' }} />
+                  <CloudUploadOutlined style={{ fontSize: '48px', color: 'var(--ant-color-primary)' }} />
                 </p>
                 <p className="ant-upload-text" style={{ 
-                  color: '#1A2A80', 
+                  color: 'var(--ant-color-text)', 
                   fontSize: '16px', 
                   fontWeight: '500',
                   margin: '16px 0 8px 0'
@@ -502,7 +502,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   Haz clic o arrastra el archivo aquí
                 </p>
                 <p className="ant-upload-hint" style={{ 
-                  color: '#7A85C1',
+                  color: 'var(--ant-color-text-secondary)',
                   fontSize: '14px',
                   margin: '0'
                 }}>
@@ -517,8 +517,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   icon={<PlusOutlined />}
                   onClick={handleManualSelect}
                   style={{
-                    backgroundColor: '#3B38A0',
-                    borderColor: '#3B38A0',
+                    backgroundColor: 'var(--ant-color-primary)',
+                    borderColor: 'var(--ant-color-primary)',
                     borderRadius: '6px',
                     fontWeight: '500'
                   }}
@@ -532,19 +532,19 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             <div style={{ 
               textAlign: 'center', 
               padding: '40px 20px',
-              backgroundColor: '#f6ffed',
+              backgroundColor: 'var(--ant-color-success-bg)',
               borderRadius: '8px',
-              border: '2px solid #52c41a'
+              border: '2px solid var(--ant-color-success)'
             }}>
               <CheckCircleOutlined style={{ 
                 fontSize: '64px', 
-                color: '#52c41a', 
+                color: 'var(--ant-color-success)', 
                 marginBottom: '16px',
                 display: 'block'
               }} />
               
               <Text style={{ 
-                color: '#389e0d', 
+                color: 'var(--ant-color-success)', 
                 fontSize: '18px', 
                 fontWeight: '600',
                 display: 'block',
@@ -555,7 +555,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 
               {selectedFile && (
                 <Text style={{ 
-                  color: '#666', 
+                  color: 'var(--ant-color-text-secondary)', 
                   fontSize: '14px',
                   display: 'block',
                   marginBottom: '16px'
@@ -568,8 +568,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 type="primary"
                 onClick={handleCloseModal}
                 style={{
-                  backgroundColor: '#52c41a',
-                  borderColor: '#52c41a',
+                  backgroundColor: 'var(--ant-color-success)',
+                  borderColor: 'var(--ant-color-success)',
                   marginTop: '16px'
                 }}
               >
@@ -580,17 +580,17 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             <div style={{ 
               textAlign: 'center', 
               padding: '40px 20px',
-              backgroundColor: '#F8F9FB',
+              backgroundColor: 'var(--ant-color-bg-container)',
               borderRadius: '8px',
-              border: '2px solid #7A85C1'
+              border: '2px solid var(--ant-color-border)'
             }}>
-              <FileAddOutlined style={{ fontSize: '48px', color: '#3B38A0', marginBottom: '16px' }} />
+              <FileAddOutlined style={{ fontSize: '48px', color: 'var(--ant-color-primary)', marginBottom: '16px' }} />
               
               {selectedFile && (
                 <div style={{ marginBottom: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
-                    <FileTextOutlined style={{ color: '#1A2A80', marginRight: '8px', fontSize: '16px' }} />
-                    <Text strong style={{ color: '#1A2A80' }}>
+                    <FileTextOutlined style={{ color: 'var(--ant-color-primary)', marginRight: '8px', fontSize: '16px' }} />
+                    <Text strong style={{ color: 'var(--ant-color-text)' }}>
                       {selectedFile.name}
                     </Text>
                   </div>
@@ -601,7 +601,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
               )}
 
               <Text style={{ 
-                color: '#1A2A80', 
+                color: 'var(--ant-color-text)', 
                 fontSize: '16px', 
                 fontWeight: '500',
                 display: 'block',
@@ -612,8 +612,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
 
               <Progress
                 percent={progress}
-                strokeColor="#3B38A0"
-                trailColor="#E6E6E6"
+                strokeColor="var(--ant-color-primary)"
+                trailColor="var(--ant-color-bg-base)"
                 style={{ maxWidth: '300px', margin: '0 auto 24px auto' }}
               />
 

@@ -61,7 +61,6 @@ const UploadPdfPage: React.FC = () => {
   return (
     <div style={{ 
       padding: "32px", 
-      backgroundColor: "#f5f7fa",
       minHeight: "100vh",
       marginRight: previewSidebarVisible ? "50%" : "0",
       transition: "margin-right 0.3s ease-in-out"
@@ -72,7 +71,6 @@ const UploadPdfPage: React.FC = () => {
           <Title 
             level={1} 
             style={{ 
-              color: "#1A2A80", 
               marginBottom: "8px",
               fontSize: "32px",
               fontWeight: "600"
@@ -83,9 +81,9 @@ const UploadPdfPage: React.FC = () => {
           </Title>
           <Text 
             style={{ 
-              color: "#7A85C1", 
               fontSize: "16px",
-              fontWeight: "400"
+              fontWeight: "400",
+              opacity: 0.85
             }}
           >
             Sistema de carga y administración de material educativo en formato PDF
@@ -101,7 +99,7 @@ const UploadPdfPage: React.FC = () => {
                   display: "flex", 
                   alignItems: "center",
                   justifyContent: "space-between",
-                  color: "#1A2A80"
+                  color: "inherit"
                 }}>
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px" }} />
@@ -110,8 +108,8 @@ const UploadPdfPage: React.FC = () => {
                     </span>
                     <div style={{
                       marginLeft: "16px",
-                      backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
-                      color: documents.length > 0 ? "#3B38A0" : "#666",
+                      backgroundColor: documents.length > 0 ? "var(--ant-color-primary-bg)" : "rgba(0, 0, 0, 0.04)",
+                      color: documents.length > 0 ? "var(--ant-color-primary)" : "var(--ant-color-text-disabled)",
                       padding: "4px 12px",
                       borderRadius: "16px",
                       fontSize: "12px",
@@ -159,16 +157,24 @@ const UploadPdfPage: React.FC = () => {
                           onProgress("process", 75, "Procesando documento...");
                         }
                         
-                        const result = await uploadDocument(file);
+                        const document = await uploadDocument(file);
                         
                         if (onProgress) {
                           onProgress("store", 100, "¡Documento almacenado exitosamente!");
                         }
                         
-                        return result;
+                        return {
+                          success: true,
+                          fileUrl: document.downloadUrl,
+                          fileId: document.id,
+                          document: document
+                        };
                       } catch (error) {
-                        console.error("Error uploading document:", error);
-                        throw error;
+                        const errorMessage = error instanceof Error ? error.message : 'Error en el procesamiento';
+                        return {
+                          success: false,
+                          error: errorMessage
+                        };
                       }
                     }}
                     onUploadSuccess={() => {
@@ -179,8 +185,8 @@ const UploadPdfPage: React.FC = () => {
               }
               style={{
                 borderRadius: "12px",
-                boxShadow: "0 4px 16px rgba(26, 42, 128, 0.1)",
-                border: "1px solid #e8eaed"
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
+                border: "1px solid"
               }}
             >
               <DocumentTable
