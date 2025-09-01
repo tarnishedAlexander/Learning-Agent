@@ -4,6 +4,7 @@ import { FileTextOutlined } from "@ant-design/icons";
 import UploadButton from "../components/shared/UploadButton";
 import { DocumentTable } from "../components/documents/DocumentTable";
 import { PdfPreviewSidebar } from "../components/documents/PdfPreviewSidebar";
+import { DocumentDataSidebar } from "../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../hooks/useDocuments";
 import type { Document } from "../interfaces/documentInterface";
    
@@ -11,13 +12,17 @@ const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 const UploadPdfPage: React.FC = () => {
-  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, uploadDocument } = useDocuments();
+  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
   
   // Estados para el sidebar de previsualización
   const [previewSidebarVisible, setPreviewSidebarVisible] = useState<boolean>(false);
   const [documentToPreview, setDocumentToPreview] = useState<Document | null>(null);
+  
+  // Estados para el sidebar de datos
+  const [dataSidebarVisible, setDataSidebarVisible] = useState<boolean>(false);
+  const [documentToViewData, setDocumentToViewData] = useState<Document | null>(null);
 
   // Configuración responsiva
   const isSmallScreen = !screens.lg;
@@ -54,9 +59,19 @@ const UploadPdfPage: React.FC = () => {
     message.error(error.message);
   }, []);
 
-  const handlePreview = useCallback((doc: Document) => {
-    setDocumentToPreview(doc);
-    setPreviewSidebarVisible(true);
+  const handleViewData = useCallback((doc: Document) => {
+    // Si el preview está abierto, cerrarlo primero para evitar conflictos
+    if (previewSidebarVisible) {
+      setPreviewSidebarVisible(false);
+      setDocumentToPreview(null);
+    }
+    setDocumentToViewData(doc);
+    setDataSidebarVisible(true);
+  }, [previewSidebarVisible]);
+
+  const handleCloseDataSidebar = useCallback(() => {
+    setDataSidebarVisible(false);
+    setDocumentToViewData(null);
   }, []);
 
   const handleCloseSidebar = useCallback(() => {
@@ -64,12 +79,24 @@ const UploadPdfPage: React.FC = () => {
     setDocumentToPreview(null);
   }, []);
 
+  const handlePreview = useCallback((doc: Document) => {
+    // Si el data sidebar está abierto, cerrarlo primero para evitar conflictos
+    if (dataSidebarVisible) {
+      setDataSidebarVisible(false);
+      setDocumentToViewData(null);
+    }
+    setDocumentToPreview(doc);
+    setPreviewSidebarVisible(true);
+  }, [dataSidebarVisible]);
+
   return (
     <div style={{ 
       padding: isSmallScreen ? "16px" : "32px", 
       backgroundColor: "#f5f7fa",
       minHeight: "100vh",
-      marginRight: pageMarginRight,
+      marginRight: (previewSidebarVisible || dataSidebarVisible) 
+        ? (window.innerWidth <= 768 ? "0" : "50%") 
+        : "0",
       transition: "margin-right 0.3s ease-in-out"
     }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -319,6 +346,7 @@ const UploadPdfPage: React.FC = () => {
                 onDownload={handleDownload}
                 onDelete={deleteDocument}
                 onPreview={handlePreview}
+                onViewData={handleViewData}
                 onDeleteSuccess={handleDeleteSuccess}
                 onDeleteError={handleDeleteError}
               />
@@ -334,6 +362,13 @@ const UploadPdfPage: React.FC = () => {
         onClose={handleCloseSidebar}
         isSmallScreen={isSmallScreen}
         sidebarWidth={sidebarWidth}
+      />
+
+      {/* Sidebar de datos del documento */}
+      <DocumentDataSidebar
+        document={documentToViewData}
+        visible={dataSidebarVisible}
+        onClose={handleCloseDataSidebar}
       />
     </div>
   );

@@ -9,10 +9,10 @@ const { Text } = Typography;
 interface DocumentTableProps {
   documents: Document[];
   loading: boolean;
-  onDelete?: (fileName: string) => Promise<void>;
+  onDelete?: (documentId: string) => Promise<void>;
   onDownload?: (doc: Document) => Promise<void>;
   onPreview?: (doc: Document) => void;
-  // Nuevas props para el DeleteButton
+  onViewData?: (doc: Document) => void;
   onDeleteSuccess?: () => void;
   onDeleteError?: (error: Error) => void;
 }
@@ -23,6 +23,7 @@ export const DocumentTable = ({
   onDelete, 
   onDownload, 
   onPreview,
+  onViewData,
   onDeleteSuccess,
   onDeleteError 
 }: DocumentTableProps) => {
@@ -126,7 +127,7 @@ export const DocumentTable = ({
             Descargar
           </Button>
           <DeleteButton
-            onDelete={() => onDelete?.(record.fileName) || Promise.resolve()}
+            onDelete={() => onDelete?.(record.id) || Promise.resolve()}
             resourceInfo={{
               name: record.originalName,
               type: "Documento PDF",
