@@ -4,6 +4,7 @@ import { ReloadOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import QuestionCard from '../../components/ai/QuestionCard';
 import type { GeneratedQuestion } from '../../services/exams.service';
 import { useExamsStore } from '../../store/examsStore';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -37,6 +38,7 @@ export default function AiResults({
   onReorder,
 }: AiResultsProps) {
   const { token } = theme.useToken();
+   const navigate = useNavigate();
   const [regenLoading, setRegenLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);
@@ -72,7 +74,7 @@ export default function AiResults({
     try {
       await onSave();
       addFromQuestions({ title: subject || 'Examen', questions, publish: true });
-      window.location.href = '/exam';
+      navigate('/exams');
     } finally {
       setSaveLoading(false);
     }

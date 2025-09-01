@@ -7,6 +7,7 @@ import Interview from "../pages/reinforcement/interview";
 import Login from "../pages/Login";
 import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
+import ExamManagementPage from "../pages/exams/ExamManagementPage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
@@ -44,6 +45,7 @@ export const AppRoutes = () => {
             <Route path="/" element={<Navigate to="/exams/create" replace />} />
             <Route path="/exams/create" element={<ExamsCreatePage />} />
             <Route path="*" element={<Navigate to="/exams/create" replace />} />
+            <Route path="/exams" element={<ExamManagementPage />} />
 
             <Route path="/upload-pdf" element={<UploadPdfPage />} />
           </Route>
