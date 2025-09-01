@@ -5,8 +5,7 @@ import StudentHome from "./StudentHome";
 import { useUserStore } from "../../store/userStore";
 
 export default function DashboardPage() {
-  const user = useUserStore((s) => s.user);
-  debugger;
+  const user = useUserStore((s) => s.user); 
   const isTeacher = user?.roles?.includes("docente");
   const isStudent = user?.roles?.includes("estudiante");
   return (
