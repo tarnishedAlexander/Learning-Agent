@@ -60,7 +60,7 @@ const UploadPdfPage: React.FC = () => {
 
   return (
     <div style={{ 
-      padding: "32px", 
+      padding: "24px", 
       backgroundColor: "#f5f7fa",
       minHeight: "100vh",
       marginRight: previewSidebarVisible ? "50%" : "0",
@@ -68,24 +68,27 @@ const UploadPdfPage: React.FC = () => {
     }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header Section */}
-        <div style={{ marginBottom: "32px", textAlign: "center" }}>
+        <div style={{ marginBottom: "24px" }}>
           <Title 
-            level={1} 
+            level={2}
             style={{ 
               color: "#1A2A80", 
               marginBottom: "8px",
-              fontSize: "32px",
-              fontWeight: "600"
+              fontWeight: "500",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px"
             }}
           >
-            <FileTextOutlined style={{ marginRight: "12px" }} />
+            <FileTextOutlined />
             Gestión de Documentos Académicos
           </Title>
           <Text 
             style={{ 
               color: "#7A85C1", 
-              fontSize: "16px",
-              fontWeight: "400"
+              fontSize: "14px",
+              display: "block",
+              marginTop: "4px"
             }}
           >
             Sistema de carga y administración de material educativo en formato PDF
