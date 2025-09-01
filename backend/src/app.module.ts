@@ -7,6 +7,7 @@ import { DocumentsModule } from './modules/repository_documents/documents.module
 import { AcademicManagementModule } from './modules/academic_management/academic_management.module';
 import { ExamsModule } from './modules/exams/exams.module';
 import { AiConfigService } from './core/ai/ai.config';
+import { InfrastructureModule } from './modules/repository_documents/infrastructure/infrastructure.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AiConfigService } from './core/ai/ai.config';
     AcademicManagementModule,
     ExamsModule,
     DocumentsModule,
+    InfrastructureModule
   ],
   controllers: [],
   providers: [AiConfigService],
