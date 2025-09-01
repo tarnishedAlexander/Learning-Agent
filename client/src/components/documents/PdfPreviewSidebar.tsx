@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Typography, Spin, Alert } from 'antd';
 import { CloseOutlined, FileTextOutlined } from '@ant-design/icons';
 import type { Document } from '../../interfaces/documentInterface';
-import { documentsApi } from '../../services/api/documentsApi';
+import { documentService } from '../../services/documents.service';
 
 const { Title, Text } = Typography;
 
@@ -10,16 +10,37 @@ interface PdfPreviewSidebarProps {
   document: Document | null;
   onClose: () => void;
   visible: boolean;
+  isSmallScreen?: boolean;
+  sidebarWidth?: string;
 }
 
 export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
   document,
   onClose,
   visible,
+  isSmallScreen = false,
+  sidebarWidth = '50%'
 }) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadPdfUrl = useCallback(async () => {
+    if (!document) return;
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const signedUrl = await documentService.getDownloadUrl(document.id);
+      setPdfUrl(signedUrl);
+    } catch (err) {
+      console.error('Error loading PDF:', err);
+      setError('Error al cargar el PDF para previsualización');
+    } finally {
+      setLoading(false);
+    }
+  }, [document]);
 
   useEffect(() => {
     if (document && visible) {
@@ -28,24 +49,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
       setPdfUrl(null);
       setError(null);
     }
-  }, [document, visible]);
-
-  const loadPdfUrl = async () => {
-    if (!document) return;
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const signedUrl = await documentsApi.getDownloadUrl(document.fileName);
-      setPdfUrl(signedUrl);
-    } catch (err) {
-      console.error('Error loading PDF:', err);
-      setError('Error al cargar el PDF para previsualización');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [document, visible, loadPdfUrl]);
 
   if (!visible) return null;
 
@@ -55,20 +59,22 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
         position: 'fixed',
         top: 0,
         right: 0,
-        width: '50%',
+        width: sidebarWidth,
         height: '100vh',
         backgroundColor: '#FFFFFF',
         boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.15)',
-        zIndex: 1000,
-        display: 'flex',
+        zIndex: isSmallScreen ? 1050 : 1000,
+        display: visible ? 'flex' : 'none',
         flexDirection: 'column',
         borderLeft: '1px solid #E8E8E8',
+        transform: visible ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s ease-in-out',
       }}
     >
       {/* Header */}
       <div
         style={{
-          padding: '16px 20px',
+          padding: isSmallScreen ? '12px 16px' : '16px 20px',
           borderBottom: '1px solid #E8E8E8',
           backgroundColor: '#F8F9FA',
           display: 'flex',
@@ -76,14 +82,41 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
           alignItems: 'center',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FileTextOutlined style={{ color: '#1A2A80', fontSize: '18px' }} />
-          <div>
-            <Title level={5} style={{ margin: 0, color: '#1A2A80' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px',
+          minWidth: 0,
+          flex: 1
+        }}>
+          <FileTextOutlined style={{ 
+            color: '#1A2A80', 
+            fontSize: isSmallScreen ? '16px' : '18px',
+            flexShrink: 0
+          }} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <Title 
+              level={5} 
+              style={{ 
+                margin: 0, 
+                color: '#1A2A80',
+                fontSize: isSmallScreen ? '14px' : '16px'
+              }}
+            >
               Previsualización de PDF
             </Title>
             {document && (
-              <Text type="secondary" style={{ fontSize: '12px' }}>
+              <Text 
+                type="secondary" 
+                style={{ 
+                  fontSize: isSmallScreen ? '11px' : '12px',
+                  display: 'block',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+                title={document.originalName}
+              >
                 {document.originalName}
               </Text>
             )}
@@ -95,8 +128,9 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
           onClick={onClose}
           style={{
             color: '#666666',
-            fontSize: '16px',
-            padding: '4px',
+            fontSize: isSmallScreen ? '14px' : '16px',
+            padding: isSmallScreen ? '2px' : '4px',
+            flexShrink: 0
           }}
         />
       </div>
@@ -105,7 +139,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
       <div
         style={{
           flex: 1,
-          padding: '16px',
+          padding: isSmallScreen ? '12px' : '16px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -118,10 +152,17 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               justifyContent: 'center',
               alignItems: 'center',
               height: '200px',
+              flexDirection: isSmallScreen ? 'column' : 'row',
+              gap: isSmallScreen ? '8px' : '12px'
             }}
           >
-            <Spin size="large" />
-            <Text style={{ marginLeft: '12px' }}>Cargando PDF...</Text>
+            <Spin size={isSmallScreen ? "default" : "large"} />
+            <Text style={{ 
+              fontSize: isSmallScreen ? '14px' : '16px',
+              textAlign: 'center'
+            }}>
+              Cargando PDF...
+            </Text>
           </div>
         )}
 
@@ -131,7 +172,10 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
             description={error}
             type="error"
             showIcon
-            style={{ marginBottom: '16px' }}
+            style={{ 
+              marginBottom: '16px',
+              fontSize: isSmallScreen ? '12px' : '14px'
+            }}
           />
         )}
 
@@ -142,7 +186,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               width: '100%',
               height: '100%',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: isSmallScreen ? '4px' : '8px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
             }}
             title={`PDF Preview: ${document?.originalName}`}
@@ -157,9 +201,13 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               alignItems: 'center',
               height: '200px',
               color: '#999999',
+              textAlign: 'center',
+              padding: isSmallScreen ? '20px' : '0'
             }}
           >
-            <Text>Selecciona un documento para previsualizar</Text>
+            <Text style={{ fontSize: isSmallScreen ? '14px' : '16px' }}>
+              Selecciona un documento para previsualizar
+            </Text>
           </div>
         )}
       </div>
