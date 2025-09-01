@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Typography, Spin, Alert } from 'antd';
 import { CloseOutlined, FileTextOutlined } from '@ant-design/icons';
 import type { Document } from '../../interfaces/documentInterface';
-import { documentsApi } from '../../services/api/documentsApi';
+import { documentService } from '../../services/documents.service';
 
 const { Title, Text } = Typography;
 
@@ -25,14 +25,14 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPdfUrl = React.useCallback(async () => {
+  const loadPdfUrl = useCallback(async () => {
     if (!document) return;
 
     setLoading(true);
     setError(null);
     
     try {
-      const signedUrl = await documentsApi.getDownloadUrl(document.fileName);
+      const signedUrl = await documentService.getDownloadUrl(document.id);
       setPdfUrl(signedUrl);
     } catch (err) {
       console.error('Error loading PDF:', err);
