@@ -9,7 +9,9 @@ const useEnrollment = () => {
     }
 
     const enrollGroupStudents = async (payload: EnrollGroupRequest): Promise<EnrollGroupResponse> => {
-        return enrollmentService.enrollGroupStudents(payload);
+        const res = await enrollmentService.enrollGroupStudents(payload);
+        const data: EnrollGroupResponse = res.data;
+        return data
     }
 
     return {

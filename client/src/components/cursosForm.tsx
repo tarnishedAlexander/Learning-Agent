@@ -102,22 +102,6 @@ export const CursosForm = ({
       >
         <Form.Item
           style={{ width: "100%" }}
-          label="Nombre"
-          validateStatus={
-            formik.errors.name && formik.touched.name ? "error" : ""
-          }
-          help={formik.touched.name && formik.errors.name}
-        >
-          <Input
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-          />
-        </Form.Item>
-
-        <Form.Item
-          style={{ width: "100%" }}
           label="Semestre"
           validateStatus={
             formik.errors.semester && formik.touched.semester ? "error" : ""

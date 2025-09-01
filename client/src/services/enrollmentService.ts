@@ -1,5 +1,5 @@
 import apiClient from "../api/apiClient";
-import type { createEnrollmentInterface, EnrollGroupRequest, EnrollGroupResponse, } from "../interfaces/enrollmentInterface";
+import type { createEnrollmentInterface, EnrollGroupRequest, } from "../interfaces/enrollmentInterface";
 
 export const enrollmentService = {
     async enrollStudentInClass(enrollData: createEnrollmentInterface ) {
@@ -12,10 +12,10 @@ export const enrollmentService = {
         }
     },
 
-  async enrollGroupStudents(payload: EnrollGroupRequest): Promise<EnrollGroupResponse> {
+  async enrollGroupStudents(payload: EnrollGroupRequest) {
     try {
       const response = await apiClient.post('/academic/enrollments/group-students', payload);
-      return response.data as EnrollGroupResponse;
+      return response.data
     } catch (error) {
       console.error("Failed to enroll group of students", error);
       throw error;

@@ -1,23 +1,80 @@
-
-
 .ai-results {
-  
+  /* Usamos la base de develop pero sin limitar altura para permitir DnD */
   padding: 12px;
-  background: #fafbfc;
+  background: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
   max-height: none;
   overflow: visible;
   position: relative;
   z-index: 2;
 }
 
+/* Cabecera de pregunta (de fix) */
 .question-header {
   min-height: 60px;
   padding: 12px;
-  background: #fafbfc; 
+  background: #fafbfc;
 }
 
+/* Tarjeta sutil (develop) */
+.card.subtle {
+  background: inherit !important;
+  color: inherit !important;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 12px;
+  box-shadow: none;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Card-like para el contenedor principal (develop) */
+.ai-results.card-like {
+  background: inherit !important;
+  color: inherit !important;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 12px;
+  padding: 16px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Preferencias de color: Light */
+@media (prefers-color-scheme: light) {
+  .card.subtle {
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .ai-results.card-like {
+    background: #fff !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Preferencias de color: Dark */
 @media (prefers-color-scheme: dark) {
   .question-header {
-    background: #1f1f1f; 
+    background: #1f1f1f;
+  }
+
+  .card.subtle {
+    background: inherit !important;
+    color: inherit !important;
+    border-color: var(--ant-color-border-secondary);
+    box-shadow: none;
+  }
+
+  .ai-results.card-like {
+    background: var(--ant-color-bg-container) !important;
+    color: var(--ant-color-text, #e0e0e0) !important;
+    border-color: var(--ant-color-border-secondary);
+    box-shadow: none;
+  }
+
+  .ai-results.card-like .ant-typography,
+  .ai-results.card-like label,
+  .ai-results.card-like span,
+  .ai-results.card-like p {
+    color: var(--ant-color-text, #e0e0e0) !important;
   }
 }

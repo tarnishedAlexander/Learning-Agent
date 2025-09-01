@@ -1,108 +1,159 @@
 import { useEffect, useState } from "react"
-import { claseService } from "../services/classesService"
-import { useClaseStore } from "../store/claseStore";
-import type { Clase } from "../interfaces/claseInterface";
-import { studentService } from "../services/studentService";
-import type { StudentInfo } from "../interfaces/studentInterface";
+import { classService } from "../services/classes.service";
+import type { Clase, CreateClassDTO } from "../interfaces/claseInterface";
 import { useUserContext } from "../context/UserContext";
 
 const useClasses = () => {
-  const { clases, setClases, addClase } = useClaseStore();
-  const [objClass, setObjClass] = useState<Clase>();
-  const [curso, setCurso] = useState('')
-  const [students, setStudents] = useState<StudentInfo[]>([])
+  const [actualClass, setActualClass] = useState<Clase>();
+  const [classes, setClasses] = useState<Clase[]>([]);
   const { user, fetchUser } = useUserContext();
 
-  /*
-  const fetchUser = async () => {
-    const authData = localStorage.getItem("auth");
-    if (!authData) {
-      console.log("Sin datos Auth guardados en localstorage");
-      return;
-    }
-    const parsedData = JSON.parse(authData);
-    const user = await meAPI(parsedData.accessToken);
-    setUserData(user);
-  };*/
-
   useEffect(() => {
-    fetchClases();
-    if (!user || user === null) {
-      fetchUser();
+    const prepareHook = async () => {
+      if (!user) {
+        await fetchUser();
+      }
     }
-  }, []);
+    prepareHook();
+  }, [user]);
 
-  const fetchClases = async () => {
-    const data = await claseService.getClases();
-    setClases(data);
+  const fetchClassesByCourse = async (courseId: string) => {
+    if (!user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+
+    const res = await classService.getClassesByCourseId(courseId);
+    if (res.code == 200) {
+      setClasses(res.data)
+      return {
+        success: true,
+        message: "Períodos recuperados exitosamente"
+      }
+    }
   };
 
-  const createClass = async (newClase: Omit<Clase, 'id'>) => {
-    const objClass = await claseService.createClase(newClase);
-    addClase(objClass)
+  const fetchClassesByStudent = async (studentId: string) => {
+    if (!user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+
+    const res = await classService.getClassesByStudentId(studentId);
+    if (res.code == 200) {
+      setClasses(res.data)
+      return {
+        success: true,
+        message: "Clases recuperados exitosamente"
+      }
+    }
   }
 
-  const fetchClase = async (id: string) => {
-    const curso = await claseService.getClaseById(id)
-    setObjClass(curso);
-    setCurso(curso.name)
-    const students = await studentService.getStudentsByClassId(id)
-    setStudents(students)
-  }
+  const createClass = async (data: Omit<CreateClassDTO, 'teacherId'>) => {
+    if (!user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
 
-  const createStudents = async (newStudentGroup: Omit<StudentInfo, 'id'>) => {
-    console.log(newStudentGroup)
-    // const newStudents = {
-    //   ...newStudentGroup,
-    //   id: uuidv4()
-    // }
-    //await studentService.createStudentGroup(newStudents)
-    //setStudents(newStudents)
+    const newClass = { ...data, teacherId: user.id }
+    const res = await classService.createClass(newClass);
+
+    if (res.code == 201) {
+      return {
+        success: true,
+        message: "Período creado exitosamente"
+      }
+    } else {
+      return {
+        success: false,
+        message: res.error
+      }
+    }
+  };
+
+  const fetchClassById = async (classId: string) => {
+    const res = await classService.getClassById(classId);
+    if (res.code == 200) {
+      setActualClass(res.data)
+      return {
+        success: true,
+        message: "Clase recuperada exitosamente"
+      }
+    } else {
+      return {
+        success: false,
+        message: res.error
+      }
+    }
   }
 
   const updateClass = async (values: Clase) => {
-    try {
-      const id = values.id;
-      const classData = {
-        name: values.name, 
-        semester: values.semester, 
-        teacherId: values.teacherId, 
-        dateBegin: values.dateBegin, 
-        dateEnd: values.dateEnd
-      }
-      await claseService.updateClase(id, classData)
+    if (!values.id || !user) {
       return {
-        success: true
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
       }
-    } catch {
-      console.error(`Error updating class with id ${values.id}`)
+    }
+    const res = await classService.updateClass(values.id, values);
+    if (res.code == 201) {
+      setActualClass(res.data)
       return {
-        success: false
+        success: true,
+        message: "Clase actualizada exitosamente"
+      }
+    } else {
+      return {
+        success: false,
+        message: res.error
       }
     }
   }
 
   const softDeleteClass = async (classId: string) => {
-    try {
-      const userId = user?.id || "";
-      return await claseService.softDeleteClase(classId, userId);
-    } catch (error) {
-      console.error(`Error deleting class with id ${classId}`)
+    if (!classId || !user) {
+      return {
+        success: false,
+        message: "Ha ocurrido un error, inténtelo de nuevo"
+      }
+    }
+    const res = await classService.softDeleteClase(classId, user.id);
+    if (res.code == 201) {
+      setActualClass(res.data)
+      return {
+        success: true,
+        message: "Clase eliminada exitosamente"
+      }
+      //TODO aun falta añadir todos los errores posibles o ponerlos bien en back (?)
+    } else if (res.code == 409) {
+      return {
+        success: false,
+        message: "Esta clase aun tiene inscripciones pendientes"
+      }
+    } else {
+      console.log(res)
+      return {
+        success: false,
+        message: res.error
+      }
     }
   }
 
   return {
-    clases,
-    fetchClases,
+    actualClass,
+    classes,
+    fetchClassesByCourse,
+    fetchClassesByStudent,
     createClass,
-    fetchClase,
-    objClass,
-    curso,
-    students,
-    createStudents,
+    fetchClassById,
     updateClass,
     softDeleteClass,
-  };
+  }
 }
 
 export default useClasses
