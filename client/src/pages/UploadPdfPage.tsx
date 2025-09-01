@@ -61,7 +61,7 @@ const UploadPdfPage: React.FC = () => {
   return (
     <div style={{ 
       padding: "32px", 
-      backgroundColor: "#f5f7fa",
+      backgroundColor: "var(--background-color, #0b1024)",
       minHeight: "100vh",
       marginRight: previewSidebarVisible ? "50%" : "0",
       transition: "margin-right 0.3s ease-in-out"
@@ -72,7 +72,7 @@ const UploadPdfPage: React.FC = () => {
           <Title 
             level={1} 
             style={{ 
-              color: "#1A2A80", 
+              color: "var(--title-color, #e6eaff)", 
               marginBottom: "8px",
               fontSize: "32px",
               fontWeight: "600"
@@ -83,7 +83,7 @@ const UploadPdfPage: React.FC = () => {
           </Title>
           <Text 
             style={{ 
-              color: "#7A85C1", 
+              color: "var(--subtitle-color, #bfc7ff)", 
               fontSize: "16px",
               fontWeight: "400"
             }}
@@ -104,14 +104,14 @@ const UploadPdfPage: React.FC = () => {
                   color: "#1A2A80"
                 }}>
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px" }} />
-                    <span style={{ fontSize: "18px", fontWeight: "500" }}>
+                    <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px", color: "var(--icon-color, #e6eaff)" }} />
+                    <span style={{ fontSize: "18px", fontWeight: "500", color: "var(--text-color, #e6eaff)" }}>
                       Repositorio de Documentos
                     </span>
                     <div style={{
                       marginLeft: "16px",
-                      backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
-                      color: documents.length > 0 ? "#3B38A0" : "#666",
+                      backgroundColor: documents.length > 0 ? "var(--badge-bg-active, #1f2b66)" : "var(--badge-bg, #1a2352)",
+                      color: documents.length > 0 ? "var(--badge-text-active, #9aa6ff)" : "var(--badge-text, #7a85c1)",
                       padding: "4px 12px",
                       borderRadius: "16px",
                       fontSize: "12px",
@@ -180,7 +180,8 @@ const UploadPdfPage: React.FC = () => {
               style={{
                 borderRadius: "12px",
                 boxShadow: "0 4px 16px rgba(26, 42, 128, 0.1)",
-                border: "1px solid #e8eaed"
+                border: "1px solid var(--border-color, #35407a)",
+                backgroundColor: "var(--card-background, #0f1735)"
               }}
             >
               <DocumentTable
