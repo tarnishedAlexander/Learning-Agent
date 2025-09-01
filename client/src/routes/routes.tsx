@@ -1,9 +1,9 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { ClassMenu } from "../pages/academic_management/ClassesMenu";
 import { StudentsByClass } from "../pages/academic_management/StudentsByClass";
-import { StudentProfile } from "../pages/reinforcement";
-import Exam from "../pages/exam";
-import Interview from "../pages/interview";
+import { Reinforcement } from "../pages/reinforcement/reinforcement";
+import Exam from "../pages/reinforcement/exam";
+import Interview from "../pages/reinforcement/interview";
 import Login from "../pages/Login";
 import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
@@ -34,7 +34,11 @@ export const AppRoutes = () => {
             <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
             <Route path="/classes" element={<ClassMenu />} />
             <Route path="/classes/:id" element={<CourseDetailPage />} />
-            <Route path="/reinforcement" element={<StudentProfile />} />
+
+
+            <Route path="/classes/:id/students" element={<StudentsByClass />} />
+            <Route path="/reinforcement" element={<Reinforcement />} />
+
             <Route path="/exam" element={<Exam />} />
             <Route path="/interview" element={<Interview />} />
             <Route path="/" element={<Navigate to="/exams/create" replace />} />
