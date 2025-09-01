@@ -94,9 +94,16 @@ export const DocumentTable = ({
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
     },
     {
-      title: 'Tamaño',
+      title: (
+        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+          <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
+            <span style={{ display: 'inline-block' }}>Tamaño</span>
+          </div>
+        </Tooltip>
+      ),
       dataIndex: 'size',
       key: 'size',
+      showSorterTooltip: false,
       sorter: (a: Document, b: Document) => a.size - b.size,
       filters: [
         { text: '< 100 KB', value: 'lt_100kb' },
