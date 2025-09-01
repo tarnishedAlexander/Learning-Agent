@@ -1,15 +1,15 @@
 import { Table, Button, Space } from 'antd';
-import { DownloadOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
+import { DownloadOutlined, EyeOutlined, FileTextOutlined, BookOutlined } from '@ant-design/icons';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
 
 interface DocumentTableProps {
   documents: Document[];
   loading: boolean;
-  onDelete?: (fileName: string) => Promise<void>;
+  onDelete?: (documentId: string) => Promise<void>;
   onDownload?: (doc: Document) => Promise<void>;
   onPreview?: (doc: Document) => void;
-  // Nuevas props para el DeleteButton
+  onViewData?: (doc: Document) => void;
   onDeleteSuccess?: () => void;
   onDeleteError?: (error: Error) => void;
 }
@@ -20,6 +20,7 @@ export const DocumentTable = ({
   onDelete, 
   onDownload, 
   onPreview,
+  onViewData,
   onDeleteSuccess,
   onDeleteError 
 }: DocumentTableProps) => {
@@ -66,6 +67,18 @@ export const DocumentTable = ({
           </Button>
           <Button
             type="link"
+            icon={<BookOutlined />}
+            onClick={() => onViewData?.(record)}
+            style={{ 
+              color: '#52C41A',
+              fontWeight: '500'
+            }}
+            title="Ver datos extraídos"
+          >
+            Datos
+          </Button>
+          <Button
+            type="link"
             icon={<DownloadOutlined />}
             onClick={() => onDownload?.(record)}
             style={{ 
@@ -76,7 +89,7 @@ export const DocumentTable = ({
             Descargar
           </Button>
           <DeleteButton
-            onDelete={() => onDelete?.(record.fileName) || Promise.resolve()}
+            onDelete={() => onDelete?.(record.id) || Promise.resolve()}
             resourceInfo={{
               name: record.originalName,
               type: "Documento PDF",
