@@ -23,7 +23,6 @@ import {
   DocumentListItemDto,
 } from './dtos/list-documents.dto';
 import {
-  DeleteDocumentParamDto,
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
@@ -50,6 +49,7 @@ export class DocumentsController {
       const documents = result.docs.map(
         (doc) =>
           new DocumentListItemDto(
+            doc.id,
             doc.fileName,
             doc.originalName,
             doc.mimeType,
@@ -106,12 +106,12 @@ export class DocumentsController {
     }
   }
 
-  @Delete(':filename')
+  @Delete(':id')
   async deleteDocument(
-    @Param() params: DeleteDocumentParamDto,
+    @Param('id') documentId: string,
   ): Promise<DeleteDocumentResponseDto> {
     try {
-      const result = await this.deleteDocumentUseCase.execute(params.filename);
+      const result = await this.deleteDocumentUseCase.execute(documentId);
 
       if (!result.success) {
         // Documento no encontrado
@@ -120,7 +120,7 @@ export class DocumentsController {
             new DeleteDocumentErrorDto(
               'Document Not Found',
               result.message,
-              params.filename,
+              documentId,
             ),
             HttpStatus.NOT_FOUND,
           );
@@ -131,7 +131,7 @@ export class DocumentsController {
           new DeleteDocumentErrorDto(
             'Delete Failed',
             result.message,
-            params.filename,
+            documentId,
           ),
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
@@ -139,7 +139,7 @@ export class DocumentsController {
 
       return new DeleteDocumentResponseDto(
         result.message,
-        params.filename,
+        documentId,
         result.deletedAt!,
       );
     } catch (error) {
@@ -157,7 +157,7 @@ export class DocumentsController {
         new DeleteDocumentErrorDto(
           'Internal Server Error',
           `Error interno del servidor al eliminar documento: ${errorMessage}`,
-          params.filename,
+          documentId,
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -217,18 +217,19 @@ export class DocumentsController {
     }
   }
 
-  @Get('download/:filename')
+  @Get('download/:id')
   async downloadDocument(
-    @Param('filename') filename: string,
+    @Param('id') documentId: string,
   ): Promise<{ downloadUrl: string }> {
     try {
-      if (!filename) {
+      if (!documentId) {
         throw new BadRequestException(
-          'No se ha proporcionado el nombre de archivo',
+          'No se ha proporcionado el ID del documento',
         );
       }
 
-      const downloadUrl = await this.downloadDocumentUseCase.execute(filename);
+      const downloadUrl =
+        await this.downloadDocumentUseCase.execute(documentId);
       return { downloadUrl };
     } catch (error) {
       if (
