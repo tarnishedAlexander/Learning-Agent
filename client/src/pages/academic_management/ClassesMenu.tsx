@@ -5,11 +5,12 @@ import type { Clase } from "../../interfaces/claseInterface";
 import PageTemplate from "../../components/PageTemplate";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { useUserContext } from "../../context/UserContext";
+import { useUserStore } from "../../store/userStore";
 import AccessDenied from "../../components/shared/AccessDenied";
 
 export function ClassMenu() {
-  const { user, fetchUser } = useUserContext();
+  const user = useUserStore((s) => s.user);
+  const fetchUser = useUserStore((s) => s.fetchUser);
   const { classes, fetchClassesByStudent } = useClasses();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredClasses, setFilteredClasses] = useState<Clase[]>(classes);

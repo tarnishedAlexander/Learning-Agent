@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
 import { classService } from "../services/classes.service";
 import type { Clase, CreateClassDTO } from "../interfaces/claseInterface";
-import { useUserContext } from "../context/UserContext";
+import { useUserStore } from "../store/userStore";
 
 const useClasses = () => {
   const [actualClass, setActualClass] = useState<Clase>();
   const [classes, setClasses] = useState<Clase[]>([]);
-  const { user, fetchUser } = useUserContext();
+  const user = useUserStore((s) => s.user);
+  const fetchUser = useUserStore((s) => s.fetchUser);
 
   useEffect(() => {
     const prepareHook = async () => {

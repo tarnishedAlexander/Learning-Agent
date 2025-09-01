@@ -1,22 +1,22 @@
 import PageTemplate from "../../components/PageTemplate";
 import { formatTodayEs } from "../../utils/date";
 import ProfessorHome from "./ProfessorHome";
+import StudentHome from "./StudentHome";
+import { useUserStore } from "../../store/userStore";
 
 export default function DashboardPage() {
+  const user = useUserStore((s) => s.user); 
+  const isTeacher = user?.roles?.includes("docente");
+  const isStudent = user?.roles?.includes("estudiante");
   return (
     <PageTemplate
       title="Dashboard"
       subtitle={
         "Welcome back — focus on what moves the needle. " + formatTodayEs()
       }
-      user={{
-        name: "Nora Watson",
-        role: "Sales Manager",
-        avatarUrl: "https://i.pravatar.cc/128?img=5",
-      }}
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}
     >
-      <ProfessorHome />
+      {isTeacher ? <ProfessorHome /> : <StudentHome />}
     </PageTemplate>
   );
 }

@@ -6,11 +6,12 @@ import type { Course } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
 import { CreateCourseForm } from "./CreateCourseForm";
 import { PlusOutlined } from "@ant-design/icons";
-import { useUserContext } from "../../context/UserContext";
+import { useUserStore } from "../../store/userStore";
 import AccessDenied from "../../components/shared/AccessDenied";
 
 export function TeacherCoursePage() {
-  const { user, fetchUser } = useUserContext();
+  const user = useUserStore((s) => s.user);
+  const fetchUser = useUserStore((s) => s.fetchUser);
   const { courses, createCourse } = useCourses();
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

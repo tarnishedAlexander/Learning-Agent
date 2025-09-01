@@ -6,7 +6,7 @@ import { lightTheme, darkTheme } from "./theme";
 import { AppRoutes } from "./routes/routes";
 import { useThemeStore } from "./store/themeStore";
 import "./App.css";
-import { UserProvider } from './context/UserContext';
+import { useUserStore } from './store/userStore';
 
 function App() {
   const theme = useThemeStore((s) => s.theme);
@@ -24,6 +24,12 @@ function App() {
     return () => media.removeEventListener("change", listener);
   }, []);
 
+  // Fetch user once on app load (replacing context provider behavior)
+  const fetchUser = useUserStore((s) => s.fetchUser);
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
   const currentTheme = useMemo(() => {
     const mode = theme === "system" ? systemTheme : theme;
     return mode === "dark" ? darkTheme : lightTheme;
@@ -32,9 +38,7 @@ function App() {
   return (
     <ConfigProvider theme={currentTheme}>
       <AntApp>
-        <UserProvider>
-          <AppRoutes />
-        </UserProvider>
+        <AppRoutes />
       </AntApp>
     </ConfigProvider>
   );
