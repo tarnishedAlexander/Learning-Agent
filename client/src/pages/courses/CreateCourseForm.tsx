@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useUserContext } from "../../context/UserContext";
+import { useUserStore } from "../../store/userStore";
 import { Button, Form, Input, Modal } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -11,7 +11,8 @@ interface CreateCourseFormProps {
 }
 
 export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormProps) => {
-    const { user, fetchUser } = useUserContext();
+    const user = useUserStore((s) => s.user);
+    const fetchUser = useUserStore((s) => s.fetchUser);
 
     useEffect(() => {
         if (!user || user === null) {

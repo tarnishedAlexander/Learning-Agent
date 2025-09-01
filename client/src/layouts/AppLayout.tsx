@@ -17,7 +17,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../services/authService";
 import { useThemeStore } from "../store/themeStore";
 import type { SiderTheme } from "antd/es/layout/Sider";
-import { useUserContext } from "../context/UserContext";
+import { useUserStore } from "../store/userStore";
 
 const { Sider, Content } = Layout;
 
@@ -75,7 +75,8 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useThemeStore();
-  const { user } = useUserContext();
+  const user = useUserStore((s) => s.user);
+  const setUser = useUserStore((s) => s.setUser);
   const [systemTheme, setSystemTheme] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
   );
@@ -178,6 +179,7 @@ export default function AppLayout() {
             <button
               onClick={async () => {
                 await logout();
+                setUser(null);
                 navigate("/login", { replace: true });
               }}
               className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-[var(--ant-colorText)] hover:bg-[var(--ant-colorBgElevated)]"

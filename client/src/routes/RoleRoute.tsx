@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useUserContext } from "../context/UserContext";
+import { useUserStore } from "../store/userStore";
 
 type RoleRouteProps = {
   allowed: string[];
@@ -7,10 +7,8 @@ type RoleRouteProps = {
 };
 
 export default function RoleRoute({ allowed, fallbackTo = "/" }: RoleRouteProps) {
-  const { user } = useUserContext();
-
+  const user = useUserStore((s) => s.user);
   if (!user) return <></>;
   const hasRole = user.roles?.some((r) => allowed.includes(r));
   return hasRole ? <Outlet /> : <Navigate to={fallbackTo} replace />;
 }
-

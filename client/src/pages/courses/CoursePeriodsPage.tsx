@@ -8,14 +8,14 @@ import { CreatePeriodForm } from "../../components/CreatePeriodForm";
 import useClasses from "../../hooks/useClasses";
 import type { Course } from "../../interfaces/courseInterface";
 import type { Clase, CreateClassDTO } from "../../interfaces/claseInterface";
-import { useUserContext } from "../../context/UserContext";
+import { useUserStore } from "../../store/userStore";
 import dayjs from "dayjs";
 import AccessDenied from "../../components/shared/AccessDenied";
 
 export function CoursePeriodsPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const { user } = useUserContext();
+  const user = useUserStore((s) => s.user);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);

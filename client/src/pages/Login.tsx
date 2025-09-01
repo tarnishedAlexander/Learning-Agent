@@ -22,7 +22,10 @@ export default function LoginPage({ onSubmit }: Props) {
     setLoading(true);
     try {
       if (onSubmit) await onSubmit(values);
-      else await login(values);
+      else {
+        await login(values);
+        
+      }
       navigate("/", { replace: true });
     } catch (e: unknown) {
       message.error((e as Error)?.message ?? "No se pudo iniciar sesión");
