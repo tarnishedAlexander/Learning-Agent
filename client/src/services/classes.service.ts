@@ -1,7 +1,7 @@
 import apiClient from "../api/apiClient";
-import type { Clase } from "../interfaces/claseInterface";
+import type { Clase, CreateClassDTO } from "../interfaces/claseInterface";
 
-export const claseService = {
+export const classService = {
   async getClases(): Promise<Clase[]> {
     try {
       const response = await apiClient.get("/academic/classes/");
@@ -12,7 +12,7 @@ export const claseService = {
     }
   },
   
-  async getClaseById(id: string): Promise<Clase> {
+  async getClassById(id: string) {
     try {
       const response = await apiClient.get(`/academic/classes/${id}`);
       return response.data;
@@ -22,17 +22,27 @@ export const claseService = {
     }
   },
 
-  async createClase(clase: Omit<Clase, "id">): Promise<Clase> {
+  async getClassesByStudentId(id: string) {
     try {
-      const response = await apiClient.post("/academic/classes", clase);
+      const response = await apiClient.get(`/academic/classes/by-student/${id}`);
       return response.data;
     } catch (error) {
-      console.error("Failed to create clase", error);
+      console.error("Failed to fetch classes", error);
       throw error;
     }
   },
 
-  async updateClase(id: string, claseData: Partial<Clase>): Promise<Clase> {
+  async createClass(newClass: CreateClassDTO) {
+    try {
+      const response = await apiClient.post("/academic/classes", newClass);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch clases by course", error);
+      throw error;
+    }
+  },
+
+  async updateClass(id: string, claseData: Partial<Clase>) {
     try {
       const response = await apiClient.put(`/academic/classes/${id}`, claseData);
       return response.data;
@@ -45,15 +55,20 @@ export const claseService = {
   async softDeleteClase(id: string, teacherId: string) {
     try {
       const response = await apiClient.put(`/academic/classes/remove/${id}`, {teacherId});
-      return {
-        success: true,
-        data: response.data
-      }
+      return response.data
     } catch (error) {
       console.error("Failed to soft-delete clase", error);
-      return {
-        success: false
-      }
+      throw error;
+    }
+  },
+
+  async getClassesByCourseId(id: string) {
+    try {
+      const response = await apiClient.get(`/academic/classes/by-course/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch course", error);
+      throw error;
     }
   },
 };

@@ -1,5 +1,6 @@
 import { Table, Button, Space } from 'antd';
-import { DownloadOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { DownloadOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
+import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
 
 interface DocumentTableProps {
@@ -8,9 +9,20 @@ interface DocumentTableProps {
   onDelete?: (fileName: string) => Promise<void>;
   onDownload?: (doc: Document) => Promise<void>;
   onPreview?: (doc: Document) => void;
+  // Nuevas props para el DeleteButton
+  onDeleteSuccess?: () => void;
+  onDeleteError?: (error: Error) => void;
 }
 
-export const DocumentTable = ({ documents, loading, onDelete, onDownload, onPreview }: DocumentTableProps) => {
+export const DocumentTable = ({ 
+  documents, 
+  loading, 
+  onDelete, 
+  onDownload, 
+  onPreview,
+  onDeleteSuccess,
+  onDeleteError 
+}: DocumentTableProps) => {
   const columns = [
     {
       title: 'Nombre del archivo',
@@ -63,18 +75,26 @@ export const DocumentTable = ({ documents, loading, onDelete, onDownload, onPrev
           >
             Descargar
           </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete?.(record.fileName)}
-            style={{
-              color: '#B22B0E8',
-              fontWeight: '500'
+          <DeleteButton
+            onDelete={() => onDelete?.(record.fileName) || Promise.resolve()}
+            resourceInfo={{
+              name: record.originalName,
+              type: "Documento PDF",
+              icon: <FileTextOutlined />,
+              additionalInfo: `Tamaño: ${(record.size / 1024 / 1024).toFixed(2)} MB`
             }}
-          >
-            Eliminar
-          </Button>
+            buttonConfig={{
+              variant: "link",
+              showText: true,
+              size: "middle"
+            }}
+            modalConfig={{
+              message: "¿Estás seguro de que deseas eliminar este documento?",
+              confirmText: "Eliminar Documento"
+            }}
+            onDeleteSuccess={onDeleteSuccess}
+            onDeleteError={onDeleteError}
+          />
         </Space>
       ),
     },
