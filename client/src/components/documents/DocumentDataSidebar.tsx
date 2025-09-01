@@ -17,8 +17,10 @@ import {
   message,
   Skeleton,
   Empty,
-  Progress
+  Progress,
+  theme as antTheme
 } from 'antd';
+import { useThemeStore } from '../../store/themeStore';
 import { 
   CloseOutlined, 
   FileTextOutlined, 
@@ -52,6 +54,11 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({
     extractedDataLoading,
     extractedDataError
   } = useDocuments();
+
+  // Theme
+  const theme = useThemeStore((state: { theme: string }) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
   
   const [extractedData, setExtractedData] = useState<DocumentExtractedData | null>(null);
   const [activeTab, setActiveTab] = useState('metadata');
@@ -177,12 +184,12 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({
         right: 0,
         width: window.innerWidth <= 768 ? '100%' : '50%', // Responsivo
         height: '100vh',
-        backgroundColor: '#FFFFFF',
-        boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.15)',
+        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
+        boxShadow: isDark ? '-4px 0 20px rgba(91, 110, 240, 0.1)' : '-4px 0 20px rgba(0, 0, 0, 0.15)',
         zIndex: 1000,
         display: visible ? 'flex' : 'none',
         flexDirection: 'column',
-        borderLeft: '1px solid #E8E8E8',
+        borderLeft: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
         transition: 'all 0.3s ease-in-out',
       }}
     >
@@ -190,17 +197,17 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({
       <div
         style={{
           padding: '16px 20px',
-          borderBottom: '1px solid #E8E8E8',
-          backgroundColor: '#F8F9FA',
+          borderBottom: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
+          backgroundColor: isDark ? token.colorBgElevated : '#F8F9FA',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FileTextOutlined style={{ color: '#1A2A80', fontSize: '18px' }} />
+          <FileTextOutlined style={{ color: isDark ? token.colorPrimary : '#1A2A80', fontSize: '18px' }} />
           <div>
-            <Title level={5} style={{ margin: 0, color: '#1A2A80' }}>
+            <Title level={5} style={{ margin: 0, color: isDark ? token.colorPrimary : '#1A2A80' }}>
               Datos del Documento
             </Title>
             {document && (
@@ -497,7 +504,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({
                         <Card 
                           key={chunk.id}
                           size="small"
-                          style={{ backgroundColor: '#fafafa' }}
+                          style={{ backgroundColor: isDark ? token.colorBgElevated : '#fafafa' }}
                           extra={
                             <Tooltip title="Copiar chunk">
                               <Button 
@@ -521,10 +528,10 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({
                             </Tag>
                           </Space>
                           <div style={{
-                            backgroundColor: 'white',
+                            backgroundColor: isDark ? token.colorBgContainer : 'white',
                             padding: 16,
                             borderRadius: 4,
-                            border: '1px solid #f0f0f0',
+                            border: `1px solid ${isDark ? token.colorBorder : '#f0f0f0'}`,
                             maxHeight: 200,
                             overflowY: 'auto'
                           }}>

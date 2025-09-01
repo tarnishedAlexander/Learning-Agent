@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Typography, Spin, Alert } from 'antd';
+import { Button, Typography, Spin, Alert, theme as antTheme } from 'antd';
 import { CloseOutlined, FileTextOutlined } from '@ant-design/icons';
+import { useThemeStore } from '../../store/themeStore';
 import type { Document } from '../../interfaces/documentInterface';
 import { documentService } from '../../services/documents.service';
 
@@ -24,6 +25,11 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Theme
+  const theme = useThemeStore((state: { theme: string }) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
 
   const loadPdfUrl = useCallback(async () => {
     if (!document) return;
@@ -61,12 +67,12 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
         right: 0,
         width: sidebarWidth,
         height: '100vh',
-        backgroundColor: '#FFFFFF',
-        boxShadow: '-4px 0 20px rgba(0, 0, 0, 0.15)',
+        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
+        boxShadow: isDark ? '-4px 0 20px rgba(91, 110, 240, 0.1)' : '-4px 0 20px rgba(0, 0, 0, 0.15)',
         zIndex: isSmallScreen ? 1050 : 1000,
         display: visible ? 'flex' : 'none',
         flexDirection: 'column',
-        borderLeft: '1px solid #E8E8E8',
+        borderLeft: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.3s ease-in-out',
       }}
@@ -75,8 +81,8 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
       <div
         style={{
           padding: isSmallScreen ? '12px 16px' : '16px 20px',
-          borderBottom: '1px solid #E8E8E8',
-          backgroundColor: '#F8F9FA',
+          borderBottom: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
+          backgroundColor: isDark ? token.colorBgElevated : '#F8F9FA',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -90,7 +96,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
           flex: 1
         }}>
           <FileTextOutlined style={{ 
-            color: '#1A2A80', 
+            color: isDark ? token.colorPrimary : '#1A2A80',
             fontSize: isSmallScreen ? '16px' : '18px',
             flexShrink: 0
           }} />
@@ -99,7 +105,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               level={5} 
               style={{ 
                 margin: 0, 
-                color: '#1A2A80',
+                color: isDark ? token.colorPrimary : '#1A2A80',
                 fontSize: isSmallScreen ? '14px' : '16px'
               }}
             >

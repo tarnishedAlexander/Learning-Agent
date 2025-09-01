@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Modal, Upload, Progress, Typography, Steps, Alert, message, Grid } from 'antd';
+import { Button, Modal, Upload, Progress, Typography, Steps, Alert, message, Grid, theme as antTheme } from 'antd';
 import { 
   CloudUploadOutlined, 
   PlusOutlined, 
@@ -9,6 +9,7 @@ import {
   ExclamationCircleOutlined,
   FileTextOutlined
 } from '@ant-design/icons';
+import { useThemeStore } from '../../store/themeStore';
 import type { RcFile } from 'rc-upload/lib/interface';
 import type { ButtonProps } from 'antd';
 
@@ -196,9 +197,12 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [processingSteps, setProcessingSteps] = useState<ProcessingStepState[]>([]);
   
-  // Hook de responsividad
+  // Hooks de tema y responsividad
   const screens = useBreakpoint();
   const isSmallScreen = !screens.lg;
+  const { token } = antTheme.useToken();
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
 
   // Configuración por defecto del botón
   const {
@@ -224,8 +228,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
     successText = '¡Archivo procesado exitosamente!'
   } = processingConfig;
 
-  // Color fijo del componente
-  const FIXED_COLOR = '#1A2A80';
+  // Color del componente
+  const FIXED_COLOR = token.colorBgElevated === '#141d47' ? '#5b6ef0' : '#1A2A80';
 
   // Inicializar pasos de procesamiento
   React.useEffect(() => {
@@ -471,7 +475,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            color: '#1A2A80',
+            color: isDark ? '#ffffff' : FIXED_COLOR,
             fontSize: '18px',
             fontWeight: '600'
           }}>
@@ -486,8 +490,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
         destroyOnClose={false}
         styles={{
           header: {
-            backgroundColor: '#f8f9ff',
-            borderBottom: '1px solid #e8eaed'
+            backgroundColor: isDark ? token.colorBgContainer : '#f8f9ff',
+            borderBottom: `1px solid ${isDark ? token.colorBorder : '#e8eaed'}`
           },
           body: {
             padding: isSmallScreen ? '16px' : '24px'
@@ -505,9 +509,9 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 beforeUpload={handleFileSelect}
                 showUploadList={false}
                 style={{
-                  border: '2px dashed #7A85C1',
+                  border: `2px dashed ${isDark ? token.colorBorder : '#7A85C1'}`,
                   borderRadius: '8px',
-                  backgroundColor: '#F8F9FB',
+                  backgroundColor: isDark ? token.colorBgElevated : '#F8F9FB',
                   padding: isSmallScreen ? '20px 16px' : '40px 20px',
                   cursor: 'pointer'
                 }}
@@ -515,11 +519,11 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 <p className="ant-upload-drag-icon">
                   <CloudUploadOutlined style={{ 
                     fontSize: isSmallScreen ? '36px' : '48px', 
-                    color: '#3B38A0' 
+                    color: isDark ? '#5b6ef0' : '#3B38A0' 
                   }} />
                 </p>
                 <p className="ant-upload-text" style={{ 
-                  color: '#1A2A80', 
+                  color: isDark ? '#ffffff' : '#1A2A80', 
                   fontSize: isSmallScreen ? '14px' : '16px', 
                   fontWeight: '500',
                   margin: isSmallScreen ? '12px 0 6px 0' : '16px 0 8px 0'
@@ -527,7 +531,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   {isSmallScreen ? 'Toca o arrastra aquí' : 'Haz clic o arrastra el archivo aquí'}
                 </p>
                 <p className="ant-upload-hint" style={{ 
-                  color: '#7A85C1',
+                  color: isDark ? '#bfc7ff' : '#7A85C1',
                   fontSize: isSmallScreen ? '12px' : '14px',
                   margin: '0',
                   padding: isSmallScreen ? '0 8px' : '0'
@@ -607,9 +611,9 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             <div style={{ 
               textAlign: 'center', 
               padding: isSmallScreen ? '30px 16px' : '40px 20px',
-              backgroundColor: '#F8F9FB',
+              backgroundColor: isDark ? token.colorBgElevated : '#F8F9FB',
               borderRadius: '8px',
-              border: '2px solid #7A85C1'
+              border: `2px solid ${isDark ? token.colorBorder : '#7A85C1'}`
             }}>
               <FileAddOutlined style={{ 
                 fontSize: isSmallScreen ? '36px' : '48px', 

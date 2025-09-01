@@ -3,6 +3,7 @@ import { Card, message, Typography, Row, Col, Grid } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import UploadButton from "../components/shared/UploadButton";
 import { DocumentTable } from "../components/documents/DocumentTable";
+import { useThemeStore } from "../store/themeStore";
 import { PdfPreviewSidebar } from "../components/documents/PdfPreviewSidebar";
 import { DocumentDataSidebar } from "../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../hooks/useDocuments";
@@ -12,7 +13,7 @@ const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 const UploadPdfPage: React.FC = () => {
-  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
+  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, uploadDocument } = useDocuments();
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
   
@@ -27,7 +28,6 @@ const UploadPdfPage: React.FC = () => {
   // Configuración responsiva
   const isSmallScreen = !screens.lg;
   const sidebarWidth = isSmallScreen ? '100%' : '50%';
-  const pageMarginRight = previewSidebarVisible ? (isSmallScreen ? '0' : '50%') : '0';
 
   const handleUploadSuccess = useCallback(async () => {
     setRefreshing(true);
@@ -89,15 +89,18 @@ const UploadPdfPage: React.FC = () => {
     setPreviewSidebarVisible(true);
   }, [dataSidebarVisible]);
 
+  const theme = useThemeStore(state => state.theme);
+  const isDark = theme === "dark";
+
   return (
     <div style={{ 
       padding: isSmallScreen ? "16px" : "32px", 
-      backgroundColor: "#f5f7fa",
+      backgroundColor: isDark ? "#0b1024" : "#f5f7fa",
       minHeight: "100vh",
       marginRight: (previewSidebarVisible || dataSidebarVisible) 
         ? (window.innerWidth <= 768 ? "0" : "50%") 
         : "0",
-      transition: "margin-right 0.3s ease-in-out"
+      transition: "all 0.3s ease-in-out"
     }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header Section */}
@@ -105,7 +108,7 @@ const UploadPdfPage: React.FC = () => {
           <Title 
             level={isSmallScreen ? 2 : 1} 
             style={{ 
-              color: "#1A2A80", 
+              color: isDark ? "#5b6ef0" : "#1A2A80",
               marginBottom: "8px",
               fontSize: isSmallScreen ? "24px" : "32px",
               fontWeight: "600"
@@ -116,7 +119,7 @@ const UploadPdfPage: React.FC = () => {
           </Title>
           <Text 
             style={{ 
-              color: "#7A85C1", 
+              color: isDark ? "#bfc7ff" : "#7A85C1",
               fontSize: isSmallScreen ? "14px" : "16px",
               fontWeight: "400",
               display: "block",
@@ -140,7 +143,7 @@ const UploadPdfPage: React.FC = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "12px",
-                    color: "#1A2A80",
+                    color: isDark ? "#ffffff" : "#1A2A80",
                     flexWrap: "wrap"
                   }}>
                     {/* Título con ícono */}
@@ -150,7 +153,8 @@ const UploadPdfPage: React.FC = () => {
                       gap: "6px"
                     }}>
                       <FileTextOutlined style={{ 
-                        fontSize: "16px"
+                        fontSize: "16px",
+                        color: isDark ? "#5b6ef0" : "#1A2A80"
                       }} />
                       <span style={{ 
                         fontSize: "16px", 
@@ -162,8 +166,12 @@ const UploadPdfPage: React.FC = () => {
                     
                     {/* Contador */}
                     <div style={{
-                      backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
-                      color: documents.length > 0 ? "#3B38A0" : "#666",
+                      backgroundColor: isDark 
+                        ? (documents.length > 0 ? "#141d47" : "#0f1735")
+                        : (documents.length > 0 ? "#E8F4FD" : "#F0F0F0"),
+                      color: isDark
+                        ? (documents.length > 0 ? "#5b6ef0" : "#bfc7ff")
+                        : (documents.length > 0 ? "#3B38A0" : "#666"),
                       padding: "4px 10px",
                       borderRadius: "12px",
                       fontSize: "11px",
@@ -235,7 +243,7 @@ const UploadPdfPage: React.FC = () => {
                     display: "flex", 
                     alignItems: "center",
                     justifyContent: "space-between",
-                    color: "#1A2A80"
+                    color: isDark ? "#ffffff" : "#1A2A80"
                   }}>
                     <div style={{ 
                       display: "flex", 
@@ -246,7 +254,8 @@ const UploadPdfPage: React.FC = () => {
                       <FileTextOutlined style={{ 
                         marginRight: "12px", 
                         fontSize: "20px",
-                        flexShrink: 0 
+                        flexShrink: 0,
+                        color: isDark ? "#5b6ef0" : "#1A2A80"
                       }} />
                       <span style={{ 
                         fontSize: "18px", 
@@ -259,8 +268,12 @@ const UploadPdfPage: React.FC = () => {
                       </span>
                       <div style={{
                         marginLeft: "16px",
-                        backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
-                        color: documents.length > 0 ? "#3B38A0" : "#666",
+                        backgroundColor: isDark
+                          ? (documents.length > 0 ? "#141d47" : "#0f1735")
+                          : (documents.length > 0 ? "#E8F4FD" : "#F0F0F0"),
+                        color: isDark
+                          ? (documents.length > 0 ? "#5b6ef0" : "#bfc7ff")
+                          : (documents.length > 0 ? "#3B38A0" : "#666"),
                         padding: "4px 12px",
                         borderRadius: "16px",
                         fontSize: "12px",
@@ -335,8 +348,9 @@ const UploadPdfPage: React.FC = () => {
               }
               style={{
                 borderRadius: "12px",
-                boxShadow: "0 4px 16px rgba(26, 42, 128, 0.1)",
-                border: "1px solid #e8eaed"
+                boxShadow: isDark ? "0 4px 16px rgba(91, 110, 240, 0.1)" : "0 4px 16px rgba(26, 42, 128, 0.1)",
+                border: `1px solid ${isDark ? "#35407a" : "#e8eaed"}`,
+                background: isDark ? "#0f1735" : "#ffffff"
               }}
             >
               <DocumentTable
