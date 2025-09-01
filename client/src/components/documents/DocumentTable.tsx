@@ -1,4 +1,4 @@
-import { Table, Button, Space, Tooltip } from 'antd';
+import { Table, Button, Space } from 'antd';
 import { DownloadOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
@@ -25,29 +25,15 @@ export const DocumentTable = ({
 }: DocumentTableProps) => {
   const columns = [
     {
-      title: (
-        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
-          <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
-            <span style={{ display: 'inline-block' }}>Nombre del archivo</span>
-          </div>
-        </Tooltip>
-      ),
+      title: 'Nombre del archivo',
       dataIndex: 'originalName',
       key: 'originalName',
-      showSorterTooltip: false,
       sorter: (a: Document, b: Document) => a.originalName.localeCompare(b.originalName),
     },
     {
-      title: (
-        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
-          <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
-            <span style={{ display: 'inline-block' }}>Fecha de subida</span>
-          </div>
-        </Tooltip>
-      ),
+      title: 'Fecha de subida',
       dataIndex: 'uploadedAt',
       key: 'uploadedAt',
-      showSorterTooltip: false,
       sorter: (a: Document, b: Document) =>
         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime(),
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
