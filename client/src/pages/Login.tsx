@@ -24,7 +24,6 @@ export default function LoginPage({ onSubmit }: Props) {
       if (onSubmit) await onSubmit(values);
       else {
         await login(values);
-        
       }
       navigate("/", { replace: true });
     } catch (e: unknown) {

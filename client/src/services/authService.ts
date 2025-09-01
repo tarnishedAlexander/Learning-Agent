@@ -26,12 +26,10 @@ export const login = async (payload: LoginPayload) => {
       payload
     );
     saveAuth(response.data);
-    // Obtener perfil del usuario y guardarlo en Zustand
     try {
       const me = await meAPI(response.data.accessToken);
       useUserStore.getState().setUser(me);
     } catch (e) {
-      // No bloquear el login si /me falla
       console.warn("No se pudo cargar el perfil tras login", e);
     }
     return response.data;
