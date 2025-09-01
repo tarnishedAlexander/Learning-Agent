@@ -44,7 +44,8 @@ import { ProcessDocumentTextUseCase } from './application/commands/process-docum
 import { ProcessDocumentChunksUseCase } from './application/commands/process-document-chunks.usecase';
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
-
+import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 @Module({
   imports: [PrismaModule],
   controllers: [DocumentsController, EmbeddingsController],
@@ -224,4 +225,10 @@ import { SearchDocumentsUseCase } from './application/use-cases/search-documents
     VECTOR_SEARCH_PORT,
   ],
 })
-export class DocumentsModule {}
+export class DocumentsModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: 'api/documents/upload', method: RequestMethod.POST });
+  }
+}

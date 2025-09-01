@@ -11,7 +11,10 @@ import {
   UploadedFile,
   BadRequestException,
   Body,
+  Req, // ⬅️ Agregado
 } from '@nestjs/common';
+import { Request } from 'express'; // ⬅️ Agregado
+import type { AuthenticatedRequest } from '../http/middleware/auth.middleware';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
 import { DeleteDocumentUseCase } from '../../application/commands/delete-document.usecase';
@@ -30,6 +33,8 @@ import {
 import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
+// ⬅️ Remover esta interface, ahora viene del middleware
+// interface AuthenticatedRequest extends Request {
 @Controller('api/documents')
 export class DocumentsController {
   constructor(
@@ -163,23 +168,27 @@ export class DocumentsController {
       );
     }
   }
+
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: AuthenticatedRequest,
   ): Promise<UploadDocumentResponseDto> {
     try {
       if (!file) {
         throw new BadRequestException('No se ha proporcionado ningún archivo');
       }
 
-      // TODO: En producción, obtener el uploadedBy del token de autenticación
-      // Por ahora, usamos un ID de usuario hardcodeado para testing
-      const uploadedBy = 'user-123'; // Temporal para testing
+      // ⬅️ CAMBIO PRINCIPAL: userId dinámico desde request
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new BadRequestException('Usuario no autenticado');
+      }
 
       const document = await this.uploadDocumentUseCase.execute(
         file,
-        uploadedBy,
+        userId, // ⬅️ Ya no hardcodeado
       );
 
       return {
