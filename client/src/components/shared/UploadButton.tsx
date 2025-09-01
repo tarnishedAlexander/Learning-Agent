@@ -452,7 +452,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            color: '#1A2A80',
+            color: 'var(--modal-title-color, #e6eaff)',
             fontSize: '18px',
             fontWeight: '600'
           }}>
@@ -467,8 +467,11 @@ const UploadButton: React.FC<UploadButtonProps> = ({
         destroyOnClose={false}
         styles={{
           header: {
-            backgroundColor: '#f8f9ff',
-            borderBottom: '1px solid #e8eaed'
+            backgroundColor: 'var(--header-bg, #0f1735)',
+            borderBottom: '1px solid var(--border-color, #35407a)'
+          },
+          body: {
+            backgroundColor: 'var(--modal-bg, #141d47)'
           }
         }}
       >
@@ -483,18 +486,18 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 beforeUpload={handleFileSelect}
                 showUploadList={false}
                 style={{
-                  border: '2px dashed #7A85C1',
+                  border: '2px dashed var(--border-color, #35407a)',
                   borderRadius: '8px',
-                  backgroundColor: '#F8F9FB',
+                  backgroundColor: 'var(--dragger-bg, #0f1735)',
                   padding: '40px 20px',
                   cursor: 'pointer'
                 }}
               >
                 <p className="ant-upload-drag-icon">
-                  <CloudUploadOutlined style={{ fontSize: '48px', color: '#3B38A0' }} />
+                  <CloudUploadOutlined style={{ fontSize: '48px', color: 'var(--icon-color, #9aa6ff)' }} />
                 </p>
                 <p className="ant-upload-text" style={{ 
-                  color: '#1A2A80', 
+                  color: 'var(--text-primary, #e6eaff)', 
                   fontSize: '16px', 
                   fontWeight: '500',
                   margin: '16px 0 8px 0'
@@ -502,7 +505,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   Haz clic o arrastra el archivo aquí
                 </p>
                 <p className="ant-upload-hint" style={{ 
-                  color: '#7A85C1',
+                  color: 'var(--text-secondary, #bfc7ff)',
                   fontSize: '14px',
                   margin: '0'
                 }}>
@@ -532,9 +535,9 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             <div style={{ 
               textAlign: 'center', 
               padding: '40px 20px',
-              backgroundColor: '#f6ffed',
+              backgroundColor: 'var(--success-bg, #162312)',
               borderRadius: '8px',
-              border: '2px solid #52c41a'
+              border: '2px solid var(--success-border, #52c41a)'
             }}>
               <CheckCircleOutlined style={{ 
                 fontSize: '64px', 
@@ -580,28 +583,28 @@ const UploadButton: React.FC<UploadButtonProps> = ({
             <div style={{ 
               textAlign: 'center', 
               padding: '40px 20px',
-              backgroundColor: '#F8F9FB',
+              backgroundColor: 'var(--content-bg, #0f1735)',
               borderRadius: '8px',
-              border: '2px solid #7A85C1'
+              border: '2px solid var(--border-color, #35407a)'
             }}>
-              <FileAddOutlined style={{ fontSize: '48px', color: '#3B38A0', marginBottom: '16px' }} />
+              <FileAddOutlined style={{ fontSize: '48px', color: 'var(--icon-color, #9aa6ff)', marginBottom: '16px' }} />
               
               {selectedFile && (
                 <div style={{ marginBottom: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
                     <FileTextOutlined style={{ color: '#1A2A80', marginRight: '8px', fontSize: '16px' }} />
-                    <Text strong style={{ color: '#1A2A80' }}>
+                    <Text strong style={{ color: 'var(--text-primary, #e6eaff)' }}>
                       {selectedFile.name}
                     </Text>
                   </div>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                  <Text style={{ fontSize: '12px', color: 'var(--text-secondary, #bfc7ff)' }}>
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </Text>
                 </div>
               )}
 
               <Text style={{ 
-                color: '#1A2A80', 
+                color: 'var(--text-primary, #e6eaff)', 
                 fontSize: '16px', 
                 fontWeight: '500',
                 display: 'block',
