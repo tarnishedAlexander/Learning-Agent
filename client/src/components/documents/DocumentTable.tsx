@@ -1,4 +1,8 @@
+import { useState } from 'react';
+import type { Key } from 'react';
 import { Table, Button, Space, Tooltip } from 'antd';
+import type { TablePaginationConfig } from 'antd/es/table/interface';
+import type { SorterResult, FilterValue } from 'antd/es/table/interface';
 import { DownloadOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
@@ -23,10 +27,33 @@ export const DocumentTable = ({
   onDeleteSuccess,
   onDeleteError 
 }: DocumentTableProps) => {
+  // Mantener el estado del sorter activo para mostrar tooltips dinámicos
+  const [sorterState, setSorterState] = useState<{
+    columnKey?: Key;
+    order?: 'ascend' | 'descend' | null;
+  } | null>(null);
+
+  const getSortTooltip = (columnKey: string) => {
+    if (!sorterState || sorterState.columnKey !== columnKey) {
+      return 'Haz clic para ordenar de forma ascendente';
+    }
+    if (sorterState.order === 'ascend') return 'Haz clic para ordenar de forma descendente';
+    if (sorterState.order === 'descend') return 'Haz clic para cancelar el orden';
+    return 'Haz clic para ordenar de forma ascendente';
+  };
+
+  const handleTableChange = (
+    _pagination: TablePaginationConfig,
+    _filters: Record<string, FilterValue | null>,
+    sorter: SorterResult<Document> | SorterResult<Document>[]
+  ) => {
+    const s = Array.isArray(sorter) ? sorter[0] : sorter;
+  setSorterState({ columnKey: s?.columnKey as Key, order: s?.order ?? null });
+  };
   const columns = [
     {
       title: (
-        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+        <Tooltip title={getSortTooltip('originalName')}>
           <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
             <span style={{ display: 'inline-block' }}>Nombre del archivo</span>
           </div>
@@ -39,7 +66,7 @@ export const DocumentTable = ({
     },
     {
       title: (
-        <Tooltip title={"Haz clic para ordenar de forma ascendente"}>
+        <Tooltip title={getSortTooltip('uploadedAt')}>
           <div style={{ display: 'block', width: '100%', paddingRight: 40 }}>
             <span style={{ display: 'inline-block' }}>Fecha de subida</span>
           </div>
@@ -119,6 +146,7 @@ export const DocumentTable = ({
       columns={columns}
       dataSource={documents}
       loading={loading}
+  onChange={handleTableChange}
       rowKey="fileName"
       pagination={{ 
         pageSize: 10,
