@@ -1,28 +1,35 @@
-/* Fijar el botón Siguiente en la esquina inferior derecha solo en los primeros dos pasos */
 .next-fixed {
   position: absolute;
   right: 32px;
   bottom: 12px;
   z-index: 10;
 }
+
 :root {
-  --primary: #3B38A0;       
-  --primary-dark: #1A2A80;  
-  --primary-light: #7A85C1; 
-  --primary-extra-light: #B2B0E8; 
-  --danger: #ef4444;        
-  --success: #16a34a;       
-  --warning: #f59e0b;       
-  --ink: #0f172a;           
-  --border: #7A85C1;        
-  --bg-layout: #f6f9ff;     
-  --card-border: #e0e7ff;   
+  --primary: #3B38A0;
+  --primary-dark: #1A2A80;
+  --primary-light: #7A85C1;
+  --primary-extra-light: #B2B0E8;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --ink: var(--ant-colorText, #0f172a);
+  --border: var(--ant-colorBorder, #7A85C1);
+  --bg-layout: var(--ant-colorBgLayout, #f6f9ff);
+  --card-border: var(--ant-colorBorder, #e0e7ff);
+  --surface: var(--ant-colorBgContainer, #ffffff);
 }
 
-.form-grid {
-  display: grid;
+.form-grid{
+  display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap:5px;                 
+  align-items:start;
+}
+
+@media (max-width: 900px){
+  .form-grid{ grid-template-columns: 1fr; }
+  .form-group.span-2{ max-width: 100%; justify-self: stretch; }
 }
 
 .form-group {
@@ -33,7 +40,7 @@
 
 label {
   font-weight: 600;
-  color: var(--ink);
+  color: inherit;
 }
 
 input[type="text"],
@@ -44,9 +51,9 @@ select {
   border-radius: 10px;
   padding: 12px;
   outline: none;
-  background: #fff;
+  background: var(--surface); 
   color: var(--ink);
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color .2s ease;
 }
 
 input:focus,
@@ -56,10 +63,19 @@ select:focus {
   box-shadow: 0 0 0 3px var(--primary-extra-light);
 }
 
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--ant-colorTextSecondary, #667085);
+}
+
+::selection {
+  background: var(--ant-colorFillSecondary, #e5e7eb);
+}
+
 small.help {
   color: var(--primary-light);
 }
-
 small.error {
   color: var(--danger);
   font-weight: 600;
@@ -98,27 +114,18 @@ small.error {
   background: var(--primary);
   color: #fff;
 }
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-}
-
-.btn-primary:active {
-  background: var(--primary-dark);
-  transform: translateY(1px);
-}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:active { background: var(--primary-dark); transform: translateY(1px); }
 
 .btn-secondary {
-  background: #fff;
+  background: var(--surface); 
   border: 1px solid var(--primary);
   color: var(--primary);
 }
-
 .btn-secondary:hover {
   background: var(--primary-extra-light);
   border-color: var(--primary-dark);
 }
-
 .btn-secondary:active {
   background: var(--primary-light);
   transform: translateY(1px);
@@ -133,7 +140,7 @@ small.error {
 .card {
   max-width: 980px;
   margin: 16px auto;
-  background: #fff;
+  background: var(--surface);          
   border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 20px;
@@ -145,17 +152,31 @@ small.error {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--surface);         
   border-bottom: 1px solid var(--card-border);
 }
 
-.actions {
+.actions { display: flex; gap: 8px; }
+.hidden { display: none; }
+
+.steps-container {
   display: flex;
+  align-items: center;
   gap: 8px;
+  margin-bottom: 8px;
+}
+.step-item {
+  padding: 4px 12px;
+  font-size: 15px;
+  border-bottom: 2px solid; 
 }
 
-.hidden {
-  display: none;
+.question-types-container {
+  grid-column: 1/3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .question-types-grid {
@@ -166,16 +187,22 @@ small.error {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
-  padding: 4px 0;
+  padding: 12px 0;
+  border-radius: 8px;
+}
+
+.question-type-label {
+  display: block;
+  margin-bottom: 10px;
 }
 
 .question-type-box {
-  background: #fff;
-  border: 1px solid #e0e7ff;
+  background: var(--surface);           
+  border: 1px solid var(--card-border); 
   border-radius: 8px;
-  padding: 10px 8px; 
+  padding: 10px 8px;
   min-width: 0;
-  min-height: 60px; 
+  min-height: 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -189,26 +216,34 @@ small.error {
   background: var(--bg-layout);
   border: 1px dashed var(--border);
   border-radius: 10px;
-  padding: 12px;
+  padding: 0px;
 }
 
-.hint {
-  color: var(--primary-light);
-  font-size: 0.9rem;
+input::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
 }
 
-.float-button-animation {
-  animation: float 3s ease-in-out infinite;
+input::-webkit-autofill,
+input::-webkit-autofill:hover,
+input::-webkit-autofill:focus,
+textarea::-webkit-autofill,
+select::-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--card-bg) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  caret-color: var(--ink) !important;
 }
-.avatar-hover:hover {
-  transform: scale(1.05);
+
+input::-moz-selection,
+textarea::-moz-selection {
+  background: var(--card-bg) !important;
+  color: var(--ink) !important;
 }
-.input-hover:hover {
-  box-shadow: 0 0 0 2px #B2B0E8;
+
+datalist option {
+  background: var(--card-bg) !important;
+  color: var(--ink) !important;
 }
-.button-hover:hover button {
-  transform: scale(1.1);
-}
+
 .typing-dot {
   display: inline-block;
   width: 6px;
@@ -274,27 +309,40 @@ small.error {
   }
 }
 
-.ai-results { 
-  padding: 16px; 
-  background: #fff; 
-  border: 1px solid var(--card-border); 
-  border-radius: 12px; 
-  max-height: 60vh; 
-  overflow: auto;
-}
 .ai-title { margin: 12px 0 4px; }
 .ai-list { margin: 0 0 16px 20px; }
 .ai-options { margin: 6px 0 12px 20px; list-style: disc; }
-
-#exam-form, #exam-form * {
-  user-select: none;
+.input-short {
+  max-width: 150px;  
+  width: 100%;       
 }
 
-#exam-form input,
-#exam-form textarea,
-#exam-form select,
-#exam-form input *,
-#exam-form textarea *,
-#exam-form select * {
-  user-select: text;
+#exam-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;               
+  padding-inline: 60px;   
+
+#exam-form .form-group label {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 5px;  
+  text-align: center;       
+  width: 100%;   
+  color: inherit;
+}
+
+#exam-form .form-grid {
+  padding-inline: 4px; 
+}
+#exam-form .form-group.span-2 {
+  grid-column: span 2;
+  text-align: center;  
+}
+#exam-form .form-group.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;  
+  text-align: center;    
+}
 }
