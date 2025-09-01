@@ -221,7 +221,7 @@ export default function ExamsCreatePage() {
       title="Exámenes"
       subtitle="Creador de exámenes"
       user={{ name: 'Nora Watson', role: 'Sales Manager', avatarUrl: 'https://i.pravatar.cc/128?img=5' }}
-      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exam' }, { label: 'Crear', href: '/exams/create' }]}
+      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exams' }, { label: 'Crear', href: '/exams/create' }]}
     >
       <div
         className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
