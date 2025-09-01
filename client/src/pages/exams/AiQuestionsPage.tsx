@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Alert, Button, Space, Typography, theme } from 'antd';
 import type { CSSProperties } from 'react';
 import '../../components/exams/ExamForm.css';
 import '../../components/shared/Toast.css';
@@ -10,7 +11,6 @@ import PageTemplate from '../../components/PageTemplate';
 import './ExamCreatePage.css';
 import { generateQuestions, type GeneratedQuestion } from '../../services/exams.service';
 import AiResults from './AiResults';
-import { theme, Typography } from 'antd';
 
 const { Title } = Typography;
 
@@ -147,11 +147,14 @@ export default function ExamsCreatePage() {
     const snap = formRef.current?.getSnapshot?.();
     const data = snap?.values ?? {};
     const dto = buildAiInputFromForm(data);
+
     setAiLoading(true);
     setAiError(null);
     try {
       const res = await generateQuestions(dto as any);
-      setAiQuestions(normalizeToQuestions(res));
+      const list = normalizeToQuestions(res);
+      setAiQuestions(list);
+      if (!list.length) setAiError('No se pudieron regenerar preguntas.');
     } catch {
       setAiError('No se pudo regenerar el set completo.');
     } finally {
@@ -221,7 +224,7 @@ export default function ExamsCreatePage() {
       title="Exámenes"
       subtitle="Creador de exámenes"
       user={{ name: 'Nora Watson', role: 'Sales Manager', avatarUrl: 'https://i.pravatar.cc/128?img=5' }}
-      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exam' }, { label: 'Crear', href: '/exams/create' }]}
+      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exams' }, { label: 'Crear', href: '/exams/create' }]}
     >
       <div
         className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"

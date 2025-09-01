@@ -132,6 +132,15 @@ export default function ExamsCreatePage() {
     setAiQuestions((prev) => prev.map((x) => (x.id === q.id ? q : x)));
   };
 
+  const onReorderQuestion = (from: number, to: number) => {
+    setAiQuestions(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(from, 1);
+      updated.splice(to, 0, moved);
+      return updated;
+    });
+  };
+
   const onRegenerateAll = async () => {
     const snap = formRef.current?.getSnapshot?.();
     const data = snap?.values ?? {};
@@ -216,7 +225,7 @@ export default function ExamsCreatePage() {
       }}
       breadcrumbs={[
         { label: 'Home', href: '/' },
-        { label: 'Exámenes', href: '/exam' },
+        { label: 'Exámenes', href: '/exams' },
         { label: 'Crear' },
       ]}
     >
@@ -232,11 +241,11 @@ export default function ExamsCreatePage() {
         </section>
 
         {aiOpen && (
-          <section className="card subtle " style={{ width: '100%', margin: '0 auto' }}>
+          <section className="card subtle" style={{ width: '100%', margin: '0 auto' }}>
             <AiResults
               subject={aiMeta.subject}
               difficulty={aiMeta.difficulty}
-              createdAt={new Date().toLocaleDateString()}
+              createdAt={new Date().toLocaleDateString('es-ES')}
               questions={aiQuestions}
               loading={aiLoading}
               error={aiError}
@@ -245,6 +254,7 @@ export default function ExamsCreatePage() {
               onRegenerateOne={onRegenerateOne}
               onAddManual={onAddManual}
               onSave={onSave}
+              onReorder={onReorderQuestion}
             />
           </section>
         )}
