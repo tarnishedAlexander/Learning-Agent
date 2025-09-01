@@ -62,7 +62,7 @@ const UploadPdfPage: React.FC = () => {
     <div style={{ 
 
       padding: "32px", 
-      backgroundColor: "var(--background-color, #0b1024)",
+      backgroundColor: "#f5f7fa",
       minHeight: "100vh",
       marginRight: previewSidebarVisible ? "50%" : "0",
       transition: "margin-right 0.3s ease-in-out"
@@ -73,7 +73,7 @@ const UploadPdfPage: React.FC = () => {
           <Title 
             level={2}
             style={{ 
-              color: "var(--title-color, #e6eaff)", 
+              color: "#1A2A80", 
               marginBottom: "8px",
               fontWeight: "500",
               display: "flex",
@@ -108,14 +108,14 @@ const UploadPdfPage: React.FC = () => {
                   color: "#1A2A80"
                 }}>
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px", color: "var(--icon-color, #e6eaff)" }} />
-                    <span style={{ fontSize: "18px", fontWeight: "500", color: "var(--text-color, #e6eaff)" }}>
+                    <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px" }} />
+                    <span style={{ fontSize: "18px", fontWeight: "500" }}>
                       Repositorio de Documentos
                     </span>
                     <div style={{
                       marginLeft: "16px",
-                      backgroundColor: documents.length > 0 ? "var(--badge-bg-active, #1f2b66)" : "var(--badge-bg, #1a2352)",
-                      color: documents.length > 0 ? "var(--badge-text-active, #9aa6ff)" : "var(--badge-text, #7a85c1)",
+                      backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
+                      color: documents.length > 0 ? "#3B38A0" : "#666",
                       padding: "4px 12px",
                       borderRadius: "16px",
                       fontSize: "12px",
@@ -184,8 +184,7 @@ const UploadPdfPage: React.FC = () => {
               style={{
                 borderRadius: "12px",
                 boxShadow: "0 4px 16px rgba(26, 42, 128, 0.1)",
-                border: "1px solid var(--border-color, #35407a)",
-                backgroundColor: "var(--card-background, #0f1735)"
+                border: "1px solid #e8eaed"
               }}
             >
               <DocumentTable
