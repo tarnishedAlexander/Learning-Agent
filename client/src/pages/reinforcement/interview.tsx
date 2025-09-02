@@ -1,17 +1,19 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, Input, Typography, Button, Modal, Space } from 'antd';
+import { useState, useRef, useEffect } from 'react';
+import { Card, Input, Button, Modal } from 'antd';
 import { RightOutlined, SendOutlined } from '@ant-design/icons';
 
-const { Title } = Typography;
-const { Search } = Input;
+type ChatMessageProps = {
+  text: string;
+  isUser: boolean;
+};
 
-const ChatMessage = ({ text, isUser }) => {
+const ChatMessage = ({ text, isUser }: ChatMessageProps) => {
   const messageStyle = {
     padding: '12px 18px',
     borderRadius: '22px',
     maxWidth: '75%',
-    wordWrap: 'break-word',
+    overflowWrap: 'break-word' as const,
     fontSize: '15px',
     backgroundColor: isUser ? '#f0f2f5' : '#e6e6e6',
     color: '#333',
@@ -41,7 +43,7 @@ export default function InterviewChat() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInputDisabled, setIsInputDisabled] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {

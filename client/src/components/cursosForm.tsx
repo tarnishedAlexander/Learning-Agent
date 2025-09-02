@@ -1,4 +1,4 @@
-import { Modal, Form, Input, DatePicker, Button, Select } from "antd";
+import { Modal, Form, DatePicker, Button, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";

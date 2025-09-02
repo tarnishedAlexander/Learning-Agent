@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Alert, Button, Space, Typography, theme } from 'antd';
+import { Typography, theme } from 'antd';
 import type { CSSProperties } from 'react';
 import '../../components/exams/ExamForm.css';
 import '../../components/shared/Toast.css';
@@ -251,6 +251,9 @@ export default function ExamsCreatePage() {
               onRegenerateOne={onRegenerateOne}
               onAddManual={onAddManual}
               onSave={onSave}
+              onReorder={function (_from: number, _to: number): void {
+                throw new Error('Function not implemented.');
+              }}
             />
           </section>
         )}

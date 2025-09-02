@@ -38,7 +38,7 @@ export default function AiResults({
   onReorder,
 }: AiResultsProps) {
   const { token } = theme.useToken();
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [regenLoading, setRegenLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);

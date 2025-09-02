@@ -1,8 +1,7 @@
-import { Layout, Menu, ConfigProvider, Avatar } from "antd";
+import { Layout, Menu, Avatar } from "antd";
 import type React from "react";
 import {
   HomeOutlined,
-  TeamOutlined,
   LogoutOutlined,
   SettingOutlined,
   SunOutlined,
