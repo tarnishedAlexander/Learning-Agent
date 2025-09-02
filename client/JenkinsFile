@@ -54,7 +54,6 @@ pipeline {
 
               echo "Ejecutando deploy…"
               DEPLOY_OUTPUT=$(npx --yes vercel@latest deploy dist \
-                --prebuilt \
                 --prod \
                 --yes \
                 --token "$VERCEL_TOKEN")
