@@ -29,28 +29,37 @@ pipeline {
     stage('Deploy to Vercel (prod)') {
       steps {
         withCredentials([
-          string(credentialsId: 'VERCEL_TOKEN',    variable: 'VERCEL_TOKEN'),
-          string(credentialsId: 'VERCEL_ORG_ID',   variable: 'VERCEL_ORG_ID'),
+          string(credentialsId: 'VERCEL_TOKEN',      variable: 'VERCEL_TOKEN'),
+          string(credentialsId: 'VERCEL_ORG_ID',     variable: 'VERCEL_ORG_ID'),
           string(credentialsId: 'VERCEL_PROJECT_ID', variable: 'VERCEL_PROJECT_ID')
         ]) {
           sh '''
             set -e
-            # Verificar CLI
+
+            # Opcional: desactivar telemetry de la CLI en CI
+            export VERCEL_CLI_TELEMETRY_DISABLED=1
+
             npx --yes vercel@latest --version
 
-            # Para proyectos Vite (estático), subimos la carpeta dist directamente
-            # --prod: a producción
-            # --yes/--confirm: no interactivo
-            # --token/--org-id/--project-id: autenticación + destino
-            # Nota: dist/ debe existir del stage Build
-            npx --yes vercel@latest deploy dist \
-              --prod \
-              --yes \
-              --confirm \
-              --token "$VERCEL_TOKEN" \
-              --org-id "$VERCEL_ORG_ID" \
-              --project-id "$VERCEL_PROJECT_ID"
-          '''
+            # Crear el archivo de link para la CLI (.vercel/project.json)
+            mkdir -p .vercel
+            cat > .vercel/project.json <<JSON
+        {
+          "orgId": "${VERCEL_ORG_ID}",
+          "projectId": "${VERCEL_PROJECT_ID}"
+        }
+        JSON
+
+                # Ya que build fue hecho, usamos --prebuilt y desplegamos la carpeta dist
+                npx --yes vercel@latest deploy dist \
+                  --prod \
+                  --yes \
+                  --confirm \
+                  --prebuilt \
+                  --token "${VERCEL_TOKEN}"
+              '''
+            }
+          }
         }
       }
     }
