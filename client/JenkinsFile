@@ -9,7 +9,7 @@ pipeline {
   }
 
   stages {
-    stage('Checkout'){ steps { checkout scm } }
+    stage('Checkout') { steps { checkout scm } }
 
     stage('Build frontend') {
       steps {
@@ -24,6 +24,51 @@ pipeline {
     stage('Artefactos') {
       steps {
         archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
+      }
+    }
+
+    stage('Deploy to Vercel (prod)') {
+      steps {
+        withCredentials([
+          string(credentialsId: 'VERCEL_TOKEN',      variable: 'VERCEL_TOKEN'),
+          string(credentialsId: 'VERCEL_ORG_ID',     variable: 'VERCEL_ORG_ID'),
+          string(credentialsId: 'VERCEL_PROJECT_ID', variable: 'VERCEL_PROJECT_ID')
+        ]) {
+          dir('client') {
+            sh '''
+              set -e
+              export VERCEL_CLI_TELEMETRY_DISABLED=1
+
+              echo "[pwd]"; pwd
+              echo "[ls client/]"; ls -la
+              echo "[ls dist/]"; ls -la dist || true
+
+              mkdir -p .vercel
+              printf '{"orgId":"%s","projectId":"%s"}' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+              echo "[vercel link]"; cat .vercel/project.json
+
+              if [ ! -d dist ]; then
+              echo "No existe client/dist/. ¿Ejecutaste npm run build?"
+              exit 1
+              fi
+
+              echo "Ejecutando deploy…"
+              DEPLOY_OUTPUT=$(npx --yes vercel@latest deploy dist \
+                --prod \
+                --yes \
+                --token "$VERCEL_TOKEN")
+
+              echo "$DEPLOY_OUTPUT"
+
+              DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https?://[^ ]+\\.vercel\\.app[^ ]*' | tail -1 || true)
+              if [ -z "$DEPLOY_URL" ]; then
+                echo "No se pudo extraer la URL del deploy desde la salida de la CLI."
+                exit 1
+              fi
+              echo "Deploy listo en: $DEPLOY_URL"
+            '''
+          }
+        }
       }
     }
   }

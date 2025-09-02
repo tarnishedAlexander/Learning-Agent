@@ -7,7 +7,7 @@ import { useUserStore } from "../../store/userStore";
 export default function DashboardPage() {
   const user = useUserStore((s) => s.user); 
   const isTeacher = user?.roles?.includes("docente");
-  const isStudent = user?.roles?.includes("estudiante");
+  // const isStudent = user?.roles?.includes("estudiante");
   return (
     <PageTemplate
       title="Dashboard"

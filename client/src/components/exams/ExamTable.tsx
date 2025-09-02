@@ -27,7 +27,7 @@ function StatusVisibility({ exam }: { exam: ExamSummary }) {
     return (
       <div className="flex items-center justify-center gap-2 flex-wrap" style={{ lineHeight: 1.2 }}>
         <Tag color="error">Oculto</Tag>
-        <span className="text-[12px] text-[var(--ant-color-text-tertiary)]">No visible al alumnado</span>
+        <span className="text-[12px] text-[var(--app-color-text-tertiary)]">No visible al alumnado</span>
       </div>
     );
   }
@@ -35,7 +35,7 @@ function StatusVisibility({ exam }: { exam: ExamSummary }) {
     return (
       <div className="flex items-center justify-center gap-2 flex-wrap" style={{ lineHeight: 1.2 }}>
         <Tag color="success">Publicado</Tag>
-        <span className="text-[12px] text-[var(--ant-color-text-tertiary)]">Visible • Publicado: {fmt(exam.publishedAt)}</span>
+        <span className="text-[12px] text-[var(--app-color-text-tertiary)]">Visible • Publicado: {fmt(exam.publishedAt)}</span>
       </div>
     );
   }
@@ -43,14 +43,14 @@ function StatusVisibility({ exam }: { exam: ExamSummary }) {
     return (
       <div className="flex items-center justify-center gap-2 flex-wrap" style={{ lineHeight: 1.2 }}>
         <Tag color="processing">Programado</Tag>
-        <span className="text-[12px] text-[var(--ant-color-text-tertiary)]">Visible • Programado: {fmt(exam.publishedAt)}</span>
+        <span className="text-[12px] text-[var(--app-color-text-tertiary)]">Visible • Programado: {fmt(exam.publishedAt)}</span>
       </div>
     );
   }
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap" style={{ lineHeight: 1.2 }}>
       <Tag color="default">Borrador</Tag>
-      <span className="text-[12px] text-[var(--ant-color-text-tertiary)]">Visible • Aún no publicado</span>
+      <span className="text-[12px] text-[var(--app-color-text-tertiary)]">Visible • Aún no publicado</span>
     </div>
   );
 }
@@ -144,7 +144,7 @@ export default function ExamTable({ data, onEdit }: Props) {
           <Text strong style={{ color: token.colorPrimary, fontSize: token.fontSizeLG }} ellipsis>
             {title}
           </Text>
-          <div style={{ textAlign: 'center' }} className="text-[12px] text-[var(--ant-color-text-tertiary)]">
+          <div style={{ textAlign: 'center' }} className="text-[12px] text-[var(--app-color-text-tertiary)]">
             {record.totalQuestions} preguntas • Creado: {fmt(record.createdAt)}
           </div>
         </div>

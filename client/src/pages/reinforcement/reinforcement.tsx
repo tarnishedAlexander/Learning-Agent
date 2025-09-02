@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Typography, Layout, Modal, Space, Row, Col, Button } from "antd";
+import { useState } from "react";
+import { Typography, Layout, Modal, Space, Row, Button } from "antd";
 import { BookOutlined, FileTextOutlined } from "@ant-design/icons";
 import { ProgressCard } from "../../components/reinforcement/ProgressCard";
 import { CourseCards } from "../../components/reinforcement/CourseCards";
