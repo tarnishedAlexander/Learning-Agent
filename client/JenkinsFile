@@ -35,33 +35,36 @@ pipeline {
         ]) {
           sh '''
             set -e
-
-            # Opcional: desactivar telemetry de la CLI en CI
             export VERCEL_CLI_TELEMETRY_DISABLED=1
 
-            npx --yes vercel@latest --version
-
-            # Crear el archivo de link para la CLI (.vercel/project.json)
+            # 1) Link para la CLI (sin interactividad)
             mkdir -p .vercel
             cat > .vercel/project.json <<JSON
-        {
-          "orgId": "${VERCEL_ORG_ID}",
-          "projectId": "${VERCEL_PROJECT_ID}"
-        }
-        JSON
+    {
+      "orgId": "${VERCEL_ORG_ID}",
+      "projectId": "${VERCEL_PROJECT_ID}"
+    }
+    JSON
 
-                # Ya que build fue hecho, usamos --prebuilt y desplegamos la carpeta dist
-                npx --yes vercel@latest deploy dist \
-                  --prod \
-                  --yes \
-                  --confirm \
-                  --prebuilt \
-                  --token "${VERCEL_TOKEN}"
-              '''
-            }
-          }
+            # 2) Verifica que exista dist/
+            test -d dist || { echo "No existe dist/. ¿Ejecutaste npm run build?"; exit 1; }
+
+            # 3) Deploy (sin --org-id/--project-id)
+            npx --yes vercel@latest deploy dist \
+              --prod \
+              --yes \
+              --confirm \
+              --prebuilt \
+              --token "${VERCEL_TOKEN}"
+          '''
         }
       }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
     }
   }
 }
