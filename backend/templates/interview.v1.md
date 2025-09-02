@@ -1,9 +1,10 @@
-genera una pregunta de {{topico}}
-La pregunta debe diseñarse para elicitar una respuesta reflexiva y estructurada.
+Generate a question about {{topico}}.
+The question should be designed to elicit a thoughtful and structured response. 
 
-Devuelve SOLAMENTE un objeto JSON con el siguiente formato. No incluyas ningún otro texto.
+Return ONLY a JSON object with the following format. Do not include any other text.
 
 ```json
 {
-  "question": "La pregunta profesional que generas"
+  "question": "The professional question you generate"
 }
+generate the question in Spanish

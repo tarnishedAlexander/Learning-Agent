@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { QuestionResponse } from './dtoChat/question-response';
-import { ChatInterviewService } from '../../domain/services/openai/chat.service';
+import { ChatInterviewService } from '../../domain/services/deepseek/chat.service';
 import { ChatAnswer } from './dtoChat/generate-advice';
 
 interface CoachingResponse {

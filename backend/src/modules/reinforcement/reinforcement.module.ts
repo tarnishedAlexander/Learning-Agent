@@ -4,7 +4,7 @@ import { AiConfigService } from '../../core/ai/ai.config';
 import { LlmModule } from '../llm/llm.module';
 import { PromptTemplateModule } from '../prompt-template/prompt-template.module';
 import { ChatController } from './infrastructure/httpchat/chat.controller';
-import { OpenAIService } from './domain/services/openai/openai.service';
+import { DeepSeekService } from './domain/services/deepseek/deepseek.service';
 
 @Module({
   imports: [PrismaModule, LlmModule, PromptTemplateModule],
@@ -14,7 +14,7 @@ import { OpenAIService } from './domain/services/openai/openai.service';
     //{ provide: EXAM_REPO, useClass: ExamPrismaRepository },
     // adaptador IA
     AiConfigService,
-    OpenAIService,
+    DeepSeekService,
     //CreateExamCommandHandler,
   ],
 })
