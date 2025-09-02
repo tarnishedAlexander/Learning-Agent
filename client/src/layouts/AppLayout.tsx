@@ -113,17 +113,17 @@ export default function AppLayout() {
         onCollapse={setCollapsed}
         theme={currentTheme}
         trigger={null}
-        className="bg-[var(--ant-colorBgLayout)]"
+        className="bg-[var(--app-colorBgLayout)]"
       >
         <div className="h-full ">
-          <div className="h-full w-full pb-2 bg-[var(--ant-colorBgContainer)] shadow-sm ring-1 ring-[var(--ant-colorBorder)] flex flex-col overflow-hidden">
+          <div className="h-full w-full pb-2 bg-[var(--app-colorBgContainer)] shadow-sm ring-1 ring-[var(--app-colorBorder)] flex flex-col overflow-hidden">
             <div className="px-5 pt-5 pb-4">
               <div className="text-xl font-semibold tracking-tight">
                 LEARNING ISC
               </div>
             </div>
 
-            <ConfigProvider
+            {/* <ConfigProvider
               theme={{
                 components: {
                   Menu: {
@@ -137,7 +137,7 @@ export default function AppLayout() {
                   },
                 },
               }}
-            >
+            > */}
               <Menu
                 mode="inline"
                 selectedKeys={[selectedKey]}
@@ -149,7 +149,7 @@ export default function AppLayout() {
                   overflowY: "auto",
                 }}
               />
-            </ConfigProvider>
+            {/* </ConfigProvider> */}
 
             <div className="px-5 pt-6 pb-2 mt-auto mb-2">
               <div className="flex flex-col items-center text-center">
@@ -158,7 +158,7 @@ export default function AppLayout() {
                     onClick={() =>
                       setTheme(theme === "light" ? "dark" : "light")
                     }
-                    className="p-1 rounded-full hover:bg-[var(--ant-colorBgElevated)]"
+                    className="p-1 rounded-full hover:bg-[var(--app-colorBgElevated)]"
                     aria-label="Toggle theme"
                   >
                     {theme === "light" ? <MoonOutlined /> : <SunOutlined />}
@@ -182,7 +182,7 @@ export default function AppLayout() {
                 setUser(null);
                 navigate("/login", { replace: true });
               }}
-              className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-[var(--ant-colorText)] hover:bg-[var(--ant-colorBgElevated)]"
+              className="mx-auto mb-5 my-5 py-5 flex items-center justify-center gap-3 h-10 px-4 rounded-xl text-[var(--app-colorText)] hover:bg-[var(--app-colorBgElevated)]"
             >
               <LogoutOutlined />
               <span className="text-sm">Log Out</span>
@@ -192,7 +192,7 @@ export default function AppLayout() {
       </Sider>
 
       <Layout className="flex flex-col min-h-0">
-        <Content className="flex-1 min-h-0 overflow-hidden pt-4 md:p-6 bg-[var(--ant-colorBgLayout)]">
+        <Content className="flex-1 min-h-0 overflow-hidden pt-4 md:p-6 bg-[var(--app-colorBgLayout)]">
           <Outlet />
         </Content>
       </Layout>

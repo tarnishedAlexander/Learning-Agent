@@ -1,0 +1,3 @@
+html, body, #root {
+  font-family: var(--app-fontFamily), system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}

@@ -21,7 +21,7 @@ export const lightTheme: ThemeConfig = {
     fontFamily: "Inter, sans-serif",
     borderRadius: 12,
     wireframe: false,
-
+    colorBgBase: "#f6f9ff",
     colorBgLayout: "#f6f9ff",
     colorBgContainer: "#ffffff",
     colorBgElevated: "#ffffff",
@@ -58,7 +58,7 @@ export const darkTheme: ThemeConfig = {
     colorWarning: "#f59e0b",
     colorError: "#f87171",
     borderRadius: 12,
-
+    colorBgBase: "#0b1024",
     colorBgLayout: "#0b1024",
     colorBgContainer: "#0f1735",
     colorBgElevated: "#141d47",

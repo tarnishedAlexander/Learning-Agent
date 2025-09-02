@@ -62,7 +62,7 @@ export default function PageTemplate({
           {actions && <div className="flex gap-2">{actions}</div>}
 
           {user && (
-            <div className="flex items-center gap-3 bg-[var(--ant-background-color)] p-2 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3 bg-[var(--app-background-color)] p-2 rounded-lg shadow-sm">
               <Avatar src={user.avatarUrl} alt={user.name}>
                 {user.name.charAt(0)}
               </Avatar>

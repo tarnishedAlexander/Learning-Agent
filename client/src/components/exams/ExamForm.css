@@ -13,11 +13,11 @@
   --danger: #ef4444;
   --success: #16a34a;
   --warning: #f59e0b;
-  --ink: var(--ant-colorText, #0f172a);
-  --border: var(--ant-colorBorder, #7A85C1);
-  --bg-layout: var(--ant-colorBgLayout, #f6f9ff);
-  --card-border: var(--ant-colorBorder, #e0e7ff);
-  --surface: var(--ant-colorBgContainer, #ffffff);
+  --ink: var(--app-colorText, #0f172a);
+  --border: var(--app-colorBorder, #7A85C1);
+  --bg-layout: var(--app-colorBgLayout, #f6f9ff);
+  --card-border: var(--app-colorBorder, #e0e7ff);
+  --surface: var(--app-colorBgContainer, #ffffff);
 }
 
 .form-grid{
@@ -66,11 +66,11 @@ select:focus {
 input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: var(--ant-colorTextSecondary, #667085);
+  color: var(--app-colorTextSecondary, #667085);
 }
 
 ::selection {
-  background: var(--ant-colorFillSecondary, #e5e7eb);
+  background: var(--app-colorFillSecondary, #e5e7eb);
 }
 
 small.help {
