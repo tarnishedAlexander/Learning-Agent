@@ -1,21 +1,31 @@
 import React, { useCallback, useState } from "react";
-import { Card, message, Typography, Row, Col } from "antd";
+import { Card, message, Row, Col, theme as antTheme } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
+import PageTemplate from "../components/PageTemplate";
 import UploadButton from "../components/shared/UploadButton";
 import { DocumentTable } from "../components/documents/DocumentTable";
 import { PdfPreviewSidebar } from "../components/documents/PdfPreviewSidebar";
+import { DocumentDataSidebar } from "../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../hooks/useDocuments";
+import { useThemeStore } from "../store/themeStore";
 import type { Document } from "../interfaces/documentInterface";
-   
-const { Title, Text } = Typography;
 
 const UploadPdfPage: React.FC = () => {
-  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, uploadDocument } = useDocuments();
+  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  
+  // Theme
+  const theme = useThemeStore((state: { theme: string }) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
   
   // Estados para el sidebar de previsualización
   const [previewSidebarVisible, setPreviewSidebarVisible] = useState<boolean>(false);
   const [documentToPreview, setDocumentToPreview] = useState<Document | null>(null);
+  
+  // Estados para el sidebar de datos
+  const [dataSidebarVisible, setDataSidebarVisible] = useState<boolean>(false);
+  const [documentToViewData, setDocumentToViewData] = useState<Document | null>(null);
 
   const handleUploadSuccess = useCallback(async () => {
     setRefreshing(true);
@@ -48,9 +58,19 @@ const UploadPdfPage: React.FC = () => {
     message.error(error.message);
   }, []);
 
-  const handlePreview = useCallback((doc: Document) => {
-    setDocumentToPreview(doc);
-    setPreviewSidebarVisible(true);
+  const handleViewData = useCallback((doc: Document) => {
+    // Si el preview está abierto, cerrarlo primero para evitar conflictos
+    if (previewSidebarVisible) {
+      setPreviewSidebarVisible(false);
+      setDocumentToPreview(null);
+    }
+    setDocumentToViewData(doc);
+    setDataSidebarVisible(true);
+  }, [previewSidebarVisible]);
+
+  const handleCloseDataSidebar = useCallback(() => {
+    setDataSidebarVisible(false);
+    setDocumentToViewData(null);
   }, []);
 
   const handleCloseSidebar = useCallback(() => {
@@ -58,40 +78,32 @@ const UploadPdfPage: React.FC = () => {
     setDocumentToPreview(null);
   }, []);
 
-  return (
-    <div style={{ 
-      padding: "32px", 
-      backgroundColor: "#f5f7fa",
-      minHeight: "100vh",
-      marginRight: previewSidebarVisible ? "50%" : "0",
-      transition: "margin-right 0.3s ease-in-out"
-    }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* Header Section */}
-        <div style={{ marginBottom: "32px", textAlign: "center" }}>
-          <Title 
-            level={1} 
-            style={{ 
-              color: "#1A2A80", 
-              marginBottom: "8px",
-              fontSize: "32px",
-              fontWeight: "600"
-            }}
-          >
-            <FileTextOutlined style={{ marginRight: "12px" }} />
-            Gestión de Documentos Académicos
-          </Title>
-          <Text 
-            style={{ 
-              color: "#7A85C1", 
-              fontSize: "16px",
-              fontWeight: "400"
-            }}
-          >
-            Sistema de carga y administración de material educativo en formato PDF
-          </Text>
-        </div>
+  const handlePreview = useCallback((doc: Document) => {
+    // Si el data sidebar está abierto, cerrarlo primero para evitar conflictos
+    if (dataSidebarVisible) {
+      setDataSidebarVisible(false);
+      setDocumentToViewData(null);
+    }
+    setDocumentToPreview(doc);
+    setPreviewSidebarVisible(true);
+  }, [dataSidebarVisible]);
+  
 
+  return (
+    <div>
+      <PageTemplate
+        title="Documentos"
+        subtitle="Sistema de carga y administración de material educativo en formato PDF"
+        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Documentos" }]}
+      >
+        <div
+          className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "24px 24px"
+          }}
+        >
         {/* Documents Table Section */}
         <Row>
           <Col xs={24}>
@@ -101,7 +113,7 @@ const UploadPdfPage: React.FC = () => {
                   display: "flex", 
                   alignItems: "center",
                   justifyContent: "space-between",
-                  color: "#1A2A80"
+                  color: isDark ? token.colorText : "#1A2A80"
                 }}>
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <FileTextOutlined style={{ marginRight: "12px", fontSize: "20px" }} />
@@ -110,8 +122,12 @@ const UploadPdfPage: React.FC = () => {
                     </span>
                     <div style={{
                       marginLeft: "16px",
-                      backgroundColor: documents.length > 0 ? "#E8F4FD" : "#F0F0F0",
-                      color: documents.length > 0 ? "#3B38A0" : "#666",
+                      backgroundColor: documents.length > 0 
+                        ? (isDark ? token.colorPrimaryBg : "#E8F4FD") 
+                        : (isDark ? token.colorBgTextHover : "#F0F0F0"),
+                      color: documents.length > 0 
+                        ? (isDark ? token.colorPrimary : "#3B38A0") 
+                        : (isDark ? token.colorTextSecondary : "#666"),
                       padding: "4px 12px",
                       borderRadius: "16px",
                       fontSize: "12px",
@@ -149,25 +165,12 @@ const UploadPdfPage: React.FC = () => {
                     }}
                     onUpload={async (file, onProgress) => {
                       try {
-                        if (onProgress) {
-                          onProgress("validate", 25, "Validando formato PDF...");
-                          await new Promise(resolve => setTimeout(resolve, 500));
-                          
-                          onProgress("extract", 50, "Extrayendo contenido...");
-                          await new Promise(resolve => setTimeout(resolve, 500));
-                          
-                          onProgress("process", 75, "Procesando documento...");
-                        }
-                        
-                        const result = await uploadDocument(file);
-                        
-                        if (onProgress) {
-                          onProgress("store", 100, "¡Documento almacenado exitosamente!");
-                        }
-                        
+                        // Usar processDocumentComplete que incluye upload + procesamiento + chunks
+                        const result = await processDocumentComplete(file, onProgress);
                         return result;
                       } catch (error) {
-                        console.error("Error uploading document:", error);
+                        
+                        console.error("Error processing document:", error);
                         throw error;
                       }
                     }}
@@ -179,8 +182,11 @@ const UploadPdfPage: React.FC = () => {
               }
               style={{
                 borderRadius: "12px",
-                boxShadow: "0 4px 16px rgba(26, 42, 128, 0.1)",
-                border: "1px solid #e8eaed"
+                boxShadow: isDark 
+                  ? "0 4px 16px rgba(91, 110, 240, 0.1)" 
+                  : "0 4px 16px rgba(26, 42, 128, 0.1)",
+                border: `1px solid ${isDark ? token.colorBorder : "#e8eaed"}`,
+                backgroundColor: isDark ? token.colorBgContainer : "#FFFFFF"
               }}
             >
               <DocumentTable
@@ -190,19 +196,28 @@ const UploadPdfPage: React.FC = () => {
                 onDownload={handleDownload}
                 onDelete={deleteDocument}
                 onPreview={handlePreview}
+                onViewData={handleViewData}
                 onDeleteSuccess={handleDeleteSuccess}
                 onDeleteError={handleDeleteError}
               />
             </Card>
           </Col>
         </Row>
-      </div>
+        </div>
+      </PageTemplate>
 
       {/* Sidebar de previsualización de PDF */}
       <PdfPreviewSidebar
         document={documentToPreview}
         visible={previewSidebarVisible}
         onClose={handleCloseSidebar}
+      />
+
+      {/* Sidebar de datos del documento */}
+      <DocumentDataSidebar
+        document={documentToViewData}
+        visible={dataSidebarVisible}
+        onClose={handleCloseDataSidebar}
       />
     </div>
   );

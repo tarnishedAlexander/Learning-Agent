@@ -1,15 +1,16 @@
-import { Table, Button, Space } from 'antd';
-import { DownloadOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tooltip, theme as antTheme } from 'antd';
+import { DownloadOutlined, EyeOutlined, FileTextOutlined, BookOutlined } from '@ant-design/icons';
+import { useThemeStore } from '../../store/themeStore';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
 
 interface DocumentTableProps {
   documents: Document[];
   loading: boolean;
-  onDelete?: (fileName: string) => Promise<void>;
+  onDelete?: (documentId: string) => Promise<void>;
   onDownload?: (doc: Document) => Promise<void>;
   onPreview?: (doc: Document) => void;
-  // Nuevas props para el DeleteButton
+  onViewData?: (doc: Document) => void;
   onDeleteSuccess?: () => void;
   onDeleteError?: (error: Error) => void;
 }
@@ -20,28 +21,56 @@ export const DocumentTable = ({
   onDelete, 
   onDownload, 
   onPreview,
+  onViewData,
   onDeleteSuccess,
   onDeleteError 
 }: DocumentTableProps) => {
+  // Theme
+  const theme = useThemeStore((state: { theme: string }) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
+
   const columns = [
     {
-      title: 'Nombre del archivo',
+      title: (
+        <Tooltip title="Haz clic para ordenar alfabéticamente por nombre">
+          <span style={{ cursor: 'pointer' }}>Nombre del archivo</span>
+        </Tooltip>
+      ),
       dataIndex: 'originalName',
       key: 'originalName',
       sorter: (a: Document, b: Document) => a.originalName.localeCompare(b.originalName),
+      showSorterTooltip: {
+        title: 'Ordenar por nombre de archivo'
+      },
     },
     {
-      title: 'Fecha de subida',
+      title: (
+        <Tooltip title="Haz clic para ordenar por fecha de subida">
+          <span style={{ cursor: 'pointer' }}>Fecha de subida</span>
+        </Tooltip>
+      ),
       dataIndex: 'uploadedAt',
       key: 'uploadedAt',
       sorter: (a: Document, b: Document) =>
         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime(),
+      showSorterTooltip: {
+        title: 'Ordenar por fecha de subida'
+      },
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
     },
     {
-      title: 'Tamaño',
+      title: (
+        <Tooltip title="Haz clic para ordenar por tamaño de archivo">
+          <span style={{ cursor: 'pointer' }}>Tamaño</span>
+        </Tooltip>
+      ),
       dataIndex: 'size',
       key: 'size',
+      sorter: (a: Document, b: Document) => a.size - b.size,
+      showSorterTooltip: {
+        title: 'Ordenar por tamaño de archivo'
+      },
       render: (size: number) => {
         const kb = size / 1024;
         if (kb < 1024) return `${kb.toFixed(2)} KB`;
@@ -53,30 +82,47 @@ export const DocumentTable = ({
       key: 'actions',
       render: (_: unknown, record: Document) => (
         <Space>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => onPreview?.(record)}
-            style={{ 
-              color: '#1A2A80',
-              fontWeight: '500'
-            }}
-          >
-            Previsualizar
-          </Button>
-          <Button
-            type="link"
-            icon={<DownloadOutlined />}
-            onClick={() => onDownload?.(record)}
-            style={{ 
-              color: '#3B38A0',
-              fontWeight: '500'
-            }}
-          >
-            Descargar
-          </Button>
+          <Tooltip title="Ver PDF en pantalla completa">
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => onPreview?.(record)}
+              style={{ 
+                color: isDark ? token.colorPrimary : '#1A2A80',
+                fontWeight: '500'
+              }}
+            >
+              Previsualizar
+            </Button>
+          </Tooltip>
+          <Tooltip title="Ver contenido extraído del documento">
+            <Button
+              type="link"
+              icon={<BookOutlined />}
+              onClick={() => onViewData?.(record)}
+              style={{ 
+                color: isDark ? token.colorSuccess : '#52C41A',
+                fontWeight: '500'
+              }}
+            >
+              Datos
+            </Button>
+          </Tooltip>
+          <Tooltip title="Descargar archivo PDF">
+            <Button
+              type="link"
+              icon={<DownloadOutlined />}
+              onClick={() => onDownload?.(record)}
+              style={{ 
+                color: isDark ? token.colorInfo : '#3B38A0',
+                fontWeight: '500'
+              }}
+            >
+              Descargar
+            </Button>
+          </Tooltip>
           <DeleteButton
-            onDelete={() => onDelete?.(record.fileName) || Promise.resolve()}
+            onDelete={() => onDelete?.(record.id) || Promise.resolve()}
             resourceInfo={{
               name: record.originalName,
               type: "Documento PDF",
@@ -114,12 +160,15 @@ export const DocumentTable = ({
         style: { marginTop: '16px' }
       }}
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
         borderRadius: '8px',
       }}
       className="academic-table"
       locale={{
-        emptyText: 'No hay documentos en el repositorio'
+        emptyText: 'No hay documentos en el repositorio',
+        triggerDesc: 'Ordenar descendente',
+        triggerAsc: 'Ordenar ascendente',
+        cancelSort: 'Cancelar ordenamiento'
       }}
       scroll={{ x: 800 }}
       size="middle"
