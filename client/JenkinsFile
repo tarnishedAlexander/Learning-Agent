@@ -9,7 +9,7 @@ pipeline {
   }
 
   stages {
-    stage('Checkout'){ steps { checkout scm } }
+    stage('Checkout') { steps { checkout scm } }
 
     stage('Build frontend') {
       steps {
@@ -26,6 +26,7 @@ pipeline {
         archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
       }
     }
+
     stage('Deploy to Vercel (prod)') {
       steps {
         withCredentials([
@@ -35,28 +36,25 @@ pipeline {
         ]) {
           dir('client') {
             sh '''
-              set -e
+              set -euo pipefail
               export VERCEL_CLI_TELEMETRY_DISABLED=1
 
-              # 1) Link para la CLI (sin interactividad) EN client/
               mkdir -p .vercel
-              cat > .vercel/project.json <<JSON
-    {
-      "orgId": "${VERCEL_ORG_ID}",
-      "projectId": "${VERCEL_PROJECT_ID}"
-    }
-    JSON
+              printf '{"orgId":"%s","projectId":"%s"}' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+              echo "[vercel link]"; cat .vercel/project.json
 
-              # 2) Verifica que exista client/dist/
               test -d dist || { echo "No existe client/dist/. ¿Ejecutaste npm run build?"; exit 1; }
 
-              # 3) Deploy de client/dist (sin --org-id/--project-id)
-              npx --yes vercel@latest deploy dist \
-                --prod \
-                --yes \
-                --confirm \
-                --prebuilt \
-                --token "${VERCEL_TOKEN}"
+              echo "Ejecutando deploy…"
+              DEPLOY_OUTPUT="$(npx --yes vercel@latest deploy dist --prod --yes --confirm --prebuilt --token "$VERCEL_TOKEN")"
+              echo "$DEPLOY_OUTPUT"
+
+              DEPLOY_URL="$(echo "$DEPLOY_OUTPUT" | grep -Eo 'https?://[^ ]+\\.vercel\\.app[^ ]*' | tail -1 || true)"
+              if [ -z "$DEPLOY_URL" ]; then
+                echo "No se pudo extraer la URL del deploy desde la salida de la CLI."
+                exit 1
+              fi
+              echo " Deploy listo en: $DEPLOY_URL"
             '''
           }
         }
