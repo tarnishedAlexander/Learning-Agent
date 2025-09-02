@@ -1,5 +1,5 @@
 export interface Document {
-  id?: string; // Hacer opcional para compatibilidad con código existente
+  id: string; // Requerido - todos los documentos deben tener ID
   fileName: string;
   originalName: string;
   mimeType: string;
@@ -19,4 +19,44 @@ export interface DocumentListResponse {
 export interface UploadResponse {
   success: boolean;
   data: Document;
+}
+
+// Nuevas interfaces para datos extraídos
+export interface DocumentMetadata {
+  title?: string;
+  author?: string;
+  pages?: number;
+  fileName?: string;
+  fileType?: string;
+  uploadDate?: string;
+  mimeType?: string;
+  size?: number;
+  language?: string;
+}
+
+export interface DocumentStatistics {
+  wordCount: number;
+  charCount: number;
+  chunkCount: number;
+  averageChunkSize?: number;
+  minChunkSize?: number;
+  maxChunkSize?: number;
+  totalContentLength?: number;
+}
+
+export interface DocumentChunk {
+  id: string;
+  content: string;
+  chunkIndex: number;
+  type: string;
+  contentLength: number;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface DocumentExtractedData {
+  metadata: DocumentMetadata;
+  statistics: DocumentStatistics;
+  chunks: DocumentChunk[];
+  extractedText?: string;
 }
