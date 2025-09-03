@@ -35,6 +35,8 @@ export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormPr
             name: ""
         },
         validationSchema,
+        validateOnChange: true,
+        validateOnBlur: true,
         onSubmit: (values, { resetForm }) => {
             onSubmit(values);
             resetForm();
