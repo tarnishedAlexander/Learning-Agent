@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
 
-import { ChatRequest } from './dtoC/chat-request';
+import { ChatRequest } from './dto/chat-request';
 import { DEEPSEEK_PORT } from 'src/modules/deepseek/tokens';
 import type { DeepseekPort } from 'src/modules/deepseek/domain/ports/deepseek.port';
 import { ChatResponse } from 'src/modules/deepseek/domain/ports/response';
