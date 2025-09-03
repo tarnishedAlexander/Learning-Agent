@@ -28,7 +28,7 @@ import type {
 import useEnrollment from "../../hooks/useEnrollment";
 import dayjs from "dayjs";
 import useStudents from "../../hooks/useStudents";
-import { useUserContext } from "../../context/UserContext";
+import { useUserStore } from "../../store/userStore";
 import useCourses from "../../hooks/useCourses";
 
 const { Text } = Typography;
@@ -42,7 +42,7 @@ export function CourseDetailPage() {
   const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
   const { getCourseByID } = useCourses();
   const { getTeacherInfoById } = useTeacher();
-  const { user } = useUserContext();
+  const user = useUserStore((s) => s.user);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);

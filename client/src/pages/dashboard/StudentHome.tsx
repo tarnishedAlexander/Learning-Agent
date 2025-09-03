@@ -15,7 +15,6 @@ export default function StudentHome() {
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
-    // Simula fetch; conecta a tu API/Nest
     const t = setTimeout(() => {
       setNextExam({
         course: "Algorithms I",
@@ -31,7 +30,7 @@ export default function StudentHome() {
         { id: "r1", title: "Practice set: DP (20 Qs)", cta: "Practice now" },
         { id: "r2", title: "Flashcards: Graph patterns", cta: "Review" },
       ]);
-      setProgress(68); // % general del curso
+      setProgress(68);
       setLoading(false);
     }, 600);
     return () => clearTimeout(t);

@@ -6,6 +6,7 @@ import type {
 } from "../types/auth";
 import { ApiError } from "../utils/errors";
 import { saveAuth, readAuth, clearAuth } from "../utils/storage";
+import { useUserStore } from "../store/userStore";
 
 export const logout = async () => {
   const { refreshToken } = readAuth();
@@ -25,6 +26,12 @@ export const login = async (payload: LoginPayload) => {
       payload
     );
     saveAuth(response.data);
+    try {
+      const me = await meAPI(response.data.accessToken);
+      useUserStore.getState().setUser(me);
+    } catch (e) {
+      console.warn("No se pudo cargar el perfil tras login", e);
+    }
     return response.data;
   } catch (error) {
     throw new ApiError("Error al iniciar sesión", 401, error);

@@ -1,210 +1,442 @@
-// src/services/documents.service.ts
-import { api } from "./api/instance";
-import type { Document, DocumentListResponse, UploadResponse } from "../interfaces/documentInterface";
+import apiClient from "../api/apiClient";
+import axios from "axios";
+import { meAPI } from "./authService";
+import type { 
+  Document, 
+  DocumentListResponse, 
+  UploadResponse 
+} from "../interfaces/documentInterface";
 
-// Tipos para el mock server
-interface MockDocument {
-  id?: string;
+// Interface para errores de HTTP
+interface HttpError {
+  response?: {
+    status: number;
+    data?: unknown;
+  };
+  message?: string;
+}
+
+// Interface para la información del usuario
+interface UserInfo {
+  id: string;
+  email: string;
+  name: string;
+  lastname: string;
+  roles: string[];
+}
+
+// Función auxiliar para obtener el token de autenticación y verificar que el usuario esté autenticado
+const getAuthTokenAndVerifyUser = async (): Promise<{ token: string; user: UserInfo }> => {
+  const authData = localStorage.getItem("auth");
+  if (!authData) {
+    throw new Error('No hay datos de autenticación disponibles. Por favor, inicia sesión.');
+  }
+  
+  try {
+    const parsedAuth = JSON.parse(authData);
+    const token = parsedAuth.accessToken;
+    
+    if (!token) {
+      throw new Error('Token de acceso no encontrado. Por favor, inicia sesión nuevamente.');
+    }
+    
+    // Verificar que el token sea válido y obtener información del usuario
+    const user = await meAPI(token) as UserInfo;
+    
+    return { token, user };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Error al obtener información del usuario')) {
+      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+    }
+    throw new Error('Error al verificar la autenticación. Por favor, inicia sesión nuevamente.');
+  }
+};
+
+// Interfaces para las respuestas del backend
+interface DocumentBackendResponse {
+  id: string;
   fileName: string;
   originalName: string;
   mimeType: string;
   size: number;
-  dataUrl?: string;
-  downloadUrl?: string;
-  uploadedAt?: string;
-  createdAt?: string;
+  downloadUrl: string;
+  uploadedAt: string;
 }
 
-const API_BASE = (import.meta.env.VITE_API_BASE ?? "http://localhost:3000") as string;
-const USE_MOCK = (import.meta.env.VITE_USE_MOCK === "true");
+interface DocumentListBackendResponse {
+  success: boolean;
+  message: string;
+  documents: DocumentBackendResponse[];
+  total: number;
+}
+
+interface UploadBackendResponse {
+  id: string;
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  downloadUrl: string;
+  uploadedAt: string;
+}
+
+interface DeleteBackendResponse {
+  success: boolean;
+  message: string;
+  fileName: string;
+  deletedAt: string;
+}
+
+interface ProcessChunksBackendResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    totalChunks: number;
+    processingTimeMs: number;
+    statistics: {
+      averageChunkSize: number;
+      minChunkSize: number;
+      maxChunkSize: number;
+      actualOverlapPercentage: number;
+    };
+  };
+}
+
+interface DocumentChunksBackendResponse {
+  success: boolean;
+  message: string;
+  data: {
+    chunks: Array<{
+      id: string;
+      content: string;
+      chunkIndex: number;
+      type: string;
+      contentLength: number;
+      metadata?: Record<string, unknown>;
+      createdAt: string;
+    }>;
+    total: number;
+    statistics: {
+      totalChunks: number;
+      averageChunkSize: number;
+      minChunkSize: number;
+      maxChunkSize: number;
+      totalContentLength: number;
+    };
+  };
+}
 
 export const documentService = {
+  /**
+   * Obtener lista de documentos
+   */
   async getDocuments(): Promise<DocumentListResponse> {
     try {
-      if (!USE_MOCK) {
-        // backend real: asumimos que devuelve DocumentListResponse
-        const resp = await api.get("/documents");
-        return resp.data as DocumentListResponse;
-      }
-
-      // mock: json-server devuelve un array plano
-      const res = await fetch(`${API_BASE}/documents`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const raw = (await res.json()) as MockDocument[];
-
-      // mapear al shape Document
-      const documents: Document[] = raw.map((d) => ({
-        fileName: d.fileName,
-        originalName: d.originalName,
-        mimeType: d.mimeType,
-        size: d.size,
-        // para modo mock usamos la dataUrl (base64) como downloadUrl
-        downloadUrl: d.dataUrl ?? d.downloadUrl ?? `${API_BASE}/files/${d.fileName}`,
-        uploadedAt: d.uploadedAt ?? d.createdAt ?? new Date().toISOString(),
+      const response = await apiClient.get<DocumentListBackendResponse>('/api/documents');
+      
+      // Mapear respuesta del backend a nuestra interfaz
+      const documents: Document[] = response.data.documents.map(doc => ({
+        id: doc.id,
+        fileName: doc.fileName,
+        originalName: doc.originalName,
+        mimeType: doc.mimeType,
+        size: doc.size,
+        downloadUrl: doc.downloadUrl,
+        uploadedAt: doc.uploadedAt,
       }));
 
       return {
         success: true,
         data: {
           documents,
-          totalCount: documents.length,
+          totalCount: response.data.total,
         },
       };
     } catch (error) {
-      console.error("Error al obtener documentos:", error);
-      throw error;
+      console.error('Error loading documents:', error);
+      throw new Error('Error al cargar los documentos');
     }
   },
 
-  _fileToDataUrl(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Error leyendo el archivo"));
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
-  },
-
+  /**
+   * Subir un documento
+   */
   async uploadDocument(file: File): Promise<UploadResponse> {
     try {
-      if (!USE_MOCK) {
-        const form = new FormData();
-        form.append("file", file);
-        const resp = await fetch(`${API_BASE}/documents/upload`, {
-          method: "POST",
-          body: form,
-        });
-        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
-        const data = await resp.json();
-        return data as UploadResponse;
-      }
+      // Obtener el token y verificar autenticación usando meAPI
+      const { token } = await getAuthTokenAndVerifyUser();
 
-      // MOCK: convertir a dataUrl y guardar metadata en json-server
-      const dataUrl = await this._fileToDataUrl(file);
-      const payload = {
-        fileName: `${Date.now()}_${file.name}`,
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
-        dataUrl, // guardamos el base64
-        createdAt: new Date().toISOString(),
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Preparar headers (NO incluir Content-Type para multipart/form-data)
+      const headers = {
+        'Authorization': `Bearer ${token}`,
       };
 
-      const res = await fetch(`${API_BASE}/documents`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const saved = await res.json();
+      // Usar axios directamente para evitar conflictos con interceptores
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/";
+      
+      const response = await axios.post<UploadBackendResponse>(
+        `${API_URL}api/documents/upload`, 
+        formData,
+        { 
+          headers,
+          timeout: 30000 // 30 segundos de timeout
+        }
+      );
 
-      // mapear saved a UploadResponse (data = Document)
-      const doc: Document = {
-        fileName: saved.fileName,
-        originalName: saved.originalName,
-        mimeType: saved.mimeType,
-        size: saved.size,
-        downloadUrl: saved.dataUrl ?? `${API_BASE}/files/${saved.fileName}`,
-        uploadedAt: saved.createdAt ?? new Date().toISOString(),
+      // Mapear respuesta del backend a nuestra interfaz
+      const document: Document = {
+        id: response.data.id,
+        fileName: response.data.fileName,
+        originalName: response.data.originalName,
+        mimeType: response.data.mimeType,
+        size: response.data.size,
+        downloadUrl: response.data.downloadUrl,
+        uploadedAt: response.data.uploadedAt,
       };
 
       return {
         success: true,
-        data: doc,
+        data: document,
       };
-    } catch (error) {
-      console.error("Error al subir documento:", error);
-      throw error;
-    }
-  },
-
-  async downloadDocument(fileName: string): Promise<Blob> {
-    try {
-      if (!USE_MOCK) {
-        const resp = await fetch(`${API_BASE}/documents/download/${encodeURIComponent(fileName)}`);
-        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
-        return await resp.blob();
+    } catch (error: unknown) {
+      console.error('Error uploading document:', error);
+      
+      const httpError = error as HttpError;
+      
+      // Manejar errores específicos de autenticación
+      if (httpError.response?.status === 401) {
+        throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
       }
-
-      // mock: buscar por fileName
-      const q = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
-      if (!q.ok) throw new Error(`HTTP error! status: ${q.status}`);
-      const items = (await q.json()) as MockDocument[];
-      const doc = items[0];
-      if (!doc) throw new Error("Documento no encontrado en mock server");
-      if (!doc.dataUrl) throw new Error("El documento no tiene una URL de datos válida");
-
-      // dataUrl -> blob
-      const blobResp = await fetch(doc.dataUrl);
-      if (!blobResp.ok) throw new Error("No se pudo convertir dataUrl a blob");
-      return await blobResp.blob();
-    } catch (error) {
-      console.error("Error al descargar documento:", error);
-      throw error;
-    }
-  },
-
-  async getDocumentByFileName(fileName: string): Promise<Document> {
-    try {
-      if (!USE_MOCK) {
-        const resp = await api.get(`/documents/${fileName}`);
-        return resp.data as Document;
+      
+      if (httpError.response?.status === 403) {
+        throw new Error('Sin permisos para subir documentos.');
       }
-      const res = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const items = (await res.json()) as MockDocument[];
-      const d = items[0];
-      if (!d) throw new Error("Documento no encontrado");
-      return {
-        fileName: d.fileName,
-        originalName: d.originalName,
-        mimeType: d.mimeType,
-        size: d.size,
-        downloadUrl: d.dataUrl ?? d.downloadUrl ?? `${API_BASE}/files/${d.fileName}`,
-        uploadedAt: d.uploadedAt ?? d.createdAt ?? new Date().toISOString(),
-      };
-    } catch (error) {
-      console.error("Error al obtener documento por nombre:", error);
-      throw error;
-    }
-  },
-
-  async deleteDocument(fileName: string): Promise<void> {
-    try {
-      if (!USE_MOCK) {
-        const resp = await fetch(`${API_BASE}/documents/${encodeURIComponent(fileName)}`, { method: "DELETE" });
-        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
-        return;
+      
+      // Si es un error de la función getAuthTokenAndVerifyUser, mantener el mensaje original
+      if ((error as Error).message?.includes('autenticación') || 
+          (error as Error).message?.includes('sesión') ||
+          (error as Error).message?.includes('meAPI')) {
+        throw error;
       }
-
-      const q = await fetch(`${API_BASE}/documents?fileName=${encodeURIComponent(fileName)}`);
-      if (!q.ok) throw new Error(`HTTP error! status: ${q.status}`);
-      const items = (await q.json()) as MockDocument[];
-      const doc = items[0];
-      if (!doc) throw new Error("Documento no encontrado en mock server");
-
-      const del = await fetch(`${API_BASE}/documents/${doc.id}`, { method: "DELETE" });
-      if (!del.ok) throw new Error(`HTTP error! status: ${del.status}`);
-    } catch (error) {
-      console.error("Error al eliminar documento:", error);
-      throw error;
+      
+      throw new Error('Error al subir el documento. Por favor, inténtalo nuevamente.');
     }
   },
 
-  async downloadAndSaveDocument(fileName: string, originalName?: string): Promise<void> {
+  /**
+   * Descargar un documento usando su ID
+   */
+  async getDownloadUrl(documentId: string): Promise<string> {
     try {
-      const blob = await this.downloadDocument(fileName);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = originalName ?? fileName;
+      const response = await apiClient.get(`/api/documents/download/${documentId}`);
+      return response.data.downloadUrl || response.data.url;
+    } catch (error) {
+      console.error('Error getting download URL:', error);
+      throw new Error('Error al obtener URL de descarga');
+    }
+  },
+
+  /**
+   * Descargar y guardar documento usando su ID
+   */
+  async downloadAndSaveDocument(documentId: string, originalName: string): Promise<void> {
+    try {
+      // Obtener la URL de descarga usando axios (nuestro backend)
+      const downloadUrlResponse = await apiClient.get(`/api/documents/download/${documentId}`);
+      const downloadUrl = downloadUrlResponse.data.downloadUrl;
+      
+      // Usar fetch() para MinIO ya que axios puede interferir con las URLs firmadas
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`Error al descargar: ${response.status} ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Crear URL temporal para el blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Crear enlace temporal para descarga forzada
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = originalName.endsWith('.pdf') ? originalName : `${originalName}.pdf`;
+      
+      // Forzar descarga
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      
+      // Limpiar blob URL para liberar memoria
+      window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error("Error al descargar y guardar documento:", error);
-      throw error;
+      console.error('Error downloading document:', error);
+      throw new Error('Error al descargar el documento');
+    }
+  },
+
+  /**
+   * Eliminar un documento
+   */
+  async deleteDocument(documentId: string): Promise<void> {
+    try {
+      await apiClient.delete<DeleteBackendResponse>(`/api/documents/${documentId}`);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      throw new Error('Error al eliminar el documento');
+    }
+  },
+
+  /**
+   * Procesar chunks de un documento
+   */
+  async processDocumentChunks(
+    documentId: string,
+    options?: {
+      chunkSize?: number;
+      overlapSize?: number;
+      maxChunkSize?: number;
+      strategy?: string;
+      minChunkSize?: number;
+      preserveFormatting?: boolean;
+      splitBy?: string;
+    }
+  ): Promise<ProcessChunksBackendResponse> {
+    try {
+      const response = await apiClient.post<ProcessChunksBackendResponse>(
+        `/api/documents/${documentId}/process-chunks`,
+        options || {}
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error processing document chunks:', error);
+      throw new Error('Error al procesar los chunks del documento');
+    }
+  },
+
+  /**
+   * Obtener chunks de un documento
+   */
+  async getDocumentChunks(documentId: string): Promise<DocumentChunksBackendResponse> {
+    try {
+      const response = await apiClient.get<DocumentChunksBackendResponse>(`/api/documents/${documentId}/chunks`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting document chunks:', error);
+      throw new Error('Error al obtener los chunks del documento');
+    }
+  },
+
+  /**
+   * Generar embeddings para un documento
+   */
+  async generateDocumentEmbeddings(
+    documentId: string,
+    options?: {
+      embeddingConfig?: {
+        model?: string;
+        dimensions?: number;
+        additionalConfig?: Record<string, unknown>;
+      };
+      replaceExisting?: boolean;
+      batchSize?: number;
+      chunkFilters?: {
+        chunkTypes?: string[];
+        chunkIndices?: number[];
+        minContentLength?: number;
+      };
+    }
+  ): Promise<{
+    success: boolean;
+    result?: {
+      documentId: string;
+      totalChunksProcessed: number;
+      chunksSkipped: number;
+      chunksWithErrors: number;
+      totalProcessingTimeMs: number;
+      estimatedCost?: {
+        totalTokens: number;
+        totalCost: number;
+      };
+    };
+    metadata?: {
+      processingTimeMs: number;
+      timestamp: string;
+    };
+  }> {
+    try {
+      const response = await apiClient.post(
+        `/api/repository-documents/embeddings/generate/${documentId}`,
+        options || {}
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error generating embeddings:', error);
+      throw new Error('Error al generar embeddings');
+    }
+  },
+
+  /**
+   * Procesar texto de un documento
+   */
+  async processDocumentText(documentId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await apiClient.post(`/api/documents/${documentId}/process-text`);
+      return response.data;
+    } catch (error) {
+      console.error('Error processing document text:', error);
+      throw new Error('Error al procesar el texto del documento');
+    }
+  },
+
+  /**
+   * Procesamiento completo de un documento (upload + process + chunks)
+   */
+  async processDocumentComplete(
+    file: File,
+    onProgress?: (step: string, progress: number, message: string) => void
+  ): Promise<{
+    success: boolean;
+    document: Document;
+    processing: {
+      textProcessed: boolean;
+      chunksProcessed: boolean;
+      totalChunks: number;
+    };
+  }> {
+    try {
+      // Paso 1: Upload
+      onProgress?.('upload', 25, 'Subiendo documento...');
+      const uploadResult = await this.uploadDocument(file);
+      
+      if (!uploadResult.data.id) {
+        throw new Error('No se obtuvo ID del documento subido');
+      }
+
+      // Paso 2: Procesar texto
+      onProgress?.('text', 50, 'Procesando texto...');
+      await this.processDocumentText(uploadResult.data.id);
+
+      // Paso 3: Procesar chunks
+      onProgress?.('chunks', 75, 'Generando chunks...');
+      const chunksResult = await this.processDocumentChunks(uploadResult.data.id);
+
+      onProgress?.('complete', 100, 'Proceso completado');
+
+      return {
+        success: true,
+        document: uploadResult.data,
+        processing: {
+          textProcessed: true,
+          chunksProcessed: true,
+          totalChunks: chunksResult.data?.totalChunks || 0,
+        },
+      };
+    } catch (error) {
+      console.error('Error in complete document processing:', error);
+      throw new Error('Error en el procesamiento completo del documento');
     }
   },
 };

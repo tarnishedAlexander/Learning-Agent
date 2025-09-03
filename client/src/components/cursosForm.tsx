@@ -1,11 +1,11 @@
-import { Modal, Form, Input, DatePicker, Button, Select } from "antd";
+import { Modal, Form, DatePicker, Button, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import type { Clase } from "../interfaces/claseInterface";
-import { useUserContext } from "../context/UserContext";
+import { useUserStore } from "../store/userStore";
 
 interface CreateClaseModalProps {
   open: boolean;
@@ -21,7 +21,8 @@ export const CursosForm = ({
   clase,
 }: CreateClaseModalProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
-  const { user, fetchUser } = useUserContext();
+  const user = useUserStore((s) => s.user);
+  const fetchUser = useUserStore((s) => s.fetchUser);
 
   useEffect(() => {
     if (!user || user === null) {

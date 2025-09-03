@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { Alert, Button, Card, Modal, Radio, Skeleton, Space, Typography, theme } from 'antd';
 import { ReloadOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import QuestionCard from '../../components/ai/QuestionCard';
 import type { GeneratedQuestion } from '../../services/exams.service';
-import { palette } from '../../theme';
+import { useExamsStore } from '../../store/examsStore';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -19,6 +20,7 @@ export type AiResultsProps = {
   onRegenerateOne?: (q: GeneratedQuestion) => Promise<void> | void;
   onAddManual: (type: GeneratedQuestion['type']) => void;
   onSave: () => Promise<void> | void;
+  onReorder: (from: number, to: number) => void;
 };
 
 export default function AiResults({
@@ -33,12 +35,17 @@ export default function AiResults({
   onRegenerateOne,
   onAddManual,
   onSave,
+  onReorder,
 }: AiResultsProps) {
   const { token } = theme.useToken();
+  const navigate = useNavigate();
   const [regenLoading, setRegenLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [typeModalOpen, setTypeModalOpen] = useState(false);
   const [typeChoice, setTypeChoice] = useState<GeneratedQuestion['type']>('multiple_choice');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const addFromQuestions = useExamsStore((s) => s.addFromQuestions);
 
   const total = questions.length;
   const selected = questions.filter(q => q.include).length;
@@ -66,6 +73,8 @@ export default function AiResults({
     setSaveLoading(true);
     try {
       await onSave();
+      addFromQuestions({ title: subject || 'Examen', questions, publish: true });
+      navigate('/exams');
     } finally {
       setSaveLoading(false);
     }
@@ -81,17 +90,26 @@ export default function AiResults({
     setTypeModalOpen(false);
   };
 
+  const handleDragStart = (index: number) => () => setDragIndex(index);
+  const handleDragOver = (index: number) => (e: DragEvent) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    onReorder(dragIndex, index);
+    setDragIndex(index);
+  };
+  const handleDragEnd = () => setDragIndex(null);
+
   return (
-    <div className="ai-results-wrap">
-      <div className="ai-results card-like">
-        <Title level={3} className="!mb-4" style={{ color: token.colorPrimary }}>
-          Revisar Examen: <span style={{ color: palette.P0 }}>{subject}</span>
+    <div className="ai-results-wrap" style={{ background: token.colorBgContainer, borderRadius: token.borderRadiusLG }}>
+      <div className="ai-results card-like" style={{ color: token.colorText }}>
+        <Title level={3} className="!mb-4" style={{ color: token.colorTextHeading }}>
+          Revisar Examen: <span style={{ color: token.colorPrimary }}>{subject}</span>
         </Title>
 
         <div className="flex flex-wrap gap-6 p-4 rounded-md mb-4" style={examInfoStyle}>
           <div className="flex flex-col">
             <Text type="secondary">Materia</Text>
-            <Text strong style={{ color: palette.P0 }}>{subject}</Text>
+            <Text strong style={{ color: token.colorPrimary }}>{subject}</Text>
           </div>
           <div className="flex flex-col">
             <Text type="secondary">Total</Text>
@@ -114,31 +132,49 @@ export default function AiResults({
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6">
-          <Card size="small"><Text strong>MC:</Text> <Text>{mc}</Text></Card>
-          <Card size="small"><Text strong>VF:</Text> <Text>{tf}</Text></Card>
-          <Card size="small"><Text strong>AN:</Text> <Text>{an}</Text></Card>
-          <Card size="small"><Text strong>EJ:</Text> <Text>{ej}</Text></Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}>
+            <Text strong>MC:</Text> <Text>{mc}</Text>
+          </Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}>
+            <Text strong>VF:</Text> <Text>{tf}</Text>
+          </Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}>
+            <Text strong>AN:</Text> <Text>{an}</Text>
+          </Card>
+          <Card size="small" style={{ background: token.colorFillQuaternary, borderColor: token.colorBorderSecondary }}>
+            <Text strong>EJ:</Text> <Text>{ej}</Text>
+          </Card>
         </div>
 
         {error && <Alert type="error" showIcon className="mb-4" message={error} />}
         {loading ? (
-          <Card><Skeleton active paragraph={{ rows: 4 }} /></Card>
+          <Card style={{ background: token.colorBgElevated, borderColor: token.colorBorderSecondary }}>
+            <Skeleton active paragraph={{ rows: 4 }} />
+          </Card>
         ) : (
-          <Space direction="vertical" className="w-full">
+          <Space direction="vertical" className="w-full" size={0}>
             {questions.map((q, i) => (
-              <QuestionCard
+              <div
                 key={q.id}
-                index={i}
-                question={q}
-                onChange={onChange}
-                onRegenerate={onRegenerateOne}
-              />
+                draggable
+                onDragStart={handleDragStart(i)}
+                onDragOver={handleDragOver(i)}
+                onDragEnd={handleDragEnd}
+                style={{ cursor: 'move' }}
+              >
+                <QuestionCard
+                  index={i}
+                  question={q}
+                  onChange={onChange}
+                  onRegenerate={onRegenerateOne}
+                />
+              </div>
             ))}
           </Space>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between gap-3 mt-8">
-          <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row justify-between gap-1 mt-3">
+          <div className="flex gap-1">
             <Button icon={<ReloadOutlined />} loading={regenLoading} onClick={handleRegenerateAll} aria-label="Regenerar Preguntas">
               Regenerar
             </Button>

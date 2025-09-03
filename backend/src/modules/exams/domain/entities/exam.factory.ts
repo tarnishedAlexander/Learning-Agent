@@ -48,7 +48,9 @@ export class ExamFactory {
       time,
       reference ?? null,
       distributionVO,      
-      new Date(),            
+      new Date(),
+      new Date(),  
+      undefined,            
     );
   }
 }

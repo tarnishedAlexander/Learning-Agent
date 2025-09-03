@@ -11,9 +11,9 @@ import {
   UploadedFile,
   BadRequestException,
   Body,
-  Req, // ⬅️ Agregado
+  Req,
 } from '@nestjs/common';
-import { Request } from 'express'; // ⬅️ Agregado
+import { Request } from 'express';
 import type { AuthenticatedRequest } from '../http/middleware/auth.middleware';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
@@ -26,7 +26,6 @@ import {
   DocumentListItemDto,
 } from './dtos/list-documents.dto';
 import {
-  DeleteDocumentParamDto,
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
@@ -55,6 +54,7 @@ export class DocumentsController {
       const documents = result.docs.map(
         (doc) =>
           new DocumentListItemDto(
+            doc.id,
             doc.fileName,
             doc.originalName,
             doc.mimeType,
@@ -111,12 +111,12 @@ export class DocumentsController {
     }
   }
 
-  @Delete(':filename')
+  @Delete(':id')
   async deleteDocument(
-    @Param() params: DeleteDocumentParamDto,
+    @Param('id') documentId: string,
   ): Promise<DeleteDocumentResponseDto> {
     try {
-      const result = await this.deleteDocumentUseCase.execute(params.filename);
+      const result = await this.deleteDocumentUseCase.execute(documentId);
 
       if (!result.success) {
         // Documento no encontrado
@@ -125,7 +125,7 @@ export class DocumentsController {
             new DeleteDocumentErrorDto(
               'Document Not Found',
               result.message,
-              params.filename,
+              documentId,
             ),
             HttpStatus.NOT_FOUND,
           );
@@ -136,7 +136,7 @@ export class DocumentsController {
           new DeleteDocumentErrorDto(
             'Delete Failed',
             result.message,
-            params.filename,
+            documentId,
           ),
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
@@ -144,7 +144,7 @@ export class DocumentsController {
 
       return new DeleteDocumentResponseDto(
         result.message,
-        params.filename,
+        documentId,
         result.deletedAt!,
       );
     } catch (error) {
@@ -162,7 +162,7 @@ export class DocumentsController {
         new DeleteDocumentErrorDto(
           'Internal Server Error',
           `Error interno del servidor al eliminar documento: ${errorMessage}`,
-          params.filename,
+          documentId,
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -180,19 +180,15 @@ export class DocumentsController {
         throw new BadRequestException('No se ha proporcionado ningún archivo');
       }
 
-      // ⬅️ CAMBIO PRINCIPAL: userId dinámico desde request
       const userId = req.user?.id;
       if (!userId) {
         throw new BadRequestException('Usuario no autenticado');
       }
 
-      const document = await this.uploadDocumentUseCase.execute(
-        file,
-        userId, // ⬅️ Ya no hardcodeado
-      );
+      const document = await this.uploadDocumentUseCase.execute(file, userId);
 
       return {
-        id: document.id, // Devolver el ID del documento para usarlo en otros endpoints
+        id: document.id,
         fileName: document.fileName,
         originalName: document.originalName,
         mimeType: document.mimeType,
@@ -201,7 +197,6 @@ export class DocumentsController {
         uploadedAt: document.uploadedAt,
       };
     } catch (error) {
-      // Si ya es una BadRequestException o HttpException, re-lanzarla
       if (
         error instanceof BadRequestException ||
         error instanceof HttpException
@@ -226,18 +221,19 @@ export class DocumentsController {
     }
   }
 
-  @Get('download/:filename')
+  @Get('download/:id')
   async downloadDocument(
-    @Param('filename') filename: string,
+    @Param('id') documentId: string,
   ): Promise<{ downloadUrl: string }> {
     try {
-      if (!filename) {
+      if (!documentId) {
         throw new BadRequestException(
-          'No se ha proporcionado el nombre de archivo',
+          'No se ha proporcionado el ID del documento',
         );
       }
 
-      const downloadUrl = await this.downloadDocumentUseCase.execute(filename);
+      const downloadUrl =
+        await this.downloadDocumentUseCase.execute(documentId);
       return { downloadUrl };
     } catch (error) {
       if (

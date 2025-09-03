@@ -54,7 +54,7 @@ export const useChatLogic = () => {
       setInputValue("");
       setIsTyping(true);
       try {
-        const response = await fetch("http://localhost:3000/chat", {
+        const response = await fetch(`${import.meta.env.VITE_URL}${import.meta.env.VITE_CHAT_URL}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

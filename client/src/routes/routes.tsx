@@ -7,10 +7,12 @@ import Interview from "../pages/reinforcement/interview";
 import Login from "../pages/Login";
 import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
+import ExamManagementPage from "../pages/exams/ExamManagementPage";
 import UploadPdfPage from "../pages/UploadPdfPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
+import RoleRoute from "./RoleRoute";
 import AppLayout from "../layouts/AppLayout";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import SettingsPage from "../pages/settings/SettingsPage";
@@ -30,22 +32,27 @@ export const AppRoutes = () => {
           <Route element={<AppLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="/courses" element={<TeacherCoursePage />} />
-            <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
-            <Route path="/classes" element={<ClassMenu />} />
-            <Route path="/classes/:id" element={<CourseDetailPage />} />
 
+            {/* Professor */}
+            <Route element={<RoleRoute allowed={["docente"]} />}> 
+              <Route path="/courses" element={<TeacherCoursePage />} />
+              <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
+              <Route path="/exams/create" element={<ExamsCreatePage />} />
+              <Route path="/exams" element={<ExamManagementPage />} />
+              <Route path="/classes/:id/students" element={<StudentsByClass />} />
+              <Route path="/classes/:id" element={<CourseDetailPage />} />
+            </Route>
 
-            <Route path="/classes/:id/students" element={<StudentsByClass />} />
-            <Route path="/reinforcement" element={<Reinforcement />} />
-
-            <Route path="/exam" element={<Exam />} />
-            <Route path="/interview" element={<Interview />} />
-            <Route path="/" element={<Navigate to="/exams/create" replace />} />
-            <Route path="/exams/create" element={<ExamsCreatePage />} />
-            <Route path="*" element={<Navigate to="/exams/create" replace />} />
+            {/* Students */}
+            <Route element={<RoleRoute allowed={["estudiante"]} />}> 
+              <Route path="/classes" element={<ClassMenu />} />
+              <Route path="/reinforcement" element={<Reinforcement />} />
+              <Route path="/exam" element={<Exam />} />
+              <Route path="/interview" element={<Interview />} />
+            </Route>
 
             <Route path="/upload-pdf" element={<UploadPdfPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
       </Routes>

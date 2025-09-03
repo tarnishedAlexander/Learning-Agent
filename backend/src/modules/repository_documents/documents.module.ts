@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../core/prisma/prisma.module';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { AiConfigService } from '../../core/ai/ai.config';
+import { IdentityModule } from '../identity/identity.module';
 import {
   FILE_STORAGE_REPO,
   DOCUMENT_REPOSITORY_PORT,
@@ -47,7 +48,7 @@ import { SearchDocumentsUseCase } from './application/use-cases/search-documents
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, IdentityModule],
   controllers: [DocumentsController, EmbeddingsController],
   providers: [
     // Servicios de configuración
@@ -122,17 +123,23 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
     // Use cases
     {
       provide: ListDocumentsUseCase,
-      useFactory: (storageAdapter: S3StorageAdapter) => {
-        return new ListDocumentsUseCase(storageAdapter);
+      useFactory: (
+        storageAdapter: S3StorageAdapter,
+        documentRepository: PrismaDocumentRepositoryAdapter,
+      ) => {
+        return new ListDocumentsUseCase(storageAdapter, documentRepository);
       },
-      inject: [FILE_STORAGE_REPO],
+      inject: [DOCUMENT_STORAGE_PORT, DOCUMENT_REPOSITORY_PORT],
     },
     {
       provide: DeleteDocumentUseCase,
-      useFactory: (storageAdapter: S3StorageAdapter) => {
-        return new DeleteDocumentUseCase(storageAdapter);
+      useFactory: (
+        storageAdapter: S3StorageAdapter,
+        documentRepository: PrismaDocumentRepositoryAdapter,
+      ) => {
+        return new DeleteDocumentUseCase(storageAdapter, documentRepository);
       },
-      inject: [FILE_STORAGE_REPO],
+      inject: [DOCUMENT_STORAGE_PORT, DOCUMENT_REPOSITORY_PORT],
     },
     {
       provide: UploadDocumentUseCase,
@@ -146,10 +153,13 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
     },
     {
       provide: DownloadDocumentUseCase,
-      useFactory: (storageAdapter: S3StorageAdapter) => {
-        return new DownloadDocumentUseCase(storageAdapter);
+      useFactory: (
+        storageAdapter: S3StorageAdapter,
+        documentRepository: PrismaDocumentRepositoryAdapter,
+      ) => {
+        return new DownloadDocumentUseCase(storageAdapter, documentRepository);
       },
-      inject: [FILE_STORAGE_REPO],
+      inject: [DOCUMENT_STORAGE_PORT, DOCUMENT_REPOSITORY_PORT],
     },
     {
       provide: ProcessDocumentTextUseCase,
