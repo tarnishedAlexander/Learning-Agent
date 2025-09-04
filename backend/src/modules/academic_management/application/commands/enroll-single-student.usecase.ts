@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ENROLLMENT_REPO, STUDENT_REPO, CLASSES_REPO, USER_REPO } from "../../tokens";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
@@ -8,6 +8,7 @@ import { AlreadyCreatedError, InternalServerError, NotFoundError } from "src/sha
 
 @Injectable()
 export class EnrollSingleStudentUseCase {
+    private readonly logger = new Logger(EnrollSingleStudentUseCase.name)
     constructor(
         @Inject(ENROLLMENT_REPO) private readonly enrollmentRepo: EnrollmentRepositoryPort,
         @Inject(STUDENT_REPO) private readonly studentRepo: StudentRepositoryPort,
@@ -18,19 +19,20 @@ export class EnrollSingleStudentUseCase {
     async execute(input: { studentName: string; studentLastname: string; studentCode: string; classId: string }) {
         const ojbClass = await this.classesRepo.findById(input.classId);
         if (!ojbClass) {
-            throw new NotFoundError(`Class not found with ID ${input.classId}`)
+            this.logger.error(`Class not found with ID ${input.classId}`)
+            throw new NotFoundError(`No se ha podido recupear la información de la clase`)
         }
         
         let student = await this.studentRepo.findByCode(input.studentCode);
         if (!student) {
-            console.log(`Student not found with code ${input.studentCode}, creating new user:`);
+            this.logger.log(`Student not found with code ${input.studentCode}, creating new user:`);
             student = await this.handleNewUser(input.studentName, input.studentLastname, input.studentCode);
-            console.log(student)
+            this.logger.log(student)
         }
 
         const existingEnrollments = await this.enrollmentRepo.findByStudentId(student.userId);
         if (existingEnrollments.some(enrollment => enrollment.classId === input.classId)) {
-            throw new AlreadyCreatedError(`Student is already enrolled in this class`)
+            throw new AlreadyCreatedError(`Este estudiante ya se encuentra inscrito en la clase`)
         }
 
         const enrollment = await this.enrollmentRepo.create(student.userId, input.classId);
@@ -45,14 +47,14 @@ export class EnrollSingleStudentUseCase {
             `${this.fixedString(studentLastname)+studentCode}`
         );
         if (!newUser) {
-            console.error("Error creating new user on single enrollment endpoint")
-            throw new InternalServerError("Error creating user");
+            this.logger.error("Error creating new user on single enrollment endpoint")
+            throw new InternalServerError("Error creando el usuario");
         }
 
         const newStudent = await this.studentRepo.create(newUser.id, studentCode);
         if (!newStudent) {
-            console.error("Error creating new student on single enrollment endpoint")
-            throw new InternalServerError("Error creating student");
+            this.logger.error("Error creating new student on single enrollment endpoint")
+            throw new InternalServerError("Error creando la cuenta del estudiante");
         }
         return newStudent;
     }

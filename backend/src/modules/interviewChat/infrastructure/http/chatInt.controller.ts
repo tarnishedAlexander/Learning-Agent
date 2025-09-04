@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Query, Inject } from '@nestjs/common';
-import { QuestionResponse } from './dtoChat/question-response';
-import { ChatAnswer } from './dtoChat/generate-advice';
+import { QuestionResponse } from './dto/question-response';
+import { ChatAnswer } from './dto/generate-advice';
 import { DEEPSEEK_PORT } from 'src/modules/deepseek/tokens';
 import type { DeepseekPort } from 'src/modules/deepseek/domain/ports/deepseek.port';
 
