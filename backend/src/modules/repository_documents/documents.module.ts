@@ -47,12 +47,17 @@ import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/gener
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
+import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
+import { ContextualLoggerService } from './infrastructure/services/contextual-logger.service';
 @Module({
   imports: [PrismaModule, IdentityModule],
   controllers: [DocumentsController, EmbeddingsController],
   providers: [
     // Servicios de configuración
     AiConfigService,
+
+    // Servicios de logging
+    ContextualLoggerService,
 
     // Infrastructure adapters
     { provide: DOCUMENT_STORAGE_PORT, useClass: S3StorageAdapter },
@@ -238,7 +243,7 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
 export class DocumentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware)
-      .forRoutes({ path: 'api/documents/upload', method: RequestMethod.POST });
+      .apply(LoggingMiddleware)
+      .forRoutes('api/documents', 'api/repository-documents/embeddings');
   }
 }
