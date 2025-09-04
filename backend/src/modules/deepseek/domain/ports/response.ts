@@ -13,3 +13,9 @@ export interface ChatResponse {
   answer: string;
   explanatio?: string;
 }
+export interface MultipleSelectionResponse {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
