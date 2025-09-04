@@ -19,3 +19,10 @@ export interface MultipleSelectionResponse {
   correctAnswer: number;
   explanation: string;
 }
+
+export interface DoubleOptionResponse {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
