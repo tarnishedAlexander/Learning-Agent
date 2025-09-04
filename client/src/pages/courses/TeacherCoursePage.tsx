@@ -55,7 +55,7 @@ export function TeacherCoursePage() {
 
   const goToExams = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/exams/${id}`);
+    navigate(`/exams/`);
   };
 
   const goToMaterials = (id: string, e: React.MouseEvent) => {
