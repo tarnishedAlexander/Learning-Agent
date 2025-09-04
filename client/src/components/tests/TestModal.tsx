@@ -1,9 +1,11 @@
-import { Modal, Button, Typography, Space, Divider } from "antd";
+import { Modal, Button, Typography, Space, Divider, theme } from "antd";
 import { BookOutlined } from "@ant-design/icons";
 
 const { Text, Title } = Typography;
 
 export function TestModal({ open, onClose, onSelectDifficulty }) {
+  const { token } = theme.useToken();
+
   return (
     <Modal
       open={open}
@@ -13,8 +15,8 @@ export function TestModal({ open, onClose, onSelectDifficulty }) {
       width={500}
       bodyStyle={{
         padding: 28,
-        background: "#fff",
-        borderRadius: 12,
+        background: token.colorBgElevated,
+        borderRadius: token.borderRadiusLG,
       }}
     >
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -23,19 +25,23 @@ export function TestModal({ open, onClose, onSelectDifficulty }) {
             level={4}
             style={{
               marginBottom: 4,
-              color: "#1A2A80",
+              color: token.colorTextHeading,
               fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
             }}
           >
-            <BookOutlined style={{ marginRight: 8, color: "#1A2A80" }} />
+            <BookOutlined style={{ color: token.colorPrimary }} />
             Creación de examen
           </Title>
-          <Text type="secondary" style={{ fontSize: 15 }}>
+          <Text style={{ fontSize: 15, color: token.colorTextSecondary }}>
             Selecciona la dificultad para comenzar tu prueba
           </Text>
         </div>
 
-        <Divider style={{ margin: "12px 0" }} />
+        <Divider style={{ margin: "12px 0", borderColor: token.colorBorder }} />
 
         <Space
           direction="horizontal"
@@ -44,7 +50,13 @@ export function TestModal({ open, onClose, onSelectDifficulty }) {
         >
           <Button
             size="middle"
-            className="!bg-[#1A2A80] !text-white !border-none h-9 rounded-lg font-medium shadow-md transition-all duration-200 ease-in-out hover:!bg-[#3B38A0] hover:shadow-lg hover:-translate-y-0.5"
+            style={{
+              background: token.colorPrimary,
+              color: token.colorTextLightSolid,
+              border: "none",
+              borderRadius: token.borderRadius,
+              fontWeight: 500,
+            }}
             icon={<BookOutlined />}
             onClick={() => onSelectDifficulty(5)}
           >
@@ -53,7 +65,13 @@ export function TestModal({ open, onClose, onSelectDifficulty }) {
 
           <Button
             size="middle"
-            className="!bg-[#1A2A80] !text-white !border-none h-9 rounded-lg font-medium shadow-md transition-all duration-200 ease-in-out hover:!bg-[#3B38A0] hover:shadow-lg hover:-translate-y-0.5"
+            style={{
+              background: token.colorPrimary,
+              color: token.colorTextLightSolid,
+              border: "none",
+              borderRadius: token.borderRadius,
+              fontWeight: 500,
+            }}
             icon={<BookOutlined />}
             onClick={() => onSelectDifficulty(7)}
           >
@@ -62,7 +80,13 @@ export function TestModal({ open, onClose, onSelectDifficulty }) {
 
           <Button
             size="middle"
-            className="!bg-[#1A2A80] !text-white !border-none h-9 rounded-lg font-medium shadow-md transition-all duration-200 ease-in-out hover:!bg-[#3B38A0] hover:shadow-lg hover:-translate-y-0.5"
+            style={{
+              background: token.colorPrimary,
+              color: token.colorTextLightSolid,
+              border: "none",
+              borderRadius: token.borderRadius,
+              fontWeight: 500,
+            }}
             icon={<BookOutlined />}
             onClick={() => onSelectDifficulty(10)}
           >
