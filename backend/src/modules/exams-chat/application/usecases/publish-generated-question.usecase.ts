@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Question } from '../../../exams/domain/entities/question.entity';
-import type { QuestionRepositoryPort } from '../../../exams/domain/ports/question-repository.port';
+import { Question } from '../../domain/entities/question.entity';
+import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
+
 
 export type PublishInput = {
   text: string;

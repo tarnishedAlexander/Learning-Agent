@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { OptionGeneratorPort } from '../../../exams-chat/domain/ports/option-generator.port';
+import type { OptionGeneratorPort } from '../../domain/ports/option-generator.port';
 
 
 @Injectable()

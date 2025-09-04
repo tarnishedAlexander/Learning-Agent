@@ -1,83 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../core/prisma/prisma.service';
-import { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
-import { Question } from '../../../exams/domain/entities/question.entity';
-import { Prisma } from '@prisma/client';
+import { Injectable, Inject } from '@nestjs/common';
+import { DEEPSEEK_PORT } from 'src/modules/deepseek/tokens';
+import type { DeepseekPort } from 'src/modules/deepseek/domain/ports/deepseek.port';
+import { Question, QuestionType, QuestionStatus } from '../../domain/entities/question.entity';
+import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
 
 @Injectable()
-export class PrismaQuestionRepositoryAdapter implements QuestionRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+export class DeepseekQuestionAdapter implements QuestionRepositoryPort {
+  constructor(@Inject(DEEPSEEK_PORT) private readonly deepseek: DeepseekPort) {}
 
   async save(question: Question): Promise<Question> {
-    const created = await this.prisma.examQuestion.create({
-      data: {
-        id: (question as any).id,
-        examId: (question as any).examId as any,
-        kind: (question as any).kind as any,
-        text: (question as any).text,
-        options: ((question as any).options ?? undefined) as unknown as Prisma.InputJsonValue,
-        correctOptionIndex: (question as any).correctOptionIndex ?? undefined,
-        correctBoolean: (question as any).correctBoolean ?? undefined,
-        expectedAnswer: (question as any).expectedAnswer ?? undefined,
-        order: (question as any).order as any,
-        createdAt: (question as any).createdAt ?? undefined,
-        updatedAt: (question as any).updatedAt ?? undefined,
-      },
-    });
-
-    return new Question(
-      (created as any).text,
-      (created as any).options as any,
-      undefined,
-      undefined,
-      undefined
-    );
+    return question;
   }
 
   async findById(id: string): Promise<Question | null> {
-    const found = await this.prisma.examQuestion.findUnique({ where: { id } });
-    return found
-      ? new Question(
-          (found as any).text,
-          (found as any).options as any,
-          undefined,
-          undefined,
-          undefined
-        )
-      : null;
+    return null;
   }
 
   async findAll(): Promise<Question[]> {
-    const all = await this.prisma.examQuestion.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    return all.map(
-      q =>
-        new Question(
-          (q as any).text,
-          (q as any).options as any,
-          undefined,
-          undefined,
-          undefined
-        )
-    );
+    return [];
   }
 
   async findByStatus(status: string, limit = 10, offset = 0): Promise<Question[]> {
-    const all = await this.prisma.examQuestion.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    const filtered = all.filter(q => (q as any).status === status);
-    const slice = filtered.slice(offset, offset + limit);
-    return slice.map(
-      q =>
-        new Question(
-          (q as any).text,
-          (q as any).options as any,
-          undefined,
-          undefined,
-          undefined
-        )
-    );
+    return [];
+  }
+
+  async generateQuestion(topic: string): Promise<Question> {
+    const response = await this.deepseek.generateQuestion(topic);
+    return Question.create(response.question, 'open_analysis', []);
   }
 }

@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { QuestionRepositoryPort } from '../../../exams/domain/ports/question-repository.port';
+import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
 import type { OptionGeneratorPort } from '../../domain/ports/option-generator.port';
-import { OPTION_GENERATOR } from '../../../exams/tokens';
-import { Question } from '../../../exams/domain/entities/question.entity';
+import { EXAM_AI_GENERATOR } from '../../tokens';
+import { Question } from '../../domain/entities/question.entity';
+
 
 
 export type GenerateOptionsInput = { questionId: string };
