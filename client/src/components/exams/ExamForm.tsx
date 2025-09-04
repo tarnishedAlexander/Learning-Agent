@@ -68,7 +68,13 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     setValues((prev) => ({ ...prev, [name]: v }));
     setValue(name as any, v);
     setTouched((prev) => ({ ...prev, [name]: true }));
-    touchAndValidate();
+
+    if (name === 'attempts') {
+      const errorMsg = validateAttempts(value);
+      setErrors((prev) => ({ ...prev, attempts: errorMsg }));
+    } else {
+      touchAndValidate();
+    }
   };
 
   const touchAndValidate = () => {
@@ -78,9 +84,14 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
   };
 
   const validStep = () => {
-    if (step === 0) return !!(values.subject && values.difficulty && values.attempts);
+    if (step === 0) {
+      const attemptsError = validateAttempts(String(values.attempts));
+      return !!(values.subject && values.difficulty && values.attempts) && !attemptsError;
+    }
     if (step === 1) return totalQuestions > 0;
-    if (step === 2) return !!values.timeMinutes;
+    if (step === 2) {
+      return !!values.timeMinutes && !errors.timeMinutes;
+    }
     return Boolean(values.timeMinutes) && !errors.timeMinutes;
   };
 
@@ -146,6 +157,20 @@ export const ExamForm = forwardRef<ExamFormHandle, Props>(function ExamForm(
     } finally {
       setSending(false);
     }
+  };
+
+  const validateAttempts = (value: string) => {
+    const num = Number(value);
+    if (value === '' || isNaN(num)) {
+      return 'Debes ingresar un número de intentos.';
+    }
+    if (num < 1) {
+      return 'El número de intentos debe ser al menos 1.';
+    }
+    if (num > 3) {
+      return 'El número de intentos no puede ser mayor a 3.';
+    }
+    return '';
   };
 
   return (
