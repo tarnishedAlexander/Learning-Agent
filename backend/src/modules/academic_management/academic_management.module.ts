@@ -27,6 +27,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { IdentityModule } from '../identity/identity.module';
 import { CoursePrismaRepository } from './infrastructure/persistence/course.prisma.repository';
 import { CreateCourseUseCase } from './application/commands/create-course.usecase';
+import { SoftDeleteStudentUseCase } from './application/commands/soft-delete-student.usecase';
 import { GetCoursesByTeacherUseCase } from './application/queries/get-courses-by-teacher.usecase';
 import { GetClassesByCourseUseCase } from './application/queries/get-classes-by-course.usecase';
 import { GetCourseByIdUseCase } from './application/queries/get-course-by-id.usecase';
@@ -54,6 +55,7 @@ import { GetCourseByIdUseCase } from './application/queries/get-course-by-id.use
     CreateClassUseCase,
     CreateStudentUseCase,
     CreateUserUseCase,
+    SoftDeleteStudentUseCase,
     CreateStudentProfileUseCase,
     EnrollSingleStudentUseCase,
     JwtAuthGuard,
