@@ -7,7 +7,6 @@ services:
       - "9000:9000"
       - "9090:9090"
     volumes:
-      - /tmp/data:/data
       - ./minio-data:/data
     env_file:
       - .env
