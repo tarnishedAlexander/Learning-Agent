@@ -269,6 +269,7 @@ enum ProcessingType {
   TEXT_EXTRACTION       // Extraer texto del archivo
   CHUNKING             // Dividir texto en chunks
   EMBEDDING_GENERATION // Generar embeddings vectoriales
+  CATEGORIZATION       // Categorizar documento automáticamente
   FULL_PROCESSING      // Procesamiento completo (todos los pasos)
   REPROCESSING         // Reprocesar documento existente
 }

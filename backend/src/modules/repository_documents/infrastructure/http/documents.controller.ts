@@ -21,6 +21,7 @@ import { DeleteDocumentUseCase } from '../../application/commands/delete-documen
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { ProcessDocumentTextUseCase } from '../../application/commands/process-document-text.usecase';
 import { ProcessDocumentChunksUseCase } from '../../application/commands/process-document-chunks.usecase';
+import { CategorizeDocumentUseCase } from '../../application/use-cases/categorize-document.use-case';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -32,7 +33,6 @@ import {
 import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 
-// ⬅️ Remover esta interface, ahora viene del middleware
 // interface AuthenticatedRequest extends Request {
 @Controller('api/documents')
 export class DocumentsController {
@@ -43,6 +43,7 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
+    private readonly categorizeDocumentUseCase: CategorizeDocumentUseCase,
   ) {}
 
   @Get()
@@ -428,6 +429,51 @@ export class DocumentsController {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al obtener chunks',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Categoriza un documento automáticamente basado en su contenido
+   */
+  @Post(':id/categorize')
+  async categorizeDocument(
+    @Param('id') documentId: string,
+    @Body()
+    options?: {
+      replaceExisting?: boolean;
+      maxCategoriesPerDocument?: number;
+      confidenceThreshold?: number;
+    },
+  ): Promise<{
+    success: boolean;
+    result?: any;
+    error?: string;
+    metadata?: any;
+  }> {
+    try {
+      const result = await this.categorizeDocumentUseCase.execute({
+        documentId,
+        replaceExisting: options?.replaceExisting ?? false,
+        maxCategoriesPerDocument: options?.maxCategoriesPerDocument ?? 3,
+        confidenceThreshold: options?.confidenceThreshold ?? 0.5,
+      });
+
+      return result;
+    } catch (error) {
+      console.error(`Error categorizando documento ${documentId}:`, error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error desconocido';
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error categorizando documento',
           error: 'Internal Server Error',
           details: errorMessage,
         },

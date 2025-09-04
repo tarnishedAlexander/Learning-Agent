@@ -12,6 +12,9 @@ import {
   DOCUMENT_CHUNK_REPOSITORY_PORT,
   EMBEDDING_GENERATOR_PORT,
   VECTOR_SEARCH_PORT,
+  DOCUMENT_CATEGORY_REPOSITORY_PORT,
+  DOCUMENT_CATEGORIZATION_SERVICE_PORT,
+  CATEGORIZE_DOCUMENT_USE_CASE_PORT,
 } from './tokens';
 
 // Domain ports
@@ -22,6 +25,7 @@ import { DocumentChunkRepositoryPort } from './domain/ports/document-chunk-repos
 // Controllers
 import { DocumentsController } from './infrastructure/http/documents.controller';
 import { EmbeddingsController } from './infrastructure/http/embeddings.controller';
+import { CategorizationController } from './infrastructure/http/categorization.controller';
 
 // Infrastructure adapters
 import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
@@ -31,10 +35,12 @@ import { SemanticTextChunkingAdapter } from './infrastructure/chunking/semantic-
 import { PrismaDocumentChunkRepositoryAdapter } from './infrastructure/persistence/prisma-document-chunk-repository.adapter';
 import { OpenAIEmbeddingAdapter } from './infrastructure/ai/openai-embedding.adapter';
 import { PgVectorSearchAdapter } from './infrastructure/search/pgvector-search.adapter';
+import { PrismaDocumentCategoryRepositoryAdapter } from './infrastructure/persistence/prisma-document-category-repository.adapter';
 
 // Domain services
 import { DocumentChunkingService } from './domain/services/document-chunking.service';
 import { DocumentEmbeddingService } from './domain/services/document-embedding.service';
+import { DocumentCategorizationService } from './domain/services/document-categorization.service';
 
 // Use cases
 import { ListDocumentsUseCase } from './application/queries/list-documents.usecase';
@@ -45,11 +51,16 @@ import { ProcessDocumentTextUseCase } from './application/commands/process-docum
 import { ProcessDocumentChunksUseCase } from './application/commands/process-document-chunks.usecase';
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
+import { CategorizeDocumentUseCase } from './application/use-cases/categorize-document.use-case';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 @Module({
   imports: [PrismaModule, IdentityModule],
-  controllers: [DocumentsController, EmbeddingsController],
+  controllers: [
+    DocumentsController,
+    EmbeddingsController,
+    CategorizationController,
+  ],
   providers: [
     // Servicios de configuración
     AiConfigService,
@@ -65,6 +76,12 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
     {
       provide: DOCUMENT_CHUNK_REPOSITORY_PORT,
       useClass: PrismaDocumentChunkRepositoryAdapter,
+    },
+
+    // Adapter para categorización de documentos
+    {
+      provide: DOCUMENT_CATEGORY_REPOSITORY_PORT,
+      useClass: PrismaDocumentCategoryRepositoryAdapter,
     },
 
     // Nuevos adapters para Phase 3
@@ -116,6 +133,38 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
       inject: [
         EMBEDDING_GENERATOR_PORT,
         VECTOR_SEARCH_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+      ],
+    },
+    {
+      provide: DOCUMENT_CATEGORIZATION_SERVICE_PORT,
+      useFactory: (
+        categoryRepository: PrismaDocumentCategoryRepositoryAdapter,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
+      ) => {
+        return new DocumentCategorizationService(
+          categoryRepository,
+          chunkRepository,
+        );
+      },
+      inject: [
+        DOCUMENT_CATEGORY_REPOSITORY_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+      ],
+    },
+    {
+      provide: DocumentCategorizationService,
+      useFactory: (
+        categoryRepository: PrismaDocumentCategoryRepositoryAdapter,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
+      ) => {
+        return new DocumentCategorizationService(
+          categoryRepository,
+          chunkRepository,
+        );
+      },
+      inject: [
+        DOCUMENT_CATEGORY_REPOSITORY_PORT,
         DOCUMENT_CHUNK_REPOSITORY_PORT,
       ],
     },
@@ -185,13 +234,19 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
       useFactory: (
         documentRepository: PrismaDocumentRepositoryAdapter,
         chunkingService: DocumentChunkingService,
+        categorizationService: DocumentCategorizationService,
       ) => {
         return new ProcessDocumentChunksUseCase(
           documentRepository,
           chunkingService,
+          categorizationService,
         );
       },
-      inject: [DOCUMENT_REPOSITORY_PORT, DocumentChunkingService],
+      inject: [
+        DOCUMENT_REPOSITORY_PORT,
+        DocumentChunkingService,
+        DOCUMENT_CATEGORIZATION_SERVICE_PORT,
+      ],
     },
     {
       provide: GenerateDocumentEmbeddingsUseCase,
@@ -207,6 +262,21 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
       },
       inject: [DocumentEmbeddingService],
     },
+    {
+      provide: CATEGORIZE_DOCUMENT_USE_CASE_PORT,
+      useFactory: (categorizationService: DocumentCategorizationService) => {
+        return new CategorizeDocumentUseCase(categorizationService);
+      },
+      inject: [DOCUMENT_CATEGORIZATION_SERVICE_PORT],
+    },
+    // Registro directo para inyección en controladores
+    {
+      provide: CategorizeDocumentUseCase,
+      useFactory: (categorizationService: DocumentCategorizationService) => {
+        return new CategorizeDocumentUseCase(categorizationService);
+      },
+      inject: [DOCUMENT_CATEGORIZATION_SERVICE_PORT],
+    },
   ],
   exports: [
     // Casos de uso originales
@@ -221,9 +291,13 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
     GenerateDocumentEmbeddingsUseCase,
     SearchDocumentsUseCase,
 
+    // Casos de uso para categorización
+    CategorizeDocumentUseCase,
+
     // Servicios de dominio
     DocumentChunkingService,
     DocumentEmbeddingService,
+    DocumentCategorizationService,
 
     // Tokens de puertos (para testing o extensión)
     DOCUMENT_REPOSITORY_PORT,
@@ -233,6 +307,11 @@ import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware
     DOCUMENT_CHUNK_REPOSITORY_PORT,
     EMBEDDING_GENERATOR_PORT,
     VECTOR_SEARCH_PORT,
+
+    // Tokens para categorización
+    DOCUMENT_CATEGORY_REPOSITORY_PORT,
+    DOCUMENT_CATEGORIZATION_SERVICE_PORT,
+    CATEGORIZE_DOCUMENT_USE_CASE_PORT,
   ],
 })
 export class DocumentsModule implements NestModule {
