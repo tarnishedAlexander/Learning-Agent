@@ -40,9 +40,7 @@ export const DocumentTable = ({
       dataIndex: 'originalName',
       key: 'originalName',
       sorter: (a: Document, b: Document) => a.originalName.localeCompare(b.originalName),
-      showSorterTooltip: {
-        title: 'Ordenar por nombre de archivo'
-      },
+
     },
     {
       title: (
@@ -54,9 +52,6 @@ export const DocumentTable = ({
       key: 'uploadedAt',
       sorter: (a: Document, b: Document) =>
         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime(),
-      showSorterTooltip: {
-        title: 'Ordenar por fecha de subida'
-      },
       render: (date: string) => new Date(date).toLocaleDateString('es-ES'),
     },
     {
@@ -68,9 +63,6 @@ export const DocumentTable = ({
       dataIndex: 'size',
       key: 'size',
       sorter: (a: Document, b: Document) => a.size - b.size,
-      showSorterTooltip: {
-        title: 'Ordenar por tamaño de archivo'
-      },
       render: (size: number) => {
         const kb = size / 1024;
         if (kb < 1024) return `${kb.toFixed(2)} KB`;
@@ -166,8 +158,8 @@ export const DocumentTable = ({
       className="academic-table"
       locale={{
         emptyText: 'No hay documentos en el repositorio',
-        triggerDesc: 'Ordenar descendente',
-        triggerAsc: 'Ordenar ascendente',
+        triggerDesc: '',
+        triggerAsc: '',
         cancelSort: 'Cancelar ordenamiento'
       }}
       scroll={{ x: 800 }}
