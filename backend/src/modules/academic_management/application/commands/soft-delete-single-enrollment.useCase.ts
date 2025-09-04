@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { STUDENT_REPO, COURSE_REPO, ENROLLMENT_REPO, CLASSES_REPO } from "../../tokens";
-import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
+import {  COURSE_REPO, ENROLLMENT_REPO, CLASSES_REPO } from "../../tokens";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
@@ -8,8 +7,8 @@ import { Enrollment } from "../../domain/entities/enrollment.entity";
 import { ConflictError, ForbiddenError, NotFoundError } from "src/shared/handler/errors";
 
 @Injectable()
-export class SoftDeleteStudentUseCase {
-    private readonly logger = new Logger(SoftDeleteStudentUseCase.name)
+export class SoftDeleteSingleEnrollmentUseCase {
+    private readonly logger = new Logger(SoftDeleteSingleEnrollmentUseCase.name)
     constructor(
         @Inject(ENROLLMENT_REPO) private readonly enrollmentRepo: EnrollmentRepositoryPort,
         @Inject(COURSE_REPO) private readonly courseRepo: CourseRepositoryPort,

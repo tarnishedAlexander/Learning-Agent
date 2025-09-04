@@ -26,7 +26,7 @@ import { GetClassesByCourseUseCase } from '../../application/queries/get-classes
 import { responseAlreadyCreated, responseConflict, responseCreated, responseForbidden, responseInternalServerError, responseNotFound, responseSuccess } from 'src/shared/handler/http.handler';
 import { AlreadyCreatedError, ForbiddenError, NotFoundError,ConflictError } from 'src/shared/handler/errors';
 import { GetCourseByIdUseCase } from '../../application/queries/get-course-by-id.usecase';
-import { SoftDeleteStudentUseCase } from '../../application/commands/soft-delete-student.usecase';
+import { SoftDeleteSingleEnrollmentUseCase } from '../../application/commands/soft-delete-single-enrollment.useCase';
 const academicRoute = 'academic'
 
 @UseGuards(JwtAuthGuard)
@@ -49,7 +49,7 @@ export class AcademicManagementController {
     private readonly enrollGroup: EnrollGroupStudentUseCase,
     private readonly updateClass: UpdateClassUseCase,
     private readonly softDeleteClass: SoftDeleteClassUseCase,
-    private readonly softDeleteStudent: SoftDeleteStudentUseCase,
+    private readonly softDeleteStudent: SoftDeleteSingleEnrollmentUseCase,
   ) { }
 
   //Endpoints GET
