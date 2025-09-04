@@ -39,7 +39,6 @@ export class GenerateOptionsForQuestionUseCase {
     try {
       generated = await this.optionGenerator.generateOptions(question.text);
     } catch (err) {
-      // persistimos estado invalid y devolvemos fallo
       const invalidQ = new Question(
         question.text,
         (question as any).type,
