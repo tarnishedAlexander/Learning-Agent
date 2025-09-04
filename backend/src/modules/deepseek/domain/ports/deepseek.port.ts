@@ -1,4 +1,9 @@
-import { AdviceResponse, ChatResponse, QuestionResponse } from './response';
+import {
+  AdviceResponse,
+  ChatResponse,
+  MultipleSelectionResponse,
+  QuestionResponse,
+} from './response';
 
 export interface DeepseekPort {
   generateResponse(question: string): Promise<ChatResponse>;
@@ -10,4 +15,5 @@ export interface DeepseekPort {
     answer: string,
     topic: string,
   ): Promise<AdviceResponse>;
+  generateMultipleSelection(topico: string): Promise<MultipleSelectionResponse>;
 }

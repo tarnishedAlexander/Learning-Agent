@@ -3,6 +3,7 @@ import { QuestionResponse } from './dto/question-response';
 import { ChatAnswer } from './dto/generate-advice';
 import { DEEPSEEK_PORT } from 'src/modules/deepseek/tokens';
 import type { DeepseekPort } from 'src/modules/deepseek/domain/ports/deepseek.port';
+import { MultipleSelectionResponse } from 'src/modules/deepseek/domain/ports/response';
 
 interface CoachingResponse {
   generated_question: string;
@@ -37,5 +38,11 @@ export class ChatIntController {
       chatAnswer.topic,
     );
     return respDs;
+  }
+  @Get('multipleSelection')
+  async generateMultipleSelection(
+    @Query('topico') topico: string,
+  ): Promise<MultipleSelectionResponse> {
+    return this.deepseekPort.generateMultipleSelection(topico);
   }
 }
