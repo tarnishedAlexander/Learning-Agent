@@ -245,5 +245,9 @@ export class DocumentsModule implements NestModule {
     consumer
       .apply(LoggingMiddleware)
       .forRoutes('api/documents', 'api/repository-documents/embeddings');
+
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: 'api/documents/upload', method: RequestMethod.POST });
   }
 }
