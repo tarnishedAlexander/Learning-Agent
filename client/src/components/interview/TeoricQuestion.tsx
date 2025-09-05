@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Checkbox, Button, Typography, theme, Card } from 'antd';
-import { RightOutlined, CheckOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { RightOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 const { Paragraph } = Typography;
 
@@ -27,7 +27,7 @@ export default function TeoricQuestion({ onNext }: TeoricQuestionProps) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: token.paddingLG,
-        backgroundColor: token.colorBgLayout, // se adapta a modo claro/oscuro
+        backgroundColor: token.colorBgLayout,
       }}
     >
       <Card
@@ -104,7 +104,6 @@ export default function TeoricQuestion({ onNext }: TeoricQuestionProps) {
                     textAlign: 'center',
                     cursor: 'pointer',
                     transition: 'all 0.3s',
-                    position: 'relative',
                   }}
                 >
                   <Paragraph
@@ -116,18 +115,6 @@ export default function TeoricQuestion({ onNext }: TeoricQuestionProps) {
                   >
                     {option.label}
                   </Paragraph>
-                  {selected && (
-                    <CheckOutlined
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        right: token.paddingSM,
-                        transform: 'translateY(-50%)',
-                        color: token.colorPrimary,
-                        fontSize: token.fontSizeLG,
-                      }}
-                    />
-                  )}
                 </div>
               </Checkbox>
             );
