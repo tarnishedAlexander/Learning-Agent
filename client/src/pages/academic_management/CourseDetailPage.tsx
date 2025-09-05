@@ -9,7 +9,7 @@ import {
   UserOutlined,
   FolderOutlined,
   BookOutlined,
-  BarChartOutlined
+  BarChartOutlined,
 } from "@ant-design/icons";
 import useClasses from "../../hooks/useClasses";
 import useTeacher from "../../hooks/useTeacher";
@@ -30,6 +30,7 @@ import { useUserStore } from "../../store/userStore";
 import useCourses from "../../hooks/useCourses";
 import UploadButton from '../../components/shared/UploadButton';
 import { processFile } from "../../utils/enrollGroupByFile";
+import type { StudentInfo } from "../../interfaces/studentInterface";
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -39,7 +40,7 @@ export function CourseDetailPage() {
   const navigate = useNavigate();
   const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
   const { students, fetchStudentsByClass } = useStudents();
-  const { enrollSingleStudent, enrollGroupStudents } = useEnrollment();
+  const { enrollSingleStudent, enrollGroupStudents, softDeleteSingleEnrollment } = useEnrollment();
   const { actualCourse, getCourseByID } = useCourses();
   const { teacherInfo, fetchTeacherInfoById } = useTeacher();
   const user = useUserStore((s) => s.user);
@@ -48,6 +49,7 @@ export function CourseDetailPage() {
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
   const [singleStudentFormOpen, setSingleStudentFormOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [safetyModalConfig, setSafetyModalConfig] = useState({ title: "", message: "", onConfirm: () => { } });
 
   const [parsedStudents, setParsedStudents] = useState<
     Array<
@@ -226,6 +228,16 @@ export function CourseDetailPage() {
     setSending(false);
   };
 
+  const handleDeleteSingleEnrollment = async (record: StudentInfo) => {
+    if (!id) return
+    const classData = {
+      studentId: record.userId,
+      classId: id
+    }
+    const res = await softDeleteSingleEnrollment(classData)
+    console.log(res)
+  }
+
   const studentsColumns = [
     {
       title: "Nombres",
@@ -251,18 +263,29 @@ export function CourseDetailPage() {
     {
       title: "Acciones",
       key: "actions",
-      render: () => (
-        <Button
-          type="primary"
-          size="small"
-          icon={<BarChartOutlined />}
-          onClick={() => {
-            // Sin acción - será implementado por el equipo de Ángela
-            message.info("Funcionalidad en desarrollo");
-          }}
-        >
-          Ver progreso
-        </Button>
+      render: (_: any, record: StudentInfo) => (
+        <div style={{display: "flex", gap: 8}}>
+          <Button
+            type="primary"
+            size="small"
+            icon={<BarChartOutlined />}
+            onClick={() => {
+              // Sin acción - será implementado por el equipo de Ángela
+              message.info("Funcionalidad en desarrollo");
+            }}
+          >
+            Ver progreso
+          </Button>
+          <Button
+            danger
+            type="primary"
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteSingleEnrollment(record)}
+          >
+            Eliminar
+          </Button>
+        </div>
       )
     }
   ];
