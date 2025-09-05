@@ -9,7 +9,6 @@ import { DocumentDataSidebar } from "../../components/documents/DocumentDataSide
 import { useDocuments } from "../../hooks/useDocuments";
 import { useUserStore } from "../../store/userStore";
 import { useThemeStore } from "../../store/themeStore";
-import { documentService } from "../../services/documents.service";
 import type { Document } from "../../interfaces/documentInterface";
 
 const { useBreakpoint } = Grid;
@@ -42,7 +41,6 @@ const UploadDocumentPage: React.FC = () => {
     ? '50%'
     : '100%';
 
-  // Responsive values using useBreakpoint (like BotonAdaptable example)
   const pageTitle = isSmallScreen ? "Documentos" : "Documentos Académicos";
   const containerPadding = isSmallScreen ? "16px" : "24px";
 
@@ -122,27 +120,15 @@ const UploadDocumentPage: React.FC = () => {
     setDocumentToPreview(null);
   }, []);
 
-  // mobile view: abrir PDF en nueva pestaña (a pesar de que ya no hay preview en mobile, se deja esta función para abrir en nueva pestaña)
+  // Preview
   const handlePreview = useCallback(async (doc: Document) => {
-    if (isMobileScreen) {
-      try {
-        const url = await documentService.getDownloadUrl(doc.id);
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } catch (err) {
-        console.error('Error al abrir PDF en nueva pestaña:', err);
-        message.error('No se pudo abrir el PDF. Intenta descargarlo.');
-      }
-      return;
-    }
-
-    // Desktop / tablet
     if (dataSidebarVisible) {
       setDataSidebarVisible(false);
       setDocumentToViewData(null);
     }
     setDocumentToPreview(doc);
     setPreviewSidebarVisible(true);
-  }, [dataSidebarVisible, isMobileScreen]);
+  }, [dataSidebarVisible]);
 
   return (
     <div style={{ 
