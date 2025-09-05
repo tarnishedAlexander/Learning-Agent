@@ -47,6 +47,17 @@ export class S3StorageAdapter implements DocumentStoragePort {
    */
   async uploadDocument(req: UploadDocumentRequest): Promise<Document> {
     try {
+      console.log(' MinIO Config:', {
+        endpoint: this.endpoint,
+        bucketName: this.bucketName,
+        region: minioConfig.region,
+      });
+      console.log(' Upload Request:', {
+        originalName: req.originalName,
+        mimeType: req.mimeType,
+        size: req.size,
+      });
+      
       // Generar nombre único para el archivo
       const fileName = this.generateFileName(req.originalName);
 
@@ -80,8 +91,9 @@ export class S3StorageAdapter implements DocumentStoragePort {
       );
 
       return document;
-    } catch {
-      throw new Error('Error uploading document to MinIO');
+    } catch (error) {
+      console.error('❌ MinIO Upload Error:', error);
+      throw new Error(`Error uploading document to MinIO: ${error.message || error}`);
     }
   }
 
@@ -103,8 +115,9 @@ export class S3StorageAdapter implements DocumentStoragePort {
       });
 
       return signedUrl;
-    } catch {
-      throw new Error('Error generating download URL');
+    } catch (error) {
+      console.error('❌ MinIO Download URL Error:', error);
+      throw new Error(`Error generating download URL: ${error.message || error}`);
     }
   }
 
