@@ -41,6 +41,27 @@ const UploadDocumentPage: React.FC = () => {
   const contentMaxWidth = (previewSidebarVisible || dataSidebarVisible) && !isSmallScreen 
     ? '50%'
     : '100%';
+
+  // Responsive values using useBreakpoint (like BotonAdaptable example)
+  const pageTitle = isSmallScreen ? "Documentos" : "Documentos Académicos";
+  const containerPadding = isSmallScreen ? "16px" : "24px";
+
+  const fileConfig = {
+    accept: ".pdf",
+    maxSize: 10 * 1024 * 1024, // 10MB
+    validationMessage: "Solo se permiten archivos PDF de hasta 10MB"
+  };
+
+  const processingConfig = {
+    steps: [
+      { key: "validate", title: "Validación", description: "Validando formato PDF..." },
+      { key: "extract", title: "Extracción", description: "Extrayendo contenido..." },
+      { key: "process", title: "Procesamiento", description: "Procesando documento..." },
+      { key: "store", title: "Almacenamiento", description: "Almacenando información..." }
+    ],
+    processingText: "Procesando documento PDF...",
+    successText: "¡Documento procesado exitosamente!"
+  };
     
   const handleUploadSuccess = useCallback(async () => {
     setRefreshing(true);
@@ -52,6 +73,16 @@ const UploadDocumentPage: React.FC = () => {
       setRefreshing(false);
     }
   }, [loadDocuments]);
+
+  const handleUploadDocument = useCallback(async (file: File, onProgress?: (step: string, progress: number, message: string) => void) => {
+    try {
+      const result = await processDocumentComplete(file, onProgress);
+      return result;
+    } catch (error) {
+      console.error("Error processing document:", error);
+      throw error;
+    }
+  }, [processDocumentComplete]);
 
   const handleDownload = useCallback(async (doc: Document) => {
     try {
@@ -130,11 +161,11 @@ const UploadDocumentPage: React.FC = () => {
         flex: "0 0 auto" 
       }}>
       <PageTemplate
-        title={isSmallScreen ? "Documentos" : "Documentos Académicos"}
+        title={pageTitle}
         subtitle="Sistema de carga y administración de material educativo en formato PDF"
         breadcrumbs={[{ label: "Home", href: "/" }, { label: "Documentos" }]}>
         <div style={{
-          padding: isSmallScreen ? "16px" : "24px",
+          padding: containerPadding,
           width: "100%",
           margin: "0",
           maxWidth: "none" 
@@ -144,84 +175,66 @@ const UploadDocumentPage: React.FC = () => {
             <Col xs={24}>
               <Card
                 title={
-                  isSmallScreen ? (
-                    // Mobile view 
+                  <div style={{ 
+                    display: "flex", 
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    color: isDark ? token.colorText : "#1A2A80",
+                    width: "100%",
+                    minWidth: 0,
+                    gap: isSmallScreen ? "12px" : "16px",
+                    flexWrap: isSmallScreen ? "nowrap" : "nowrap"
+                  }}>
                     <div style={{ 
                       display: "flex", 
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: (previewSidebarVisible || dataSidebarVisible) ? "16px" : "12px",
-                      color: isDark ? token.colorText : "#1A2A80",
-                      flexWrap: "nowrap",
-                      width: "100%",
-                      minWidth: 0
+                      minWidth: 0,
+                      flex: "1 1 auto",
+                      overflow: "hidden"
                     }}>
-                      <div style={{ 
-                        display: "flex", 
-                        alignItems: "center",
-                        gap: "6px",
-                        minWidth: 0,
-                        flex: "1 1 auto",
-                        marginRight: (previewSidebarVisible || dataSidebarVisible) ? "16px" : "12px"
+                      <FileTextOutlined style={{ 
+                        marginRight: "8px", 
+                        fontSize: isSmallScreen ? "14px" : "20px",
+                        flexShrink: 0 
+                      }} />
+                      <span style={{ 
+                        fontSize: isSmallScreen ? "14px" : "18px", 
+                        fontWeight: "500",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap"
                       }}>
-                        <FileTextOutlined style={{ 
-                          fontSize: "14px",
-                          flexShrink: 0
-                        }} />
-                        <span style={{ 
-                          fontSize: "14px", 
-                          fontWeight: "500",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis"
-                        }}>
-                          Repositorio
-                        </span>
-                        
-                        {/* Contador */}
-                        <div style={{
-                          backgroundColor: documents.length > 0 
-                            ? (isDark ? token.colorPrimaryBg : "#E8F4FD") 
-                            : (isDark ? token.colorBgTextHover : "#F0F0F0"),
-                          color: documents.length > 0 
-                            ? (isDark ? token.colorPrimary : "#3B38A0") 
-                            : (isDark ? token.colorTextSecondary : "#666"),
-                          padding: "2px 8px",
-                          borderRadius: "10px",
-                          fontSize: "10px",
-                          fontWeight: "500",
-                          transition: "all 0.3s ease",
-                          flexShrink: 0,
-                          whiteSpace: "nowrap",
-                          marginLeft: "8px"
-                        }}>
-                          {loading || refreshing ? "..." : `${documents.length}`}
-                        </div>
+                        {isSmallScreen ? "Repositorio" : "Repositorio de Documentos"}
+                      </span>
+                      <div style={{
+                        marginLeft: "12px",
+                        backgroundColor: documents.length > 0 
+                          ? (isDark ? token.colorPrimaryBg : "#E8F4FD") 
+                          : (isDark ? token.colorBgTextHover : "#F0F0F0"),
+                        color: documents.length > 0 
+                          ? (isDark ? token.colorPrimary : "#3B38A0") 
+                          : (isDark ? token.colorTextSecondary : "#666"),
+                        padding: isSmallScreen ? "2px 8px" : "4px 10px",
+                        borderRadius: isSmallScreen ? "10px" : "16px",
+                        fontSize: isSmallScreen ? "10px" : "12px",
+                        fontWeight: "500",
+                        transition: "all 0.3s ease",
+                        flexShrink: 0,
+                        whiteSpace: "nowrap"
+                      }}>
+                        {loading || refreshing ? (isSmallScreen ? "..." : "Actualizando...") : (isSmallScreen ? `${documents.length}` : `${documents.length} documento${documents.length !== 1 ? 's' : ''}`)}
                       </div>
-                      
-                        {/* Botón de upload */}
+                    </div>
+
+                    {!isStudent && (
                       <div style={{ 
                         flexShrink: 0,
                         minWidth: "fit-content",
-                        paddingTop: isMobileScreen ? '6px' : '4px'
+                        paddingTop: isSmallScreen ? '6px' : '4px'
                       }}>
-                        {!isStudent && (
-                          <UploadButton
-                          fileConfig={{
-                            accept: ".pdf",
-                            maxSize: 10 * 1024 * 1024, // 10MB
-                            validationMessage: "Solo se permiten archivos PDF de hasta 10MB"
-                          }}
-                          processingConfig={{
-                            steps: [
-                              { key: "validate", title: "Validación", description: "Validando formato PDF..." },
-                              { key: "extract", title: "Extracción", description: "Extrayendo contenido..." },
-                              { key: "process", title: "Procesamiento", description: "Procesando documento..." },
-                              { key: "store", title: "Almacenamiento", description: "Almacenando información..." }
-                            ],
-                            processingText: "Procesando documento PDF...",
-                            successText: "¡Documento procesado exitosamente!"
-                          }}
+                        <UploadButton
+                          fileConfig={fileConfig}
+                          processingConfig={processingConfig}
                           buttonConfig={{
                             showText: !isMobileScreen,
                             variant: "fill",
@@ -230,126 +243,14 @@ const UploadDocumentPage: React.FC = () => {
                           }}
                           modalConfig={{
                             title: "Cargar Nuevo Documento",
-                            width: isMobileScreen ? window.innerWidth * 0.9 : 600
+                            width: isMobileScreen ? (typeof window !== 'undefined' ? window.innerWidth * 0.9 : 600) : 600
                           }}
-                          onUpload={async (file, onProgress) => {
-                            try {
-                              const result = await processDocumentComplete(file, onProgress);
-                              return result;
-                            } catch (error) {
-                              console.error("Error processing document:", error);
-                              throw error;
-                            }
-                          }}
-                          onUploadSuccess={() => {
-                            handleUploadSuccess();
-                          }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ 
-                      display: "flex", 
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      color: isDark ? token.colorText : "#1A2A80",
-                      width: "100%",
-                      minWidth: 0,
-                      gap: screens.md && !screens.lg ? "8px" : "16px",
-                      flexWrap: screens.md && !screens.lg ? "wrap" : "nowrap" 
-                    }}>
-                      <div style={{ 
-                        display: "flex", 
-                        alignItems: "center",
-                        minWidth: 0,
-                        flex: "1 1 auto",
-                        overflow: "hidden"
-                      }}>
-                        <FileTextOutlined style={{ 
-                          marginRight: "8px", 
-                          fontSize: "20px",
-                          flexShrink: 0 
-                        }} />
-                        <span style={{ 
-                          fontSize: "18px", 
-                          fontWeight: "500",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap"
-                        }}>
-                          Repositorio de Documentos
-                        </span>
-                        <div style={{
-                          marginLeft: "12px",
-                          backgroundColor: documents.length > 0 
-                            ? (isDark ? token.colorPrimaryBg : "#E8F4FD") 
-                            : (isDark ? token.colorBgTextHover : "#F0F0F0"),
-                          color: documents.length > 0 
-                            ? (isDark ? token.colorPrimary : "#3B38A0") 
-                            : (isDark ? token.colorTextSecondary : "#666"),
-                          padding: "4px 10px",
-                          borderRadius: "16px",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          transition: "all 0.3s ease",
-                          flexShrink: 0,
-                          whiteSpace: "nowrap"
-                        }}>
-                          {loading || refreshing ? "Actualizando..." : `${documents.length} documento${documents.length !== 1 ? 's' : ''}`}
-                        </div>
-                      </div>
-
-                      <div style={{ 
-                        flexShrink: 0,
-                        minWidth: screens.md && !screens.lg ? "140px" : "180px", 
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        paddingRight: screens.lg ? "6px" : "0",
-                        paddingTop: screens.md && !screens.lg ? "6px" : "4px" 
-                      }}>
-                        {!isStudent && (
-                          <UploadButton
-                          fileConfig={{
-                            accept: ".pdf",
-                            maxSize: 10 * 1024 * 1024, // 10MB
-                            validationMessage: "Solo se permiten archivos PDF de hasta 10MB"
-                          }}
-                          processingConfig={{
-                            steps: [
-                              { key: "validate", title: "Validación", description: "Validando formato PDF..." },
-                              { key: "extract", title: "Extracción", description: "Extrayendo contenido..." },
-                              { key: "process", title: "Procesamiento", description: "Procesando documento..." },
-                              { key: "store", title: "Almacenamiento", description: "Almacenando información..." }
-                            ],
-                            processingText: "Procesando documento PDF...",
-                            successText: "¡Documento procesado exitosamente!"
-                          }}
-                          buttonConfig={{
-                            showText: true,
-                            variant: "fill",
-                            size: "middle",
-                            shape: "default"
-                          }}
-                          modalConfig={{
-                            title: "Cargar Nuevo Documento",
-                            width: 600
-                          }}
-                          onUpload={async (file, onProgress) => {
-                            try {
-                              const result = await processDocumentComplete(file, onProgress);
-                              return result;
-                            } catch (error) {
-                              console.error("Error processing document:", error);
-                              throw error;
-                            }
-                          }}
+                          onUpload={handleUploadDocument}
                           onUploadSuccess={handleUploadSuccess}
-                          />
-                        )}
+                        />
                       </div>
-                    </div>
-                  )
+                    )}
+                  </div>
                 }
                 style={{
                   borderRadius: "12px",
@@ -387,7 +288,6 @@ const UploadDocumentPage: React.FC = () => {
         document={documentToPreview}
         visible={previewSidebarVisible}
         onClose={handleCloseSidebar}
-        isSmallScreen={isSmallScreen}
         sidebarWidth={sidebarWidth}
       />
 
