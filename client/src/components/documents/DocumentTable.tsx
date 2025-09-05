@@ -32,10 +32,8 @@ export const DocumentTable = ({
 
   const columns = [
     {
-      title: (
-        <Tooltip title="Haz clic para ordenar alfabéticamente por nombre">
+      title: (    
           <span style={{ cursor: 'pointer' }}>Nombre del archivo</span>
-        </Tooltip>
       ),
       dataIndex: 'originalName',
       key: 'originalName',
@@ -46,9 +44,7 @@ export const DocumentTable = ({
     },
     {
       title: (
-        <Tooltip title="Haz clic para ordenar por fecha de subida">
           <span style={{ cursor: 'pointer' }}>Fecha de subida</span>
-        </Tooltip>
       ),
       dataIndex: 'uploadedAt',
       key: 'uploadedAt',
@@ -61,9 +57,7 @@ export const DocumentTable = ({
     },
     {
       title: (
-        <Tooltip title="Haz clic para ordenar por tamaño de archivo">
           <span style={{ cursor: 'pointer' }}>Tamaño</span>
-        </Tooltip>
       ),
       dataIndex: 'size',
       key: 'size',
