@@ -43,6 +43,7 @@ export class UploadDocumentUseCase {
     const existingDocument =
       await this.documentRepository.findByFileHash(fileHash);
     if (existingDocument) {
+      throw new BadRequestException('Este archivo ya existe en el sistema');
     }
 
     // Generar ID único para el documento
@@ -61,7 +62,7 @@ export class UploadDocumentUseCase {
         await this.storageAdapter.uploadDocument(uploadRequest);
 
       // Crear entidad de documento para base de datos
-      console.log('📝 Creating document entity...');
+      console.log(' Creating document entity...');
       const document = Document.create(
         documentId,
         storageResult.fileName, // storedName
@@ -75,13 +76,11 @@ export class UploadDocumentUseCase {
       );
 
       // Guardar en base de datos
-      console.log('💾 Saving to database...');
       const savedDocument = await this.documentRepository.save(document);
-      console.log('✅ Document saved successfully:', savedDocument.id);
 
       return savedDocument;
     } catch (error) {
-      console.log('❌ Upload failed:', error);
+      console.log(' Upload failed:', error);
       throw error;
     }
   }

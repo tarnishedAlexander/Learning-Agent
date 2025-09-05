@@ -92,7 +92,6 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       return document;
     } catch (error) {
-      console.error('❌ MinIO Upload Error:', error);
       throw new Error(`Error uploading document to MinIO: ${error.message || error}`);
     }
   }
@@ -116,7 +115,6 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       return signedUrl;
     } catch (error) {
-      console.error('❌ MinIO Download URL Error:', error);
       throw new Error(`Error generating download URL: ${error.message || error}`);
     }
   }
