@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Table, Button, message, Typography, Empty, Tabs } from "antd";
 import {
   EditOutlined,
@@ -38,12 +38,13 @@ const { TabPane } = Tabs;
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useUserStore((s) => s.user);
+
   const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
   const { students, fetchStudentsByClass } = useStudents();
   const { enrollSingleStudent, enrollGroupStudents, softDeleteSingleEnrollment } = useEnrollment();
   const { actualCourse, getCourseByID } = useCourses();
   const { teacherInfo, fetchTeacherInfoById } = useTeacher();
-  const user = useUserStore((s) => s.user);
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
@@ -63,60 +64,76 @@ export function CourseDetailPage() {
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string>("archivo.xlsx");
   const [sending, setSending] = useState(false);
-
   const [loading, setLoading] = useState(true);
 
+  const fetchPeriod = async () => {
+    if (!id) return
+
+    const res = await fetchClassById(id);
+    if (res.state == "error") {
+      message.error(res.message)
+    }
+  };
+
+  const fetchCourse = async () => {
+    if (!actualClass?.courseId) return
+
+    const courseID = actualClass.courseId;
+    const res = await getCourseByID(courseID);
+    if (res.state == "error") {
+      message.error(res.message)
+    }
+  };
+
+  const fetchTeacher = async () => {
+    if (!actualCourse?.teacherId) return
+
+    const res = await fetchTeacherInfoById(actualCourse.teacherId);
+    if (res.state == "error") {
+      message.error(res.message)
+    }
+  }
+
+  const fetchStudents = useCallback(async () => {
+    if (!id) return;
+
+    const res = await fetchStudentsByClass(id);
+    if (res.state === "error") {
+      message.error(res.message);
+    }
+  }, [id, fetchStudentsByClass]);
+
+
   useEffect(() => {
-    let active = true;
-    (async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        await fetchClassById(id);
-        await fetchStudentsByClass(id);
-      } catch (error) {
-        message.error("Error al cargar los datos del curso");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+    const preparePeriods = async () => {
+      if (!id) return
+      setLoading(true)
+      await fetchPeriod();
+    }
+    preparePeriods();
   }, [id]);
 
   useEffect(() => {
-    const loadCourseInfo = async () => {
+    const prepareCourse = async () => {
       if (!actualClass?.courseId) return
-
-      const courseID = actualClass.courseId;
-      const courseRes = await getCourseByID(courseID);
-      if (courseRes.state == "error") {
-        message.error(courseRes.message)
-        return
-      }
-    };
-    loadCourseInfo();
-  }, [actualClass]);
+      await fetchCourse();
+    }
+    prepareCourse();
+  }, [actualClass])
 
   useEffect(() => {
-    const loadTeacherInfo = async () => {
-      if (!actualCourse) return
-
-      const teacherId = actualCourse.teacherId;
-      if (!teacherId) return;
-
-      const teacherRes = await fetchTeacherInfoById(teacherId);
-      if (teacherRes.state == "error") {
-        message.error(teacherRes.message)
-        return
-      }
+    const prepareTeacher = async () => {
+      if (!actualCourse?.teacherId) return
+      await fetchTeacher();
+      setLoading(false)
     }
-    loadTeacherInfo();
+    prepareTeacher();
   }, [actualCourse])
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
 
   const handleEditClass = async (values: Clase) => {
     const data = await updateClass(values);
@@ -133,8 +150,8 @@ export function CourseDetailPage() {
 
   const handleDeletePeriod = () => {
     setSafetyModalConfig({
-      title: "¿Eliminar curso?",
-      message: `¿Estás seguro de que quieres eliminar el curso ${actualClass?.name}? \nEsta acción no se puede deshacer.`,
+      title: "¿Eliminar período?",
+      message: `¿Estás seguro de que quieres eliminar el período ${actualClass?.name}? Esta acción no se puede deshacer.`,
       onConfirm: confirmDeletePeriod,
     });
     setSafetyModalOpen(true);
@@ -176,6 +193,7 @@ export function CourseDetailPage() {
       await enrollSingleStudent(values);
       message.success("Estudiante inscrito correctamente");
       if (id) fetchClassById(id);
+      await fetchStudents();
       setSingleStudentFormOpen(false);
     } catch {
       message.error("Error al inscribir al estudiante");
@@ -227,7 +245,7 @@ export function CourseDetailPage() {
       setParsedStudents([]);
       setDuplicates([]);
       fetchClassById(id);
-
+      await fetchStudents()
     } else {
       message.error(result.message);
     }
@@ -261,6 +279,7 @@ export function CourseDetailPage() {
       return
     }
     message.success(res.message)
+    await fetchStudents()
     setSafetyModalOpen(false);
   }
 
