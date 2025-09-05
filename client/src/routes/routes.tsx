@@ -40,7 +40,7 @@ export const AppRoutes = () => {
               <Route path="/exams/create" element={<ExamsCreatePage />} />
               <Route path="/exams" element={<ExamManagementPage />} />
               <Route path="/classes/:id/students" element={<StudentsByClass />} />
-              <Route path="/classes/:id" element={<CourseDetailPage />} />
+              <Route path="/courses/:courseId/periods/:id" element={<CourseDetailPage />} />
             </Route>
 
             {/* Students */}
