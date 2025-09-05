@@ -1,20 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { OpenAI } from 'openai';
-import type { PromptTemplatePort } from 'src/modules/prompt-template/domain/ports/prompt-template.port';
 import { PROMPT_TEMPLATE_PORT } from 'src/modules/prompt-template/tokens';
-import { ChatAnswer } from 'src/modules/testChat/infrastructure/httpchat/dtoChat/generate-advice';
-import { QuestionResponse } from 'src/modules/testChat/infrastructure/httpchat/dtoChat/question-response';
-
-interface DeepseekCoachingResponse {
-  generated_question: string;
-  user_response: string;
-  coaching_advice: string;
-}
+import { DeepseekPort } from '../domain/ports/deepseek.port';
+import type { PromptTemplatePort } from 'src/modules/prompt-template/domain/ports/prompt-template.port';
+import { Inject, Injectable } from '@nestjs/common';
+import OpenAI from 'openai';
+import {
+  AdviceResponse,
+  ChatResponse,
+  QuestionResponse,
+} from '../domain/ports/response';
 
 @Injectable()
-export class ChatInterviewService {
+export class DsAdapter implements DeepseekPort {
   private deepseek: OpenAI;
-
   constructor(
     @Inject(PROMPT_TEMPLATE_PORT)
     private readonly promptTemplatePort: PromptTemplatePort,
@@ -24,7 +21,42 @@ export class ChatInterviewService {
       baseURL: 'https://api.deepseek.com/v1',
     });
   }
+  async generateResponse(question: string): Promise<ChatResponse> {
+    try {
+      const vars: Record<string, string> = {
+        user_question: question,
+      };
+      const prompt = await this.promptTemplatePort.render(
+        'singleQuestion.v1',
+        vars,
+      );
+      console.log(prompt);
+      const completion = await this.deepseek.chat.completions.create({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an academic assistant that always responds in a strict JSON format according to the provided instructions.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 1.3,
+        max_tokens: 500,
+      });
 
+      return JSON.parse(
+        completion.choices[0]?.message?.content ||
+          '{"answer":"No response from AI"}',
+      ) as ChatResponse;
+    } catch (error) {
+      console.error('OpenAI Error:', error);
+      throw new Error('Error generating AI response');
+    }
+  }
   async generateQuestion(topico: string): Promise<QuestionResponse> {
     try {
       const vars: Record<string, string> = {
@@ -62,16 +94,16 @@ export class ChatInterviewService {
       throw new Error('Error generating question');
     }
   }
-
-  // UPDATED METHOD: Generate advice based on question and answer
   async generateAdvise(
-    chatAnswer: ChatAnswer,
-  ): Promise<DeepseekCoachingResponse> {
+    question: string,
+    answer: string,
+    topic: string,
+  ): Promise<AdviceResponse> {
     try {
       const vars: Record<string, string> = {
-        user_question: chatAnswer.question,
-        user_answer: chatAnswer.answer,
-        topic: chatAnswer.topic,
+        user_question: question,
+        user_answer: answer,
+        topic: topic,
       };
 
       const prompt = await this.promptTemplatePort.render(
@@ -102,9 +134,9 @@ export class ChatInterviewService {
         throw new Error('No response from AI');
       }
 
-      const coachingResponse: DeepseekCoachingResponse = JSON.parse(
+      const coachingResponse: AdviceResponse = JSON.parse(
         responseContent,
-      ) as DeepseekCoachingResponse;
+      ) as AdviceResponse;
       console.log('resp advice', coachingResponse);
       return coachingResponse;
     } catch (error) {
