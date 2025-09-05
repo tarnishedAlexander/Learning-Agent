@@ -14,7 +14,7 @@ export function Reinforcement() {
 
   const studentActivities = {
     courses: [
-      { id: "exam", title: "Exámenes", description: "Preparación para exámenes y evaluaciones" },
+      { id: "test", title: "Exámenes", description: "Preparación para exámenes y evaluaciones" },
       { id: "interview", title: "Entrevistas", description: "Preparación para entrevistas de trabajo" },
     ],
   };
