@@ -7,6 +7,7 @@ import { DocumentTable } from "../../components/documents/DocumentTable";
 import { PdfPreviewSidebar } from "../../components/documents/PdfPreviewSidebar";
 import { DocumentDataSidebar } from "../../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../../hooks/useDocuments";
+import { useUserStore } from "../../store/userStore";
 import { useThemeStore } from "../../store/themeStore";
 import { documentService } from "../../services/documents.service";
 import type { Document } from "../../interfaces/documentInterface";
@@ -15,6 +16,8 @@ const { useBreakpoint } = Grid;
 
 const UploadDocumentPage: React.FC = () => {
   const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
+  const user = useUserStore((s) => s.user);
+  const isStudent = Boolean(user?.roles?.includes?.("estudiante"));
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
   
@@ -196,13 +199,14 @@ const UploadDocumentPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      {/* Botón de upload */}
+                        {/* Botón de upload */}
                       <div style={{ 
                         flexShrink: 0,
                         minWidth: "fit-content",
                         paddingTop: isMobileScreen ? '6px' : '4px'
                       }}>
-                        <UploadButton
+                        {!isStudent && (
+                          <UploadButton
                           fileConfig={{
                             accept: ".pdf",
                             maxSize: 10 * 1024 * 1024, // 10MB
@@ -240,7 +244,8 @@ const UploadDocumentPage: React.FC = () => {
                           onUploadSuccess={() => {
                             handleUploadSuccess();
                           }}
-                        />
+                          />
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -251,8 +256,8 @@ const UploadDocumentPage: React.FC = () => {
                       color: isDark ? token.colorText : "#1A2A80",
                       width: "100%",
                       minWidth: 0,
-                      gap: screens.md && !screens.lg ? "8px" : "16px", // menos espacio en medianas
-                      flexWrap: screens.md && !screens.lg ? "wrap" : "nowrap" // si hay poco espacio, permite wrap
+                      gap: screens.md && !screens.lg ? "8px" : "16px",
+                      flexWrap: screens.md && !screens.lg ? "wrap" : "nowrap" 
                     }}>
                       <div style={{ 
                         display: "flex", 
@@ -297,13 +302,14 @@ const UploadDocumentPage: React.FC = () => {
 
                       <div style={{ 
                         flexShrink: 0,
-                        minWidth: screens.md && !screens.lg ? "140px" : "180px", // ancho mínimo reducido en medianas
+                        minWidth: screens.md && !screens.lg ? "140px" : "180px", 
                         display: "flex",
                         justifyContent: "flex-end",
-                        paddingRight: screens.lg ? "6px" : "0", // casi al borde en grandes, cero en medianas
-                        paddingTop: screens.md && !screens.lg ? "6px" : "4px" // padding top agregado
+                        paddingRight: screens.lg ? "6px" : "0",
+                        paddingTop: screens.md && !screens.lg ? "6px" : "4px" 
                       }}>
-                        <UploadButton
+                        {!isStudent && (
+                          <UploadButton
                           fileConfig={{
                             accept: ".pdf",
                             maxSize: 10 * 1024 * 1024, // 10MB
@@ -339,7 +345,8 @@ const UploadDocumentPage: React.FC = () => {
                             }
                           }}
                           onUploadSuccess={handleUploadSuccess}
-                        />
+                          />
+                        )}
                       </div>
                     </div>
                   )
@@ -366,6 +373,7 @@ const UploadDocumentPage: React.FC = () => {
                   onViewData={handleViewData}
                   onDeleteSuccess={handleDeleteSuccess}
                   onDeleteError={handleDeleteError}
+                  isStudent={isStudent}
                 />
               </Card>
             </Col>
