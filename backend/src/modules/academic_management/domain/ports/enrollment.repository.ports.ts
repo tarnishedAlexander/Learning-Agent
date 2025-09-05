@@ -8,8 +8,15 @@ export interface EnrollmentRepositoryPort {
     ): Promise<Enrollment>;
     list(): Promise<Enrollment[]>;
     softDelete(
-            classId: string,
-            studentId: string
+        studentId: string,    
+        classId: string
     ): Promise<Enrollment>;
-    findByStudentAndClass(studentId: string, classId: string): Promise<Enrollment | null>
+    enableEnrollment(
+        studentId: string,
+        classId: string
+    ): Promise<Enrollment>;
+    findByStudentAndClass(
+        studentId: string, 
+        classId: string
+    ): Promise<Enrollment | null>
 }

@@ -78,5 +78,19 @@ export class EnrollmentPrismaRepository implements EnrollmentRepositoryPort {
                 isActive: false,
             },
         });
-    };   
+    };
+      
+    async enableEnrollment(studentId: string, classId:string): Promise<Enrollment> {
+        return this.prisma.enrollment.update({
+        where: {
+                studentId_classId: { 
+                studentId,
+                classId,
+            },
+        },
+            data: {
+                isActive: true,
+            },
+        });
+    };
 }
