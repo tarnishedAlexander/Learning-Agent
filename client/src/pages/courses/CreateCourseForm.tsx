@@ -3,11 +3,12 @@ import { useUserStore } from "../../store/userStore";
 import { Button, Form, Input, Modal } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import type { CreateCourseDTO } from "../../interfaces/courseInterface";
 
 interface CreateCourseFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (values: any) => void;
+    onSubmit: (values: CreateCourseDTO) => void;
 }
 
 export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormProps) => {
@@ -23,6 +24,7 @@ export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormPr
     const validationSchema = Yup.object().shape({
         name: Yup.string()
             .required("Nombre requerido")
+            .max(40, "El nombre no puede tener más de 40 caracteres")
             .matches(/^[^!@$%^&*?{}|<>]*$/, "El nombre no puede contener caracteres especiales")
             .matches(/^(?=.*[a-zA-Z]).*$/, "El nombre debe contener al menos una letra")
     })
@@ -41,14 +43,26 @@ export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormPr
     });
 
     const handleCancel = () => {
+        formik.resetForm();
         onClose();
+    }
+
+    const handleSubmit = () => {
+        formik.handleSubmit()
     }
 
     return (
         <Modal
             open={open}
             onCancel={handleCancel}
-            footer={null}
+            footer={[
+                <Button key="cancel" danger onClick={handleCancel}>
+                    Cancelar
+                </Button>,
+                <Button type="primary" onClick={handleSubmit}>
+                    Registrar materia
+                </Button>
+            ]}
             centered
             title="Registrar una nueva materia"
         >
@@ -77,14 +91,6 @@ export const CreateCourseForm = ({ open, onClose, onSubmit }: CreateCourseFormPr
                         onBlur={formik.handleBlur}
                     />
                 </Form.Item>
-
-
-                <Form.Item style={{ width: "70%" }}>
-                    <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-                        Guardar Cambios
-                    </Button>
-                </Form.Item>
-
             </Form>
         </Modal>
     )
