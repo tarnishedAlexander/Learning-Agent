@@ -208,6 +208,19 @@ export class DocumentsController {
     @Req() req: AuthenticatedRequest,
   ): Promise<UploadDocumentResponseDto> {
     try {
+      console.log(' Upload request received:', {
+        hasFile: !!file,
+        fileInfo: file ? {
+          originalname: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype,
+          fieldname: file.fieldname,
+        } : null,
+        hasUser: !!req.user,
+        userId: req.user?.id,
+        headers: req.headers,
+      });
+
       if (!file) {
         throw new BadRequestException('No se ha proporcionado ningún archivo');
       }
