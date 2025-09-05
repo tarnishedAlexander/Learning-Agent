@@ -131,9 +131,16 @@ export function CourseDetailPage() {
     setEditModalOpen(false);
   };
 
-  const handleDeleteCourse = () => setSafetyModalOpen(true);
+  const handleDeletePeriod = () => {
+    setSafetyModalConfig({
+      title: "¿Eliminar curso?",
+      message: `¿Estás seguro de que quieres eliminar el curso ${actualClass?.name}? \nEsta acción no se puede deshacer.`,
+      onConfirm: confirmDeletePeriod,
+    });
+    setSafetyModalOpen(true);
+  };
 
-  const confirmDeleteCourse = async () => {
+  const confirmDeletePeriod = async () => {
     try {
       if (!id) {
         message.error("ID del curso no encontrado");
@@ -228,14 +235,33 @@ export function CourseDetailPage() {
     setSending(false);
   };
 
+  const handleSingleEnrollmentDeleteWarning = (record: StudentInfo) => {
+    setSafetyModalConfig({
+      title: "¿Eliminar estudiante?",
+      message: `¿Estás seguro que quieres eliminar a ${record.name} ${record.lastname} de este periodo?`,
+      onConfirm: () => handleDeleteSingleEnrollment(record),
+    });
+    setSafetyModalOpen(true);
+  }
+
   const handleDeleteSingleEnrollment = async (record: StudentInfo) => {
-    if (!id) return
+    if (!id || !record) {
+      message.error("Ha ocurrido un error")
+      setSafetyModalOpen(false);
+      return
+    }
     const classData = {
       studentId: record.userId,
       classId: id
     }
     const res = await softDeleteSingleEnrollment(classData)
-    console.log(res)
+    if (res.state == "error") {
+      message.error(res.message)
+      setSafetyModalOpen(false);
+      return
+    }
+    message.success(res.message)
+    setSafetyModalOpen(false);
   }
 
   const studentsColumns = [
@@ -264,7 +290,7 @@ export function CourseDetailPage() {
       title: "Acciones",
       key: "actions",
       render: (_: any, record: StudentInfo) => (
-        <div style={{display: "flex", gap: 8}}>
+        <div style={{ display: "flex", gap: 8 }}>
           <Button
             type="primary"
             size="small"
@@ -281,7 +307,7 @@ export function CourseDetailPage() {
             type="primary"
             size="small"
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteSingleEnrollment(record)}
+            onClick={() => handleSingleEnrollmentDeleteWarning(record)}
           >
             Eliminar
           </Button>
@@ -356,7 +382,7 @@ export function CourseDetailPage() {
             danger
             type="primary"
             icon={<DeleteOutlined />}
-            onClick={handleDeleteCourse}
+            onClick={handleDeletePeriod}
           >
             Eliminar Curso
           </Button>
@@ -628,10 +654,10 @@ export function CourseDetailPage() {
 
         <SafetyModal
           open={safetyModalOpen}
-          onCancel={() => setSafetyModalOpen(false)}
-          onConfirm={confirmDeleteCourse}
-          title="¿Eliminar curso?"
-          message={`¿Estás seguro de que quieres eliminar el curso "${actualClass.name}"? Esta acción no se puede deshacer.`}
+          onCancel={() => { setSafetyModalOpen(false); }}
+          onConfirm={safetyModalConfig.onConfirm}
+          title={safetyModalConfig.title}
+          message={safetyModalConfig.message}
           confirmText="Sí, eliminar"
           cancelText="Cancelar"
           danger

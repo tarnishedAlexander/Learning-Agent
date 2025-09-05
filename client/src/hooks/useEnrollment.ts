@@ -54,7 +54,10 @@ const useEnrollment = () => {
 
     //Endpoints PUT
     const softDeleteSingleEnrollment = async (classInfo: Omit<SoftDeleteSingleEnrollmentDTO, "teacherId">) => {
-        if (!user) return
+        if (!user) return {
+            state: "error",
+            message: "No se ha podido cargar la información del usuario"
+        };
         const classId = classInfo.classId;
         const enrollData = {
             teacherId: user.id,
