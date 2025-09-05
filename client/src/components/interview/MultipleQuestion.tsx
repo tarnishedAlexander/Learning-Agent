@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Typography, Checkbox, Button, Card, theme } from 'antd';
-import { RightOutlined, CheckOutlined, CodeOutlined } from '@ant-design/icons';
+import { RightOutlined, CodeOutlined } from '@ant-design/icons';
 import type { CheckboxValueType } from 'antd/lib/checkbox/Group';
 
 const { Paragraph } = Typography;
@@ -124,7 +124,6 @@ export default function MultipleQuestion({ onNext }: MultipleQuestionProps) {
               <Checkbox key={opt.value} value={opt.value} style={{ margin: 0 }}>
                 <div
                   style={{
-                    position: 'relative',
                     width: 320,
                     padding: token.paddingMD,
                     borderRadius: token.borderRadiusLG,
@@ -160,18 +159,6 @@ export default function MultipleQuestion({ onNext }: MultipleQuestionProps) {
                   >
                     {opt.code.join('\n')}
                   </pre>
-                  {selected && (
-                    <CheckOutlined
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        right: token.paddingSM,
-                        transform: 'translateY(-50%)',
-                        color: token.colorPrimary,
-                        fontSize: token.fontSizeLG,
-                      }}
-                    />
-                  )}
                 </div>
               </Checkbox>
             );
@@ -182,7 +169,7 @@ export default function MultipleQuestion({ onNext }: MultipleQuestionProps) {
           <Button
             type="primary"
             size="large"
-            onClick={onNext} 
+            onClick={onNext}
             style={{
               marginTop: token.marginLG,
               borderRadius: token.borderRadiusLG,
