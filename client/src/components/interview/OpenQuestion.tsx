@@ -48,9 +48,7 @@ const ChatMessage: React.FC<{
         padding: `${token.paddingSM}px ${token.paddingLG}px`,
         borderRadius: token.borderRadiusXXL,
         maxWidth: '75%',
-        backgroundColor: isUser
-          ? token.colorBgElevated
-          : token.colorBgContainer,
+        backgroundColor: isUser ? token.colorBgElevated : token.colorBgContainer,
         boxShadow: token.boxShadow,
         fontSize: token.fontSize,
         color: token.colorText,
@@ -75,8 +73,8 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [inputDisabled, setInputDisabled] = useState(true);
   const [showNextButton, setShowNextButton] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasFetchedInitial = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -104,14 +102,13 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, isBotTyping, showNextButton]);
 
   async function fetchQuestion() {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_URL}${import.meta.env.VITE_CHATINT_URL}`
-      );
+      const res = await fetch(`${import.meta.env.VITE_URL}${import.meta.env.VITE_CHATINT_URL}`);
       const { question } = await res.json();
       setMessages((m) => [...m, { sender: 'bot', text: question }]);
     } catch {}
@@ -126,28 +123,19 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
     setInputDisabled(true);
     setIsBotTyping(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_URL}${import.meta.env.VITE_CHATINT_ADVICE_URL}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question: lastQuestion,
-            answer,
-            topic: 'fisica',
-          }),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_URL}${import.meta.env.VITE_CHATINT_ADVICE_URL}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: lastQuestion,
+          answer,
+          topic: 'fisica',
+        }),
+      });
       const data = await res.json();
-      setMessages((m) => [
-        ...m,
-        { sender: 'bot', text: data.coaching_advice || 'Error.' },
-      ]);
+      setMessages((m) => [...m, { sender: 'bot', text: data.coaching_advice || 'Error.' }]);
     } catch {
-      setMessages((m) => [
-        ...m,
-        { sender: 'bot', text: 'Hubo un error.' },
-      ]);
+      setMessages((m) => [...m, { sender: 'bot', text: 'Hubo un error.' }]);
     } finally {
       setIsBotTyping(false);
       setInputDisabled(false);
@@ -162,8 +150,8 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
         justifyContent: 'center',
         alignItems: 'center',
         padding: token.paddingLG,
-        height: '100%',
         backgroundColor: token.colorBgLayout,
+        overflowAnchor: 'none',
       }}
     >
       <Card
@@ -179,7 +167,8 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
         style={{
           width: '100%',
           maxWidth: 900,
-          height: '80vh',
+          height: '60vh',
+          maxHeight: '60vh',
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: token.colorBgContainer,
@@ -192,24 +181,13 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
           overflow: 'hidden',
         }}
       >
-        <div style={{ flex: 1, overflowY: 'auto', padding: token.paddingLG }}>
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: token.paddingLG, overflowAnchor: 'none' }}>
           {messages.map((msg, i) => (
-            <ChatMessage
-              key={i}
-              text={msg.text}
-              isUser={msg.sender === 'user'}
-              token={token}
-            />
+            <ChatMessage key={i} text={msg.text} isUser={msg.sender === 'user'} token={token} />
           ))}
           {isBotTyping && <TypingIndicator token={token} />}
           {showNextButton && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                margin: token.marginLG,
-              }}
-            >
+            <div style={{ display: 'flex', justifyContent: 'center', margin: token.marginLG }}>
               <Button
                 type="primary"
                 size="large"
@@ -226,7 +204,6 @@ export default function OpenQuestion({ onNext }: OpenQuestionProps) {
               </Button>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
         {!showNextButton && (
           <div
