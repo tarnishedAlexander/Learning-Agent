@@ -35,6 +35,8 @@ export const SingleStudentForm = ({ open, onClose, onSubmit }: UploadStudentForm
       studentCode: '',
     },
     validationSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
     onSubmit: (values, { resetForm }) => {
       onSubmit(values);
       resetForm();
@@ -69,21 +71,53 @@ export const SingleStudentForm = ({ open, onClose, onSubmit }: UploadStudentForm
           validateStatus={formik.errors.studentName && formik.touched.studentName ? 'error' : ''}
           help={formik.touched.studentName && formik.errors.studentName}
         >
-          <Input name="studentName" value={formik.values.studentName} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+          <Input
+            name="studentName"
+            value={formik.values.studentName}
+            onChange={(e) => {
+              formik.handleChange(e);
+              if (!formik.touched.studentName) {
+                formik.setFieldTouched("studentName", true, false);
+              }
+            }}
+            onBlur={formik.handleBlur}
+          />
         </Form.Item>
         <Form.Item
           style={{ width: '100%' }}
           label="Apellido"
           validateStatus={formik.errors.studentLastname && formik.touched.studentLastname ? 'error' : ''}
-          help={formik.touched.studentLastname && formik.errors.studentLastname}>
-          <Input name="studentLastname" value={formik.values.studentLastname} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+          help={formik.touched.studentLastname && formik.errors.studentLastname}
+        >
+          <Input
+            name="studentLastname"
+            value={formik.values.studentLastname}
+            onChange={(e) => {
+              formik.handleChange(e);
+              if (!formik.touched.studentLastname) {
+                formik.setFieldTouched("studentLastname", true, false);
+              }
+            }}
+            onBlur={formik.handleBlur}
+          />
         </Form.Item>
         <Form.Item
           style={{ width: '100%' }}
           label="Código UPB"
           validateStatus={formik.errors.studentCode && formik.touched.studentCode ? 'error' : ''}
-          help={formik.touched.studentCode && formik.errors.studentCode}>
-          <Input name="studentCode" value={formik.values.studentCode} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+          help={formik.touched.studentCode && formik.errors.studentCode}
+        >
+          <Input
+            name="studentCode"
+            value={formik.values.studentCode}
+            onChange={(e) => {
+              formik.handleChange(e);
+              if (!formik.touched.studentCode) {
+                formik.setFieldTouched("studentCode", true, false);
+              }
+            }}
+            onBlur={formik.handleBlur}
+          />
         </Form.Item>
       </Form>
     </Modal>
