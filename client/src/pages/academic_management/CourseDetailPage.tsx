@@ -37,6 +37,7 @@ const { TabPane } = Tabs;
 
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
 
@@ -283,6 +284,10 @@ export function CourseDetailPage() {
     setSafetyModalOpen(false);
   }
 
+  const goToExams = () => {
+    navigate(`/exams`)
+  }
+
   const studentsColumns = [
     {
       title: "Nombres",
@@ -375,11 +380,11 @@ export function CourseDetailPage() {
     <PageTemplate
       title={actualClass.name}
       subtitle={dayjs().format("DD [de] MMMM [de] YYYY")}
-      //TODO Hay que cambiar los Breadcrumbs para que se mantengan con el formato del usuario actual (docente o estudiante)
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Clases", href: "/classes" },
-        { label: actualClass.name, href: `/classes/${actualClass.id}` },
+        { label: "Materias", href: "/courses" },
+        { label: actualCourse?.name || "Materia", href: `/courses/${courseId}/periods` },
+        { label: actualClass.name },
       ]}
       actions={
         <>
@@ -628,6 +633,13 @@ export function CourseDetailPage() {
                       Los exámenes creados aparecerán aquí para su gestión
                     </Text>
                   </Empty>
+                  <Button 
+                    type="primary" 
+                    style={{ marginTop: "16px" }}
+                    onClick={goToExams}
+                  >
+                    Ir a exámenes
+                  </Button>
                 </div>
               </div>
             </TabPane>
