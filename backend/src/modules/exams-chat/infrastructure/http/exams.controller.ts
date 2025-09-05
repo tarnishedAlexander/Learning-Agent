@@ -1,22 +1,23 @@
 import { Controller, Post, Body } from '@nestjs/common';
+import { PublishGeneratedQuestionUseCase } from '../../application/usecases/publish-generated-question.usecase';
 import { GenerateOptionsForQuestionUseCase } from '../../application/usecases/generate-options-for-question.usecase';
-import { PublishGeneratedQuestionUseCase, PublishInput } from '../../application/usecases/publish-generated-question.usecase';
 
 @Controller('exams-chat')
 export class ExamsChatController {
   constructor(
     private readonly publishUseCase: PublishGeneratedQuestionUseCase,
-    private readonly generateOptionsUseCase: GenerateOptionsForQuestionUseCase
+    private readonly generateOptionsUseCase: GenerateOptionsForQuestionUseCase,
   ) {}
 
-  @Post('publish-question')
-  async publish(@Body() body: { text: string }) {
-    const input: PublishInput = { text: body.text };
-    return this.publishUseCase.execute(input);
+  @Post('publish')
+  async publishQuestion(@Body() body: { text: string; confidence?: number; source?: string }) {
+    const { text, confidence, source } = body;
+    return this.publishUseCase.execute({ text, confidence, source });
   }
 
   @Post('generate-options')
   async generateOptions(@Body() body: { questionId: string }) {
-    return this.generateOptionsUseCase.execute({ questionId: body.questionId });
+    const { questionId } = body;
+    return this.generateOptionsUseCase.execute({ questionId });
   }
 }

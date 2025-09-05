@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EXAM_QUESTION_REPO, EXAM_AI_GENERATOR } from '../../tokens';
 import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
 import type { OptionGeneratorPort } from '../../domain/ports/option-generator.port';
-import { EXAM_AI_GENERATOR } from '../../tokens';
-import { Question } from '../../domain/entities/question.entity';
-
-
+import { Question, QuestionStatus } from '../../domain/entities/question.entity';
 
 export type GenerateOptionsInput = { questionId: string };
 
@@ -13,13 +11,15 @@ export type GenerateOptionsResult =
   | { result: 'invalid'; reason: 'wrong_status' | 'option_generation_failed' };
 
 const MAX_OPTION_LENGTH = 500;
-const REQUIRED_OPTIONS = 4;
+const REQUIRED_OPTIONS_COUNT = 4;
 
 @Injectable()
 export class GenerateOptionsForQuestionUseCase {
   constructor(
+    @Inject(EXAM_QUESTION_REPO)
     private readonly questionRepo: QuestionRepositoryPort,
-    private readonly optionGenerator: OptionGeneratorPort,
+    @Inject(EXAM_AI_GENERATOR)
+    private readonly generator: OptionGeneratorPort,
   ) {}
 
   async execute(input: GenerateOptionsInput): Promise<GenerateOptionsResult> {
@@ -36,53 +36,66 @@ export class GenerateOptionsForQuestionUseCase {
       return { result: 'invalid', reason: 'wrong_status' };
     }
 
-    let generated: string[];
+    let options: string[] | null = null;
     try {
-      generated = await this.optionGenerator.generateOptions(question.text);
+      options = await this.generator.generateOptions(question.text);
     } catch (err) {
-      // persistimos estado invalid y devolvemos fallo
       const invalidQ = new Question(
         question.text,
-        (question as any).type,
-        (question as any).options ?? undefined,
-        (question as any).source ?? undefined,
-        (question as any).confidence ?? undefined,
+        question.type,
+        question.options ?? undefined,
+        question.source,
+        question.confidence,
         'invalid',
-        (question as any).id,
-        (question as any).createdAt,
+        question.id,
+        question.createdAt,
       );
       await this.questionRepo.save(invalidQ);
       return { result: 'invalid', reason: 'option_generation_failed' };
     }
 
-    if (!Array.isArray(generated) || generated.length < REQUIRED_OPTIONS) {
+    if (!Array.isArray(options) || options.length !== REQUIRED_OPTIONS_COUNT) {
       const invalidQ = new Question(
         question.text,
-        (question as any).type,
-        (question as any).options ?? undefined,
-        (question as any).source ?? undefined,
-        (question as any).confidence ?? undefined,
+        question.type,
+        question.options ?? undefined,
+        question.source,
+        question.confidence,
         'invalid',
-        (question as any).id,
-        (question as any).createdAt,
+        question.id,
+        question.createdAt,
       );
       await this.questionRepo.save(invalidQ);
       return { result: 'invalid', reason: 'option_generation_failed' };
     }
 
-    const normalized = generated.slice(0, REQUIRED_OPTIONS).map((o) => (o ?? '').trim());
+    const cleaned = options.map((o) => (typeof o === 'string' ? o.trim() : ''));
 
-    const invalidOption = normalized.find((o) => !o || o.length === 0 || o.length > MAX_OPTION_LENGTH);
-    if (invalidOption) {
+    if (cleaned.some((o) => !o)) {
       const invalidQ = new Question(
         question.text,
-        (question as any).type,
-        (question as any).options ?? undefined,
-        (question as any).source ?? undefined,
-        (question as any).confidence ?? undefined,
+        question.type,
+        question.options ?? undefined,
+        question.source,
+        question.confidence,
         'invalid',
-        (question as any).id,
-        (question as any).createdAt,
+        question.id,
+        question.createdAt,
+      );
+      await this.questionRepo.save(invalidQ);
+      return { result: 'invalid', reason: 'option_generation_failed' };
+    }
+
+    if (cleaned.some((o) => o.length > MAX_OPTION_LENGTH)) {
+      const invalidQ = new Question(
+        question.text,
+        question.type,
+        question.options ?? undefined,
+        question.source,
+        question.confidence,
+        'invalid',
+        question.id,
+        question.createdAt,
       );
       await this.questionRepo.save(invalidQ);
       return { result: 'invalid', reason: 'option_generation_failed' };
@@ -90,17 +103,17 @@ export class GenerateOptionsForQuestionUseCase {
 
     const updated = new Question(
       question.text,
-      (question as any).type,
-      normalized,
-      (question as any).source ?? undefined,
-      (question as any).confidence ?? undefined,
+      question.type,
+      cleaned,
+      question.source,
+      question.confidence,
       'published',
-      (question as any).id,
-      (question as any).createdAt,
+      question.id,
+      question.createdAt,
     );
 
     await this.questionRepo.save(updated);
 
-    return { result: 'options_generated', questionId: updated.id, options: normalized };
+    return { result: 'options_generated', questionId: question.id, options: cleaned };
   }
 }

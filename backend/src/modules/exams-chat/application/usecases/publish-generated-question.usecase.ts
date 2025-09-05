@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Question } from '../../domain/entities/question.entity';
 import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
-
+import { EXAM_QUESTION_REPO } from '../../tokens';
 
 export type PublishInput = {
   text: string;
@@ -34,7 +34,10 @@ function normalizeText(input: string): string {
 
 @Injectable()
 export class PublishGeneratedQuestionUseCase {
-  constructor(private readonly questionRepo: QuestionRepositoryPort) {}
+  constructor(
+    @Inject(EXAM_QUESTION_REPO)
+    private readonly questionRepo: QuestionRepositoryPort,
+  ) {}
 
   async execute(input: PublishInput): Promise<PublishResult> {
     if (!input || typeof input.text !== 'string') {
