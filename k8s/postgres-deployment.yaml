@@ -18,16 +18,14 @@ spec:
           image: pgvector/pgvector:pg16
           ports:
             - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              value: "app_user"
-            - name: POSTGRES_PASSWORD
-              value: "app_pass"
-            - name: POSTGRES_DB
-              value: "learning_agent"
+          envFrom:
+            - secretRef:
+                name: infra-secrets
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/
           livenessProbe:
             exec:
               command:
@@ -42,6 +40,9 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
+        - name: init-script
+          configMap:
+            name: postgres-init
 ---
 apiVersion: v1
 kind: Service
