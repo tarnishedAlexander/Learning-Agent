@@ -256,6 +256,8 @@ export function CreatePeriodForm({
             value={formik.values.semester}
             onChange={(value) => {
               formik.setFieldValue("semester", value);
+              formik.setFieldValue("dateBegin", "");
+              formik.setFieldValue("dateEnd", "");
             }}
             onBlur={() => formik.setFieldTouched("semester", true)}
             style={{ width: "100%" }}
@@ -293,6 +295,12 @@ export function CreatePeriodForm({
                 ? dayjs(formik.values.dateBegin)
                 : undefined
             }
+            defaultPickerValue={
+              formik.values.semester
+                ? ranges[formik.values.semester].start
+                : undefined
+            }
+            disabled={!formik.values.semester}
             disabledDate={disabledDateBegin}
             onChange={(value) => handleDateChange("dateBegin", value)}
           />
@@ -314,6 +322,12 @@ export function CreatePeriodForm({
             value={
               formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined
             }
+            defaultPickerValue={
+              formik.values.semester
+                ? ranges[formik.values.semester].start
+                : undefined
+            }
+            disabled={!formik.values.dateBegin}
             disabledDate={disabledDateEnd}
             onChange={(value) => handleDateChange("dateEnd", value)}
           />
