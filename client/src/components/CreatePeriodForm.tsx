@@ -89,6 +89,15 @@ export function CreatePeriodForm({
     },
   });
 
+  const disabledDateBegin = (current: Dayjs) => {
+    return current && current.isBefore(dayjs().subtract(1, "day"));
+  };
+
+  const disabledDateEnd = (current: Dayjs) => {
+    if (!formik.values.dateBegin) return false;
+    return current && current.isBefore(dayjs(formik.values.dateBegin));
+  };
+
   const handleCancel = () => {
     onClose();
     formik.resetForm();
@@ -157,11 +166,7 @@ export function CreatePeriodForm({
                 ? dayjs(formik.values.dateBegin)
                 : undefined
             }
-            disabledDate={(current: Dayjs) => {
-              const threeWeeksAgo = new Date();
-              threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
-              return current && current.toDate() < threeWeeksAgo;
-            }}
+            disabledDate={disabledDateBegin}
             onChange={(value) => {
               const date = value?.toDate();
               if (date) {
@@ -193,12 +198,7 @@ export function CreatePeriodForm({
             value={
               formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined
             }
-            disabledDate={(current: Dayjs) => {
-              if (!formik.values.dateBegin) return false;
-              return (
-                current && current.toDate() <= new Date(formik.values.dateBegin)
-              );
-            }}
+            disabledDate={disabledDateEnd}
             onChange={(value) => {
               const date = value?.toDate();
               if (date) {
