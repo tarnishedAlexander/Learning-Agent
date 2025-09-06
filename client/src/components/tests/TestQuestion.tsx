@@ -9,14 +9,17 @@ interface MultipleSelectionTestResponse {
   correctAnswer: number;
 }
 
-
 interface TestQuestionProps {
   onNext: () => void;
 }
 
 export default function TestQuestion({ onNext }: TestQuestionProps) {
   const { token } = theme.useToken();
-  const [multSelectionTest, setMultSelectionTest] = useState<MultipleSelectionTestResponse>();
+  const [multSelectionTest, setMultSelectionTest] = useState<MultipleSelectionTestResponse>({
+    question: "",
+    options: [],
+    correctAnswer: -1
+  });
 
   const handleSelect = (value: string) => {
     setTimeout(() => {
@@ -30,21 +33,26 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
     token.colorInfo,
     token.colorInfoHover
   ];
+
   useEffect(() => {
     fetchQuestion();
   }, []);
+
   async function fetchQuestion() {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_URL}${import.meta.env.VITE_TESTCHAT_URL}`
       );
-      const testOp = await res.json() as MultipleSelectionTestResponse;
-      setMultSelectionTest(testOp);
-    } catch (error) { 
-      console.log(error);
+      const testOp = (await res.json()) as MultipleSelectionTestResponse;
+      setMultSelectionTest({
+        question: testOp.question || "",
+        options: testOp.options || [],
+        correctAnswer: typeof testOp.correctAnswer === "number" ? testOp.correctAnswer : -1
+      });
+    } catch (error) {
+      console.error(error);
     }
   }
-
 
   return (
     <div
@@ -75,7 +83,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
             color: token.colorTextHeading
           }}
         >
-          {multSelectionTest?.question}
+          {multSelectionTest.question}
         </Title>
       </Card>
 
@@ -88,7 +96,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
           maxWidth: 800
         }}
       >
-        {multSelectionTest?.options.map((opt, index) => (
+        {multSelectionTest.options.map((opt, index) => (
           <div
             key={index}
             onClick={() => handleSelect(opt)}
