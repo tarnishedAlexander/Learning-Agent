@@ -1,4 +1,4 @@
-import { Modal, Form, Select, Space, Button, DatePicker } from "antd";
+import { Modal, Form, Select, Space, Button, DatePicker, message } from "antd";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import dayjs, { Dayjs } from "dayjs";
@@ -6,6 +6,18 @@ import type { Course } from "../interfaces/courseInterface";
 import type { CreateClassDTO } from "../interfaces/claseInterface";
 
 const { Option } = Select;
+const MIN_BUSINESS_DAYS = 25;
+
+const countBusinessDays = (start: Dayjs, end: Dayjs) => {
+  let days = 0;
+  let current = start.clone();
+  while (current.isBefore(end, "day")) {
+    const day = current.day();
+    if (day !== 0 && day !== 6) days++;
+    current = current.add(1, "day");
+  }
+  return days;
+};
 
 const periodValidationSchema = yup.object({
   semester: yup
@@ -33,12 +45,12 @@ interface CreatePeriodFormProps {
   loading?: boolean;
 }
 
-export function CreatePeriodForm({ 
-  open, 
-  onClose, 
-  onSubmit, 
+export function CreatePeriodForm({
+  open,
+  onClose,
+  onSubmit,
   course,
-  loading = false 
+  loading = false,
 }: CreatePeriodFormProps) {
   const formik = useFormik<PeriodFormValues>({
     initialValues: {
@@ -48,6 +60,17 @@ export function CreatePeriodForm({
     },
     validationSchema: periodValidationSchema,
     onSubmit: async (values, { resetForm }) => {
+      const start = dayjs(values.dateBegin);
+      const end = dayjs(values.dateEnd);
+
+      const businessDays = countBusinessDays(start, end);
+      if (businessDays < MIN_BUSINESS_DAYS) {
+        message.error(
+          `El período debe tener mínimo ${MIN_BUSINESS_DAYS} días hábiles`
+        );
+        return;
+      }
+
       try {
         const periodData: CreateClassDTO = {
           semester: values.semester,
@@ -56,7 +79,7 @@ export function CreatePeriodForm({
           dateBegin: values.dateBegin,
           dateEnd: values.dateEnd,
         };
-        
+
         await onSubmit(periodData);
         resetForm();
         onClose();
@@ -168,13 +191,13 @@ export function CreatePeriodForm({
             format="DD-MM-YYYY"
             placeholder="Seleccionar fecha de fin"
             value={
-              formik.values.dateEnd
-                ? dayjs(formik.values.dateEnd)
-                : undefined
+              formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined
             }
             disabledDate={(current: Dayjs) => {
               if (!formik.values.dateBegin) return false;
-              return current && current.toDate() <= new Date(formik.values.dateBegin);
+              return (
+                current && current.toDate() <= new Date(formik.values.dateBegin)
+              );
             }}
             onChange={(value) => {
               const date = value?.toDate();
