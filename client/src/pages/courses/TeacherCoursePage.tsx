@@ -1,8 +1,8 @@
-import { Button, Empty, Space, Input } from "antd";
+import { Button, Empty, Space, Input, message } from "antd";
 import PageTemplate from "../../components/PageTemplate";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useCourses from "../../hooks/useCourses";
-import type { Course } from "../../interfaces/courseInterface";
+import type { Course, CreateCourseDTO } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
 import { CreateCourseForm } from "./CreateCourseForm";
 import { PlusOutlined, SolutionOutlined } from "@ant-design/icons";
@@ -21,9 +21,21 @@ export function TeacherCoursePage() {
 
   useEffect(() => {
     fetchUser();
-    if (!user) return
-    fetchCoursesByTeacher(user.id)
   }, [fetchUser]);
+
+  const fetchCourses = useCallback(async () => {
+    if (!user) return
+
+    const res = await fetchCoursesByTeacher(user.id)
+    if (res.state == "error") {
+      message.error(res.message);
+      return
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetchCourses()
+  }, [user, fetchCourses])
 
   useEffect(() => {
     const lower = searchTerm.trim().toLowerCase();
@@ -55,7 +67,7 @@ export function TeacherCoursePage() {
 
   const goToExams = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/exams/${id}`);
+    navigate(`/exams/`);
   };
 
   const goToMaterials = (id: string, e: React.MouseEvent) => {
@@ -63,8 +75,17 @@ export function TeacherCoursePage() {
     navigate(`/materials/${id}`);
   };
 
-  const handleAddCourse = (values: any) => {
-    createCourse(values.name);
+  const handleAddCourse = async (values: CreateCourseDTO) => {
+    if (!values) {
+      message.error("No se pueden enviar datos vacíos")
+      return
+    }
+    const res = await createCourse(values.name);
+    if (res.state == "error"){
+      message.error(res.message)
+      return
+    }
+    message.success(res.message)
   };
 
   return (
