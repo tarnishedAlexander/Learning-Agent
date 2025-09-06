@@ -5,18 +5,20 @@ import dayjs, { Dayjs } from "dayjs";
 import type { Course } from "../interfaces/courseInterface";
 import type { CreateClassDTO } from "../interfaces/claseInterface";
 
+import isBetween from "dayjs/plugin/isBetween";
+dayjs.extend(isBetween);
+
 const { Option } = Select;
 const MIN_BUSINESS_DAYS = 25;
 
-const countBusinessDays = (start: Dayjs, end: Dayjs) => {
-  let days = 0;
-  let current = start.clone();
-  while (current.isBefore(end, "day")) {
-    const day = current.day();
-    if (day !== 0 && day !== 6) days++;
-    current = current.add(1, "day");
-  }
-  return days;
+const allowYearTileIfSameYear = (
+  current: Dayjs,
+  minDate: Dayjs,
+  maxDate: Dayjs
+) => {
+  const y = minDate.year();
+  const dec31 = dayjs(`${y}-12-31`);
+  return current.isSame(dec31, "day");
 };
 
 const periodValidationSchema = yup.object({
@@ -52,6 +54,38 @@ export function CreatePeriodForm({
   course,
   loading = false,
 }: CreatePeriodFormProps) {
+  const currentYear = new Date().getFullYear();
+
+  const ranges = {
+    [`PRIMERO ${currentYear}`]: {
+      start: dayjs(`${currentYear}-01-25`),
+      end: dayjs(`${currentYear}-06-30`),
+    },
+    [`SEGUNDO ${currentYear}`]: {
+      start: dayjs(`${currentYear}-07-25`),
+      end: dayjs(`${currentYear}-12-31`),
+    },
+    [`PRIMERO ${currentYear + 1}`]: {
+      start: dayjs(`${currentYear + 1}-01-25`),
+      end: dayjs(`${currentYear + 1}-06-30`),
+    },
+    [`SEGUNDO ${currentYear + 1}`]: {
+      start: dayjs(`${currentYear + 1}-07-25`),
+      end: dayjs(`${currentYear + 1}-12-31`),
+    },
+  };
+
+  const countBusinessDays = (start: Dayjs, end: Dayjs) => {
+    let days = 0;
+    let current = start.clone();
+    while (current.isBefore(end, "day")) {
+      const day = current.day();
+      if (day !== 0 && day !== 6) days++;
+      current = current.add(1, "day");
+    }
+    return days;
+  };
+
   const formik = useFormik<PeriodFormValues>({
     initialValues: {
       semester: "",
@@ -60,18 +94,19 @@ export function CreatePeriodForm({
     },
     validationSchema: periodValidationSchema,
     onSubmit: async (values, { resetForm }) => {
-      const start = dayjs(values.dateBegin);
-      const end = dayjs(values.dateEnd);
-
-      const businessDays = countBusinessDays(start, end);
-      if (businessDays < MIN_BUSINESS_DAYS) {
-        message.error(
-          `El período debe tener mínimo ${MIN_BUSINESS_DAYS} días hábiles`
-        );
-        return;
-      }
-
       try {
+        const start = dayjs(values.dateBegin);
+        const end = dayjs(values.dateEnd);
+
+        // Validar que haya al menos MIN_BUSINESS_DAYS días hábiles
+        const businessDays = countBusinessDays(start, end);
+        if (businessDays < MIN_BUSINESS_DAYS) {
+          message.error(
+            `El período debe tener mínimo ${MIN_BUSINESS_DAYS} días hábiles`
+          );
+          return;
+        }
+
         const periodData: CreateClassDTO = {
           semester: values.semester,
           teacherId: course.teacherId,
@@ -89,21 +124,109 @@ export function CreatePeriodForm({
     },
   });
 
-  const disabledDateBegin = (current: Dayjs) => {
-    return current && current.isBefore(dayjs().subtract(1, "day"));
-  };
-
-  const disabledDateEnd = (current: Dayjs) => {
-    if (!formik.values.dateBegin) return false;
-    return current && current.isBefore(dayjs(formik.values.dateBegin));
-  };
-
   const handleCancel = () => {
     onClose();
     formik.resetForm();
   };
 
-  const currentYear = new Date().getFullYear();
+  const disabledDateBegin = (current: Dayjs) => {
+    const { semester, dateEnd } = formik.values;
+    if (!semester || !ranges[semester]) return true;
+
+    const { start, end } = ranges[semester];
+    const minDate = start;
+    let maxDate = end;
+
+    if (dateEnd) {
+      let temp = dayjs(dateEnd);
+      let days = 0;
+      while (days < MIN_BUSINESS_DAYS) {
+        temp = temp.subtract(1, "day");
+        const d = temp.day();
+        if (d !== 0 && d !== 6) days++;
+      }
+      maxDate = temp;
+    }
+
+    let out =
+      current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
+
+    if (
+      out &&
+      current.year() === minDate.year() &&
+      allowYearTileIfSameYear(current, minDate, maxDate)
+    ) {
+      out = false;
+    }
+    return out;
+  };
+
+  const disabledDateEnd = (current: Dayjs) => {
+    const { semester, dateBegin } = formik.values;
+    if (!semester || !ranges[semester]) return true;
+
+    const { start, end } = ranges[semester];
+    let minDate = start;
+    const maxDate = end;
+
+    if (dateBegin) {
+      let temp = dayjs(dateBegin);
+      let days = 0;
+      while (days < MIN_BUSINESS_DAYS) {
+        temp = temp.add(1, "day");
+        const d = temp.day();
+        if (d !== 0 && d !== 6) days++;
+      }
+      minDate = temp;
+    }
+
+    let out =
+      current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
+
+    if (
+      out &&
+      current.year() === minDate.year() &&
+      allowYearTileIfSameYear(current, minDate, maxDate)
+    ) {
+      out = false;
+    }
+    return out;
+  };
+
+  const handleDateChange = (
+    field: "dateBegin" | "dateEnd",
+    value: Dayjs | null
+  ) => {
+    if (value) {
+      const date = value.toDate();
+      const isoDate = date.toISOString().split("T")[0];
+      formik.setFieldValue(field, isoDate);
+
+      if (field === "dateBegin") {
+        let temp = value.clone();
+        let days = 0;
+
+        while (days < MIN_BUSINESS_DAYS) {
+          temp = temp.add(1, "day");
+          const day = temp.day();
+          if (day !== 0 && day !== 6) days++;
+        }
+
+        formik.setFieldValue("dateEnd", temp.toISOString().split("T")[0]);
+      }
+
+      const selectedSemester = Object.keys(ranges).find((sem) => {
+        const { start, end } = ranges[sem];
+        return value.isBetween(start, end, "day", "[]");
+      });
+
+      if (selectedSemester && selectedSemester !== formik.values.semester) {
+        formik.setFieldValue("semester", selectedSemester);
+      }
+    } else {
+      formik.setFieldValue(field, "");
+    }
+  };
 
   return (
     <Modal
@@ -119,6 +242,7 @@ export function CreatePeriodForm({
         onFinish={formik.handleSubmit}
         style={{ marginTop: "20px" }}
       >
+        {/* Selección de período */}
         <Form.Item
           label="Período"
           validateStatus={
@@ -130,7 +254,9 @@ export function CreatePeriodForm({
           <Select
             placeholder="Seleccionar período"
             value={formik.values.semester}
-            onChange={(value) => formik.setFieldValue("semester", value)}
+            onChange={(value) => {
+              formik.setFieldValue("semester", value);
+            }}
             onBlur={() => formik.setFieldTouched("semester", true)}
             style={{ width: "100%" }}
           >
@@ -149,6 +275,7 @@ export function CreatePeriodForm({
           </Select>
         </Form.Item>
 
+        {/* Fecha inicio */}
         <Form.Item
           label="Inicio de Período"
           validateStatus={
@@ -167,22 +294,11 @@ export function CreatePeriodForm({
                 : undefined
             }
             disabledDate={disabledDateBegin}
-            onChange={(value) => {
-              const date = value?.toDate();
-              if (date) {
-                const isoDate = date.toISOString().split("T")[0];
-                formik.setFieldValue("dateBegin", isoDate);
-
-                // Calcular automáticamente la fecha de fin (34 días después)
-                const autoEnd = new Date(date);
-                autoEnd.setDate(autoEnd.getDate() + 34);
-                const autoEndISO = autoEnd.toISOString().split("T")[0];
-                formik.setFieldValue("dateEnd", autoEndISO);
-              }
-            }}
+            onChange={(value) => handleDateChange("dateBegin", value)}
           />
         </Form.Item>
 
+        {/* Fecha fin */}
         <Form.Item
           label="Fin de Período"
           validateStatus={
@@ -199,13 +315,7 @@ export function CreatePeriodForm({
               formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined
             }
             disabledDate={disabledDateEnd}
-            onChange={(value) => {
-              const date = value?.toDate();
-              if (date) {
-                const isoDate = date.toISOString().split("T")[0];
-                formik.setFieldValue("dateEnd", isoDate);
-              }
-            }}
+            onChange={(value) => handleDateChange("dateEnd", value)}
           />
         </Form.Item>
 
