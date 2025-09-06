@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Typography, theme } from "antd";
 
 const { Title } = Typography;
 
-interface Option {
-  label: string;
-  value: string;
+interface MultipleSelectionTestResponse {
+  question: string;
+  options: string[];
+  correctAnswer: number;
 }
+
 
 interface TestQuestionProps {
   onNext: () => void;
@@ -14,13 +16,7 @@ interface TestQuestionProps {
 
 export default function TestQuestion({ onNext }: TestQuestionProps) {
   const { token } = theme.useToken();
-
-  const options: Option[] = [
-    { label: "O(n²)", value: "A" },
-    { label: "O(n log n)", value: "B" },
-    { label: "O(n)", value: "C" },
-    { label: "O(log n)", value: "D" }
-  ];
+  const [multSelectionTest, setMultSelectionTest] = useState<MultipleSelectionTestResponse>();
 
   const handleSelect = (value: string) => {
     setTimeout(() => {
@@ -34,6 +30,21 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
     token.colorInfo,
     token.colorInfoHover
   ];
+  useEffect(() => {
+    fetchQuestion();
+  }, []);
+  async function fetchQuestion() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_URL}${import.meta.env.VITE_TESTCHAT_URL}`
+      );
+      const testOp = await res.json() as MultipleSelectionTestResponse;
+      setMultSelectionTest(testOp);
+    } catch (error) { 
+      console.log(error);
+    }
+  }
+
 
   return (
     <div
@@ -64,7 +75,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
             color: token.colorTextHeading
           }}
         >
-          ¿Cuál de estas complejidades es más eficiente para ordenar una lista grande?
+          {multSelectionTest?.question}
         </Title>
       </Card>
 
@@ -77,10 +88,10 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
           maxWidth: 800
         }}
       >
-        {options.map((opt, index) => (
+        {multSelectionTest?.options.map((opt, index) => (
           <div
-            key={opt.value}
-            onClick={() => handleSelect(opt.value)}
+            key={index}
+            onClick={() => handleSelect(opt)}
             style={{
               backgroundColor: optionColors[index],
               color: token.colorTextLightSolid,
@@ -103,7 +114,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
               (e.currentTarget as HTMLDivElement).style.boxShadow = token.boxShadow;
             }}
           >
-            {opt.label}
+            {opt}
           </div>
         ))}
       </div>
