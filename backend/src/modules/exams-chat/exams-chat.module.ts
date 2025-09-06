@@ -7,7 +7,10 @@ import { GenerateOptionsForQuestionUseCase } from './application/usecases/genera
 import { PublishGeneratedQuestionUseCase } from './application/usecases/publish-generated-question.usecase';
 import { DeepseekModule } from '../deepseek/deepseek.module';
 
-const AiGeneratorClass = (AiGenModule as any).AIQuestionGenerator ?? (AiGenModule as any).AiQuestionGenerator ?? (AiGenModule as any).default;
+const AiGeneratorClass =
+  (AiGenModule as any).AIQuestionGenerator ??
+  (AiGenModule as any).AiQuestionGenerator ??
+  (AiGenModule as any).default;
 
 class AiGeneratorFallback {
   async generateOptions(_text: string): Promise<string[]> {
@@ -15,9 +18,10 @@ class AiGeneratorFallback {
   }
 }
 
-const AiProvider = typeof AiGeneratorClass === 'function'
-  ? { provide: EXAM_AI_GENERATOR, useClass: AiGeneratorClass }
-  : { provide: EXAM_AI_GENERATOR, useClass: AiGeneratorFallback };
+const AiProvider =
+  typeof AiGeneratorClass === 'function'
+    ? { provide: EXAM_AI_GENERATOR, useClass: AiGeneratorClass }
+    : { provide: EXAM_AI_GENERATOR, useClass: AiGeneratorFallback };
 
 @Module({
   imports: [DeepseekModule],
@@ -28,5 +32,6 @@ const AiProvider = typeof AiGeneratorClass === 'function'
     GenerateOptionsForQuestionUseCase,
     PublishGeneratedQuestionUseCase,
   ],
+  exports: [AiProvider],
 })
 export class ExamsChatModule {}

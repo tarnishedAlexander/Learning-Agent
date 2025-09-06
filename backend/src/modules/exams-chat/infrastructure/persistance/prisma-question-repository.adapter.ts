@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { DEEPSEEK_PORT } from 'src/modules/deepseek/tokens';
 import type { DeepseekPort } from 'src/modules/deepseek/domain/ports/deepseek.port';
-import { Question, QuestionType, QuestionStatus } from '../../domain/entities/question.entity';
+import { Question } from '../../domain/entities/question.entity';
 import type { QuestionRepositoryPort } from '../../domain/ports/question-repository.port';
 
 @Injectable()
@@ -26,6 +26,6 @@ export class DeepseekQuestionAdapter implements QuestionRepositoryPort {
 
   async generateQuestion(topic: string): Promise<Question> {
     const response = await this.deepseek.generateQuestion(topic);
-    return Question.create(response.question, 'open_analysis', []);
+    return Question.create(response.question, 'multiple_choice', []);
   }
 }

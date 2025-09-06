@@ -5,6 +5,7 @@ import { EXAM_QUESTION_REPO } from '../../tokens';
 
 export type PublishInput = {
   text: string;
+  type?: 'multiple_choice' | 'true_false';
   options?: unknown;
   source?: string;
   confidence?: number;
@@ -16,7 +17,7 @@ export type PublishResult =
   | { result: 'duplicate' }
   | { result: 'invalid'; questionId: string };
 
-const MAX_CONTENT_LENGTH = 2000;
+const MAX_CONTENT_LENGTH = 1500;
 const MIN_CONFIDENCE = Number(process.env.MIN_CONFIDENCE ?? 0.6);
 
 function normalizeText(input: string): string {
@@ -59,7 +60,7 @@ export class PublishGeneratedQuestionUseCase {
       return { result: 'duplicate' };
     }
 
-    const question = Question.create(normalized);
+    const question = Question.create(normalized, input.type ?? 'multiple_choice');
     const saved = await this.questionRepo.save(question);
 
     const confidence = typeof input.confidence === 'number' ? input.confidence : 1;
