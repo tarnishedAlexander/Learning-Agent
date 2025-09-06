@@ -4,6 +4,7 @@ import type {
   DocumentChunkingService,
   ProcessChunksResult,
 } from '../../domain/services/document-chunking.service';
+import type { DocumentCategorizationService } from '../../domain/services/document-categorization.service';
 import { DocumentStatus } from '../../domain/entities/document.entity';
 
 /**
@@ -44,6 +45,7 @@ export class ProcessDocumentChunksUseCase {
   constructor(
     private readonly documentRepository: DocumentRepositoryPort,
     private readonly chunkingService: DocumentChunkingService,
+    private readonly categorizationService: DocumentCategorizationService,
   ) {}
 
   /**
@@ -91,7 +93,7 @@ export class ProcessDocumentChunksUseCase {
         },
       );
 
-      // 5. Log del resultado
+      // 5. Log del resultado de chunking
       if (result.status === 'success') {
         this.logger.log(
           `✅ Chunks procesados exitosamente para documento ${documentId}: ` +
@@ -105,6 +107,40 @@ export class ProcessDocumentChunksUseCase {
             `Max: ${result.chunkingResult.statistics.maxChunkSize} chars, ` +
             `Overlap: ${result.chunkingResult.statistics.actualOverlapPercentage.toFixed(1)}%`,
         );
+
+        // 6. Ejecutar categorización automática después del chunking exitoso
+        try {
+          this.logger.log(
+            `🔍 Iniciando categorización automática para documento ${documentId}...`,
+          );
+
+          const categorizationResult =
+            await this.categorizationService.categorizeDocument(documentId, {
+              replaceExisting: false,
+              confidenceThreshold: 0.3,
+              maxCategoriesPerDocument: 3,
+            });
+
+          if (categorizationResult.assignedCategories.length > 0) {
+            this.logger.log(
+              `🏷️ Categorización completada para ${documentId}: ` +
+                `${categorizationResult.assignedCategories.length} categorías asignadas ` +
+                `en ${categorizationResult.processingTimeMs}ms`,
+            );
+          } else {
+            this.logger.warn(
+              `⚠️ No se asignaron categorías al documento ${documentId}`,
+            );
+          }
+        } catch (categorizationError) {
+          this.logger.error(
+            `❌ Error en categorización automática para documento ${documentId}:`,
+            categorizationError instanceof Error
+              ? categorizationError.message
+              : 'Error desconocido',
+          );
+          // No fallar todo el proceso por un error de categorización
+        }
       } else {
         this.logger.error(
           `❌ Error procesando chunks para documento ${documentId}: ` +

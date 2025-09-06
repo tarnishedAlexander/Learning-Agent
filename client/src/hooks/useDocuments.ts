@@ -274,6 +274,61 @@ export const useDocuments = () => {
     }
   }, []);
 
+  const categorizeDocument = useCallback(async (
+    documentId: string,
+    options?: {
+      replaceExisting?: boolean;
+      confidenceThreshold?: number;
+      maxCategoriesPerDocument?: number;
+    }
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await documentService.categorizeDocument(documentId, options);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error categorizing document';
+      setError(errorMessage);
+      console.error('Error categorizing document:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getAvailableCategories = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await documentService.getAvailableCategories();
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error getting available categories';
+      setError(errorMessage);
+      console.error('Error getting available categories:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getDocumentCategories = useCallback(async (documentId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await documentService.getDocumentCategories(documentId);
+      return result;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error getting document categories';
+      setError(errorMessage);
+      console.error('Error getting document categories:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
@@ -300,6 +355,11 @@ export const useDocuments = () => {
     getDocumentExtractedData,
     generateDocumentEmbeddings,
     clearExtractedDataCache,
+
+    // Funcionalidades de categorización
+    categorizeDocument,
+    getAvailableCategories,
+    getDocumentCategories,
     
     // Estados para datos extraídos
     extractedDataCache,
