@@ -190,6 +190,53 @@ model ProcessingJob {
   @@index([createdAt])
 }
 
+/**
+ * ===========================
+ * Enums para Document Processing
+ * ===========================
+ */
+
+enum DocumentStatus {
+  UPLOADED      // Archivo subido, esperando procesamiento
+  PROCESSING    // En proceso de extracción/chunking/embedding
+  PROCESSED     // Completamente procesado y listo para búsqueda
+  ERROR         // Error en el procesamiento
+  DELETED       // Marcado como eliminado
+}
+
+enum ProcessingType {
+  TEXT_EXTRACTION       // Extraer texto del archivo
+  CHUNKING             // Dividir texto en chunks
+  EMBEDDING_GENERATION // Generar embeddings vectoriales
+  FULL_PROCESSING      // Procesamiento completo (todos los pasos)
+  REPROCESSING         // Reprocesar documento existente
+}
+
+enum ProcessingStatus {
+  PENDING      // Esperando en cola
+  RUNNING      // Ejecutándose actualmente
+  COMPLETED    // Completado exitosamente
+  FAILED       // Falló con error
+  CANCELLED    // Cancelado manualmente
+  RETRYING     // Reintentando después de fallo
+}
+
+enum ChunkType {
+  TEXT         // Chunk de texto normal
+  TITLE        // Título o encabezado
+  TABLE        // Contenido de tabla
+  LIST         // Lista o enumeración
+  CODE         // Código o texto técnico
+  FORMULA      // Fórmula matemática
+  METADATA     // Metadatos del documento
+}
+
+/**
+ * ===========================
+ * Exams generation
+ * ===========================
+ */
+
 model Exam {
   id                String         @id @default(uuid())
   subject           String
