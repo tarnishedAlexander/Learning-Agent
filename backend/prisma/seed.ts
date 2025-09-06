@@ -28,13 +28,14 @@ async function main() {
   const docentePassword = await bcrypt.hash('Docente123!', 10);
   const estudiantePassword = await bcrypt.hash('Estudiante123!', 10);
 
-  // --- Crear/asegurar usuario docente ---
+  // --- Crear usuario docente ---
   const docente = await prisma.user.upsert({
     where: { email: 'docente@example.com' },
     update: {
+      password: docentePassword,
+      isActive: true,
       name: 'Doc',
       lastname: 'Ejemplo',
-      isActive: true,
     },
     create: {
       email: 'docente@example.com',
@@ -64,13 +65,14 @@ async function main() {
     },
   });
 
-  // --- Crear/asegurar usuario estudiante ---
+  // --- Crear usuario estudiante ---
   const estudiante = await prisma.user.upsert({
     where: { email: 'estudiante@example.com' },
     update: {
+      password: estudiantePassword,
+      isActive: true,
       name: 'Patricio',
       lastname: 'Estrella',
-      isActive: true,
     },
     create: {
       email: 'estudiante@example.com',
@@ -105,8 +107,19 @@ async function main() {
   const pass = await bcrypt.hash('admin123', 10);
   await prisma.user.upsert({
     where: { email },
-    update: {},
-    create: { email, password: pass, isActive: true, name: 'Patricio', lastname: 'Estrella', },
+    update: {
+      password: pass,
+      isActive: true,
+      name: 'Admin',
+      lastname: 'User',
+    },
+    create: {
+      email,
+      password: pass,
+      isActive: true,
+      name: 'Admin',
+      lastname: 'User',
+    },
   });
 
   // ==============================
