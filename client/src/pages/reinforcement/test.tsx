@@ -5,7 +5,8 @@ import { TestModal } from "../../components/tests/TestModal";
 import { useStudentTest } from "../../hooks/useStudentTest";
 import TestQuestion from "../../components/tests/TestQuestion";
 import TrueOrFalseQuestion from "../../components/tests/TrueOrFalseQuestion";
-import { TestTimer } from "../../components/Timer";
+import { TestTimer } from "../../components/tests/Timer";
+
 
 export default function Test() {
   const navigate = useNavigate();
