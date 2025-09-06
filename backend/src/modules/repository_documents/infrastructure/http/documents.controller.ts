@@ -42,7 +42,6 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
-    private readonly categorizeDocumentUseCase: CategorizeDocumentUseCase,
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -50,7 +49,7 @@ export class DocumentsController {
   async listDocuments(): Promise<DocumentListResponseDto> {
     try {
       this.logger.logDocumentOperation('list');
-
+      
       const result = await this.listDocumentsUseCase.execute();
 
       // Mapear la respuesta del dominio a DTOs
@@ -81,13 +80,9 @@ export class DocumentsController {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
-      this.logger.error(
-        'Error retrieving documents',
-        error instanceof Error ? error : errorMessage,
-        {
-          errorType: 'DOCUMENTS_LIST_ERROR',
-        },
-      );
+      this.logger.error('Error retrieving documents', error instanceof Error ? error : errorMessage, {
+        errorType: 'DOCUMENTS_LIST_ERROR',
+      });
 
       // Manejar diferentes tipos de errores
       if (errorMessage.includes('Bucket de documentos no encontrado')) {
@@ -133,7 +128,7 @@ export class DocumentsController {
   ): Promise<DeleteDocumentResponseDto> {
     try {
       this.logger.logDocumentOperation('delete', documentId);
-
+      
       const result = await this.deleteDocumentUseCase.execute(documentId);
 
       if (!result.success) {
@@ -143,7 +138,7 @@ export class DocumentsController {
             documentId,
             errorType: 'DOCUMENT_NOT_FOUND',
           });
-
+          
           throw new HttpException(
             new DeleteDocumentErrorDto(
               'Document Not Found',
@@ -159,7 +154,7 @@ export class DocumentsController {
           documentId,
           errorType: result.error,
         });
-
+        
         throw new HttpException(
           new DeleteDocumentErrorDto(
             'Delete Failed',
@@ -189,15 +184,11 @@ export class DocumentsController {
       // Error inesperado
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in deleteDocument',
-        error instanceof Error ? error : errorMessage,
-        {
-          documentId,
-          errorType: 'UNEXPECTED_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in deleteDocument', error instanceof Error ? error : errorMessage, {
+        documentId,
+        errorType: 'UNEXPECTED_ERROR',
+      });
 
       throw new HttpException(
         new DeleteDocumentErrorDto(
@@ -275,16 +266,12 @@ export class DocumentsController {
       // Error inesperado
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in uploadDocument',
-        error instanceof Error ? error : errorMessage,
-        {
-          fileName: file?.originalname,
-          fileSize: file?.size,
-          errorType: 'UPLOAD_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in uploadDocument', error instanceof Error ? error : errorMessage, {
+        fileName: file?.originalname,
+        fileSize: file?.size,
+        errorType: 'UPLOAD_ERROR',
+      });
 
       throw new HttpException(
         {
@@ -313,12 +300,12 @@ export class DocumentsController {
 
       const downloadUrl =
         await this.downloadDocumentUseCase.execute(documentId);
-
+      
       this.logger.log('Document download URL generated successfully', {
         documentId,
         downloadUrlLength: downloadUrl.length,
       });
-
+      
       return { downloadUrl };
     } catch (error) {
       if (
@@ -327,18 +314,14 @@ export class DocumentsController {
       ) {
         throw error;
       }
-
+      
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in downloadDocument',
-        error instanceof Error ? error : errorMessage,
-        {
-          documentId,
-          errorType: 'DOWNLOAD_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in downloadDocument', error instanceof Error ? error : errorMessage, {
+        documentId,
+        errorType: 'DOWNLOAD_ERROR',
+      });
 
       throw new HttpException(
         {
@@ -368,7 +351,7 @@ export class DocumentsController {
           documentId,
           operation: 'text_extraction',
         });
-
+        
         return {
           success: true,
           message: 'Texto extraído exitosamente del documento',
@@ -378,7 +361,7 @@ export class DocumentsController {
           documentId,
           operation: 'text_extraction',
         });
-
+        
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
@@ -395,16 +378,12 @@ export class DocumentsController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in processDocumentText',
-        error instanceof Error ? error : errorMessage,
-        {
-          documentId,
-          operation: 'text_extraction',
-          errorType: 'PROCESSING_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in processDocumentText', error instanceof Error ? error : errorMessage, {
+        documentId,
+        operation: 'text_extraction',
+        errorType: 'PROCESSING_ERROR',
+      });
 
       throw new HttpException(
         {
@@ -456,16 +435,11 @@ export class DocumentsController {
       });
 
       if (result.status === 'success') {
-        this.logger.logChunkOperation(
-          'process',
-          documentId,
-          result.savedChunks.length,
-          {
-            processingTimeMs: result.processingTimeMs,
-            statistics: result.chunkingResult.statistics,
-          },
-        );
-
+        this.logger.logChunkOperation('process', documentId, result.savedChunks.length, {
+          processingTimeMs: result.processingTimeMs,
+          statistics: result.chunkingResult.statistics,
+        });
+        
         return {
           success: true,
           message: 'Chunks procesados exitosamente',
@@ -476,16 +450,12 @@ export class DocumentsController {
           },
         };
       } else {
-        this.logger.error(
-          'Chunk processing failed',
-          JSON.stringify(result.errors),
-          {
-            documentId,
-            operation: 'chunk_processing',
-            errors: result.errors,
-          },
-        );
-
+        this.logger.error('Chunk processing failed', JSON.stringify(result.errors), {
+          documentId,
+          operation: 'chunk_processing',
+          errors: result.errors,
+        });
+        
         return {
           success: false,
           message: 'Error procesando chunks',
@@ -502,16 +472,12 @@ export class DocumentsController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in processDocumentChunks',
-        error instanceof Error ? error : errorMessage,
-        {
-          documentId,
-          operation: 'chunk_processing',
-          errorType: 'CHUNK_PROCESSING_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in processDocumentChunks', error instanceof Error ? error : errorMessage, {
+        documentId,
+        operation: 'chunk_processing',
+        errorType: 'CHUNK_PROCESSING_ERROR',
+      });
 
       throw new HttpException(
         {
@@ -583,16 +549,12 @@ export class DocumentsController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-
-      this.logger.error(
-        'Unexpected error in getDocumentChunks',
-        error instanceof Error ? error : errorMessage,
-        {
-          documentId,
-          operation: 'chunk_retrieval',
-          errorType: 'CHUNK_RETRIEVAL_ERROR',
-        },
-      );
+      
+      this.logger.error('Unexpected error in getDocumentChunks', error instanceof Error ? error : errorMessage, {
+        documentId,
+        operation: 'chunk_retrieval',
+        errorType: 'CHUNK_RETRIEVAL_ERROR',
+      });
 
       throw new HttpException(
         {

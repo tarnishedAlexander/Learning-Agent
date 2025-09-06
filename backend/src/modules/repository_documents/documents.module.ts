@@ -45,8 +45,7 @@ import { ProcessDocumentTextUseCase } from './application/commands/process-docum
 import { ProcessDocumentChunksUseCase } from './application/commands/process-document-chunks.usecase';
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
-import { CategorizeDocumentUseCase } from './application/use-cases/categorize-document.use-case';
-import { NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
 import { ContextualLoggerService } from './infrastructure/services/contextual-logger.service';
@@ -57,9 +56,8 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     // Servicios de configuración
     AiConfigService,
 
-    // Servicios de logging y middleware
+    // Servicios de logging
     ContextualLoggerService,
-    AuthMiddleware,
 
     // Infrastructure adapters
     { provide: DOCUMENT_STORAGE_PORT, useClass: S3StorageAdapter },
@@ -245,7 +243,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
 export class DocumentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware, LoggingMiddleware)
+      .apply(LoggingMiddleware)
       .forRoutes('api/documents', 'api/repository-documents/embeddings');
 
     consumer
