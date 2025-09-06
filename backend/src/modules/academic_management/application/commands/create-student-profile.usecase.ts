@@ -1,18 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPO } from '../../tokens';
-import { STUDENT_REPO } from '../../tokens';
-import type { UserRepositoryPort } from '../../domain/ports/user.repository.ports';
+import { USER_REPO, STUDENT_REPO } from '../../tokens';
+import type { UserRepositoryPort } from 'src/modules/identity/domain/ports/user.repository.port';
 import type { StudentRepositoryPort } from '../../domain/ports/student.repository.ports';
 import { Student } from '../../domain/entities/student.entity'
-import { CreateStudentUseCase } from './create-student.usecase'
-import { CreateUserUseCase } from './create-user.usecase'
-// import { email } from 'zod';
 @Injectable()
 export class CreateStudentProfileUseCase {
   constructor(
     @Inject(USER_REPO) private readonly userRepo: UserRepositoryPort,
     @Inject(STUDENT_REPO) private readonly studentRepo: StudentRepositoryPort,
   ) { }
+
+  //TODO adaptar para factorizar la creación de usuarios-estudiantes desde enrollment useCases
   async execute(input: {
     name: string,
     lastname: string,
