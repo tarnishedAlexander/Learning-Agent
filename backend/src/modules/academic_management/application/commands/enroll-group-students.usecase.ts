@@ -40,9 +40,15 @@ export class EnrollGroupStudentUseCase {
                     this.logger.log(student)
                 }
 
-                const existingEnrollments = await this.enrollmentRepo.findByStudentId(student.userId);
-                if (existingEnrollments.some(enrollment => enrollment.classId === input.classId)) {
-                    existingRows++;
+                const existingEnrollment = await this.enrollmentRepo.findByStudentAndClass(student.userId, input.classId);
+
+                if (existingEnrollment) {
+                    if (!existingEnrollment.isActive) {
+                        await this.enrollmentRepo.enableEnrollment(student.userId,input.classId);
+                        successRows++;
+                    } else {
+                        existingRows++;
+                    }
                     continue;
                 }
 

@@ -58,6 +58,7 @@ export const darkTheme: ThemeConfig = {
     colorSuccess: "#22c55e",
     colorWarning: "#f59e0b",
     colorError: "#f87171",
+    fontFamily: "Inter, sans-serif",
     borderRadius: 12,
     colorBgBase: "#0b1024",
     colorBgLayout: "#0b1024",
