@@ -5,11 +5,6 @@ import dayjs, { Dayjs } from "dayjs";
 import type { Course } from "../interfaces/courseInterface";
 import type { CreateClassDTO } from "../interfaces/claseInterface";
 
-import { ConfigProvider } from "antd";
-import esES from "antd/locale/es_ES";
-import "dayjs/locale/es";
-dayjs.locale("es");
-
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
@@ -234,7 +229,7 @@ export function CreatePeriodForm({
   };
 
   return (
-    <ConfigProvider locale={esES}>
+    
       <Modal
         title={`Crear Período - ${course.name}`}
         open={open}
@@ -355,6 +350,6 @@ export function CreatePeriodForm({
           </Form.Item>
         </Form>
       </Modal>
-    </ConfigProvider>
+    
   );
 }
