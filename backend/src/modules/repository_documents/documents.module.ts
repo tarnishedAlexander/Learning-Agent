@@ -45,6 +45,7 @@ import { ProcessDocumentTextUseCase } from './application/commands/process-docum
 import { ProcessDocumentChunksUseCase } from './application/commands/process-document-chunks.usecase';
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
+import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
@@ -212,6 +213,34 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       },
       inject: [DocumentEmbeddingService],
     },
+    {
+      provide: CheckDocumentSimilarityUseCase,
+      useFactory: (
+        documentRepository: PrismaDocumentRepositoryAdapter,
+        textExtraction: PdfTextExtractionAdapter,
+        chunkingStrategy: SemanticTextChunkingAdapter,
+        embeddingGenerator: EmbeddingGeneratorPort,
+        vectorSearch: VectorSearchPort,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
+      ) => {
+        return new CheckDocumentSimilarityUseCase(
+          documentRepository,
+          textExtraction,
+          chunkingStrategy,
+          embeddingGenerator,
+          vectorSearch,
+          chunkRepository,
+        );
+      },
+      inject: [
+        DOCUMENT_REPOSITORY_PORT,
+        TEXT_EXTRACTION_PORT,
+        CHUNKING_STRATEGY_PORT,
+        EMBEDDING_GENERATOR_PORT,
+        VECTOR_SEARCH_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+      ],
+    },
   ],
   exports: [
     // Casos de uso originales
@@ -225,6 +254,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     // Nuevos casos de uso para embeddings
     GenerateDocumentEmbeddingsUseCase,
     SearchDocumentsUseCase,
+    CheckDocumentSimilarityUseCase,
 
     // Servicios de dominio
     DocumentChunkingService,
