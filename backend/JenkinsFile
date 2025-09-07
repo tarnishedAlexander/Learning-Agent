@@ -24,10 +24,10 @@ pipeline {
                             sh 'echo "Contenido actual:" && ls -la'
                             sh "docker build -t ${image} ."
                         }
-                        sh '''
-                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        sh """
+                            echo \"$DOCKERHUB_PASS\" | docker login -u \"$DOCKERHUB_USER\" --password-stdin
                             docker push ${image}
-                        '''
+                        """
                     }
                 }
             }
