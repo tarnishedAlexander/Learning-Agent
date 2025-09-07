@@ -202,7 +202,11 @@ export class DocumentsController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB
+    },
+  }))
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: AuthenticatedRequest,
