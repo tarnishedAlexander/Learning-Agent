@@ -4,7 +4,7 @@ pipeline {
     environment {
         CI = 'true'
         NODE_ENV = 'production'
-        DOCKER_IMAGE = "your-dockerhub-username/learning-agent-backend:${env.BUILD_NUMBER}"
+    DOCKER_IMAGE = "${DOCKERHUB_USER}/learning-agent-backend:${env.BUILD_NUMBER}"
         REGISTRY_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
     }
 
