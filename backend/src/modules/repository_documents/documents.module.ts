@@ -322,11 +322,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
 export class DocumentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggingMiddleware)
+      .apply(AuthMiddleware, LoggingMiddleware)
       .forRoutes('api/documents', 'api/repository-documents/embeddings');
-
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes({ path: 'api/documents/upload', method: RequestMethod.POST });
   }
 }

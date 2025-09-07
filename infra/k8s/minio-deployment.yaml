@@ -78,3 +78,42 @@ spec:
   resources:
     requests:
       storage: 20Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-create-bucket
+  namespace: learning-agent
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-bucket
+          image: minio/mc
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: infra-secrets
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: infra-secrets
+                  key: MINIO_ROOT_PASSWORD
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo 'Waiting for MinIO to be ready...';
+              until /usr/bin/mc alias set myminio http://minio-service:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; do
+                echo 'MinIO not ready yet, waiting...';
+                sleep 5;
+              done;
+              echo 'MinIO is ready, creating bucket...';
+              /usr/bin/mc mb myminio/documents --ignore-existing;
+              echo 'Setting bucket policy to public read...';
+              /usr/bin/mc anonymous set download myminio/documents;
+              echo 'Bucket created and configured successfully!';
