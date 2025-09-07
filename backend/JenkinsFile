@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    tools { nodejs 'node20' }
 
     environment {
         CI = 'true'
@@ -11,7 +10,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
-
+            steps {
                 checkout scm
             }
         }
@@ -35,11 +34,11 @@ pipeline {
                 }
             }
         }
-        // Opcional: Descomenta para trigger automático en Render si tienes el webhook
+        // Optional: Uncomment to trigger Render deploy if you have the webhook
         // stage('Deploy to Render') {
         //   steps {
         //     echo 'Trigger deploy in Render (webhook or API call)'
-        //     // Ejemplo:
+        //     // Example:
         //     // sh 'curl -X POST https://api.render.com/deploy/srv-xxxxxx?key=YOUR_WEBHOOK_KEY'
         //   }
         // }
