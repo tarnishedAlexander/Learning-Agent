@@ -13,12 +13,14 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "seed": "ts-node prisma/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+  ,
+  "seed": "ts-node prisma/seed.ts",
+  "seed:prod": "node dist/prisma/seed.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
@@ -102,6 +104,6 @@
     "testEnvironment": "node"
   },
   "prisma": {
-    "seed": "ts-node ./prisma/seed.ts"
+    "seed": "node dist/prisma/seed.js"
   }
 }
