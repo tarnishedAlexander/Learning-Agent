@@ -154,7 +154,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
         expiresIn: 3600,
       });
 
-      return signedUrl; // Ya no necesitamos toPublicUrl porque el cliente ya usa el endpoint público
+      return signedUrl;
     } catch (error) {
       const msg = this.getErrorMessage(error);
       throw new Error(`Error generating download URL: ${msg}`);

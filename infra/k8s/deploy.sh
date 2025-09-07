@@ -224,7 +224,7 @@ show_status() {
     echo ""
     print_success "Learning Agent application deployed successfully!"
     echo ""
-    print_success "🎉 ALL SERVICES ARE READY AND ACCESSIBLE! 🎉"
+    print_success " ALL SERVICES ARE READY AND ACCESSIBLE! "
     echo ""
     print_status "Access URLs (ready to use):"
     echo "  🌐 Frontend:       http://localhost:5173"
@@ -234,14 +234,10 @@ show_status() {
     echo "  🐘 PostgreSQL:    localhost:5432"
     echo ""
     print_status "MinIO Credentials:"
-    echo "  Username: adminminio"
-    echo "  Password: adminpassword"
     echo ""
     print_warning "Port-forwarding processes are running in background."
     print_warning "To stop all services: $0 cleanup"
     print_warning "To check logs: $0 logs <service-name>"
-    echo ""
-    print_success "¡Tu salud mental está a salvo! 🧠✨"
 }
 
 # Cleanup function
@@ -255,6 +251,30 @@ stop_port_forwarding() {
     print_status "Stopping all port-forwarding processes..."
     pkill -f "kubectl port-forward" 2>/dev/null || true
     print_success "Port-forwarding stopped"
+}
+
+# Start port-forwarding for all services
+start_port_forwarding() {
+    print_status "Starting port-forwarding for all services..."
+    
+    # Stop any existing port-forwarding processes first
+    stop_port_forwarding
+    sleep 2
+    
+    # Start port-forwarding in background
+    print_status "Setting up port-forwarding..."
+    
+    kubectl port-forward -n learning-agent service/backend-service 3000:3000 > /dev/null 2>&1 &
+    kubectl port-forward -n learning-agent service/frontend-service 5173:5173 > /dev/null 2>&1 &
+    kubectl port-forward -n learning-agent service/minio-service 9000:9000 > /dev/null 2>&1 &
+    kubectl port-forward -n learning-agent service/minio-service 9090:9090 > /dev/null 2>&1 &
+    kubectl port-forward -n learning-agent service/postgres-service 5432:5432 > /dev/null 2>&1 &
+    kubectl port-forward -n learning-agent service/jenkins-service 8080:8080 > /dev/null 2>&1 &
+    
+    # Wait a moment for port-forwarding to establish
+    sleep 5
+    
+    print_success "Port-forwarding started for all services"
 }
 
 # Main deployment function
