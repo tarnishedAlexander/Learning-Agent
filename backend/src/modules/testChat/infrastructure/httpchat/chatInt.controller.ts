@@ -30,7 +30,6 @@ export class ChatIntController {
   async generateAdvice(
     @Body() chatAnswer: ChatAnswer,
   ): Promise<CoachingResponse> {
-    console.log('answer:', chatAnswer);
     const respDs = await this.deepseekPort.generateAdvise(
       chatAnswer.question,
       chatAnswer.answer,

@@ -106,16 +106,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
       }
       params.push(finalOptions.limit);
 
-      // 6. Ejecutar consulta (por ahora simulada)
-      // En implementación real: const results = await this.prisma.$queryRawUnsafe(query, ...params);
-      console.log('🔍 Ejecutando búsqueda vectorial:', {
-        vectorDimensions: queryVector.length,
-        options: finalOptions,
-        query:
-          typeof query === 'string'
-            ? query.replace(/\s+/g, ' ').trim()
-            : 'vector search',
-      });
+
 
       // Simular resultados por ahora
       const results = await this.simulateVectorSearch(
@@ -403,7 +394,6 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
     // });
     // return result?.embedding ? { embedding: JSON.parse(result.embedding) } : null;
 
-    console.log('🔍 Obteniendo embedding para chunk:', chunkId);
     return null; // Simular por ahora
   }
 
@@ -414,7 +404,6 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
     documentId: string,
   ): Promise<number[] | null> {
     // Implementación real pendiente
-    console.log('🔍 Calculando embedding promedio para documento:', documentId);
     return null; // Simular por ahora
   }
 

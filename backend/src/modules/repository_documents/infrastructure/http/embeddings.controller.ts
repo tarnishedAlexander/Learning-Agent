@@ -310,7 +310,6 @@ export class EmbeddingsController {
   })
   async searchDocuments(@Body() dto: SemanticSearchDto) {
     try {
-      // Debug: Ver qué está llegando
       this.logger.log(`📨 DTO recibido:`, JSON.stringify(dto, null, 2));
       this.logger.log(`📊 Tipo de dto:`, typeof dto);
       this.logger.log(`📊 Tipo de query:`, typeof dto?.query);
