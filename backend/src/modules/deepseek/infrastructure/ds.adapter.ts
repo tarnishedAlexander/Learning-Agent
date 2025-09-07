@@ -9,7 +9,7 @@ import {
   QuestionResponse,
   MultipleSelectionResponse,
   DoubleOptionResponse,
-  MultipleSelectionTestResponse,
+
 } from '../domain/ports/response';
 
 @Injectable()
@@ -270,4 +270,5 @@ export class DsAdapter implements DeepseekPort {
       throw new Error('Error generating multiple selection and question');
     }
   }
+
 }
