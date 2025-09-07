@@ -19,4 +19,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 RUN npx prisma generate
 EXPOSE 3000
-CMD ["node", "dist/src/main.js"]
+CMD npx prisma migrate deploy && npx prisma db seed && node dist/src/main.js
