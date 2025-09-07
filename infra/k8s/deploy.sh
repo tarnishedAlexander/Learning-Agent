@@ -41,11 +41,39 @@ check_kubectl() {
 # Check if Minikube is running (optional - works with any Kubernetes cluster)
 check_cluster() {
     if ! kubectl cluster-info &> /dev/null; then
-        print_error "No Kubernetes cluster found. Please ensure your cluster is running."
-        print_warning "If using Minikube, run: minikube start"
-        exit 1
+        print_warning "No Kubernetes cluster found."
+        
+        # Check if minikube is available
+        if command -v minikube &> /dev/null; then
+            print_status "Minikube is available. Attempting to start..."
+            
+            # Check if minikube is already running but not accessible
+            if minikube status | grep -q "Running"; then
+                print_warning "Minikube appears to be running but kubectl can't connect."
+                print_status "Attempting to fix kubectl context..."
+                minikube update-context
+            else
+                print_status "Starting Minikube..."
+                minikube start --kubernetes-version=v1.28.2
+            fi
+            
+            # Verify connection after start/fix
+            if kubectl cluster-info &> /dev/null; then
+                print_success "Kubernetes cluster is now accessible"
+            else
+                print_error "Failed to connect to Kubernetes cluster"
+                exit 1
+            fi
+        else
+            print_error "No Kubernetes cluster found and Minikube is not installed."
+            print_status "Please either:"
+            print_status "  1. Install and start Minikube: https://minikube.sigs.k8s.io/docs/start/"
+            print_status "  2. Configure kubectl to connect to your existing cluster"
+            exit 1
+        fi
+    else
+        print_success "Kubernetes cluster is accessible"
     fi
-    print_success "Kubernetes cluster is accessible"
 }
 
 # Check if Docker images exist (for Minikube)
@@ -57,16 +85,14 @@ check_images() {
         print_status "Minikube detected. Switching to Minikube's Docker environment..."
         eval $(minikube docker-env)
         
-        # Check for required images
-        if ! docker images | grep -q "learning-agent-backend"; then
-            print_warning "Backend image not found. Building..."
-            docker build -t learning-agent-backend:latest ../../backend/
-        fi
+        # Always rebuild images to ensure latest changes
+        print_status "Building backend image..."
+        docker build -t learning-agent-backend:latest ../../backend/
         
-        if ! docker images | grep -q "learning-agent-frontend"; then
-            print_warning "Frontend image not found. Building..."
-            docker build -t learning-agent-frontend:latest ../../client/
-        fi
+        print_status "Building frontend image..."
+        docker build -t learning-agent-frontend:latest ../../client/
+        
+        print_success "Images built successfully"
     else
         print_warning "Not using Minikube. Make sure your images are available in your cluster's registry."
     fi
@@ -121,7 +147,37 @@ deploy_postgres() {
 deploy_minio() {
     print_status "Deploying MinIO object storage..."
     kubectl apply -f minio-deployment.yaml
-    print_success "MinIO deployed with bucket creation job"
+    
+    # Wait for MinIO to be ready
+    print_status "Waiting for MinIO to be ready..."
+    kubectl wait --for=condition=available --timeout=300s deployment/minio -n learning-agent
+    
+    # Configure MinIO bucket and permissions
+    configure_minio_bucket
+    
+    print_success "MinIO deployed and configured"
+}
+
+# Configure MinIO bucket and permissions
+configure_minio_bucket() {
+    print_status "Configuring MinIO bucket and permissions..."
+    
+    # Wait a bit more for MinIO to be fully ready
+    sleep 10
+    
+    # Set up MinIO client alias
+    print_status "Setting up MinIO client..."
+    kubectl exec -n learning-agent deployment/minio -- mc alias set local http://localhost:9000 adminminio adminpassword
+    
+    # Create documents bucket if it doesn't exist
+    print_status "Creating documents bucket..."
+    kubectl exec -n learning-agent deployment/minio -- mc mb local/documents --ignore-existing
+    
+    # Set public read access for the bucket
+    print_status "Setting public read access for documents bucket..."
+    kubectl exec -n learning-agent deployment/minio -- mc anonymous set download local/documents
+    
+    print_success "MinIO bucket configured with public read access"
 }
 
 # Deploy Jenkins
@@ -150,7 +206,7 @@ wait_for_deployments() {
     print_status "Waiting for all deployments to be ready..."
     
     kubectl wait --for=condition=available --timeout=300s deployment/postgres -n learning-agent
-    kubectl wait --for=condition=available --timeout=300s deployment/minio -n learning-agent
+    # MinIO is already waited for in deploy_minio function
     kubectl wait --for=condition=available --timeout=300s deployment/jenkins -n learning-agent
     kubectl wait --for=condition=available --timeout=300s deployment/backend -n learning-agent
     kubectl wait --for=condition=available --timeout=300s deployment/frontend -n learning-agent
@@ -168,17 +224,37 @@ show_status() {
     echo ""
     print_success "Learning Agent application deployed successfully!"
     echo ""
-    print_status "To access the applications:"
-    echo "  Backend API:    kubectl port-forward -n learning-agent service/backend-service 3000:3000"
-    echo "  Frontend:       kubectl port-forward -n learning-agent service/frontend-service 5173:5173"
-    echo "  MinIO Console:  kubectl port-forward -n learning-agent service/minio-service 9090:9090"
-    echo "  Jenkins:        kubectl port-forward -n learning-agent service/jenkins-service 8080:8080"
+    print_success "🎉 ALL SERVICES ARE READY AND ACCESSIBLE! 🎉"
+    echo ""
+    print_status "Access URLs (ready to use):"
+    echo "  🌐 Frontend:       http://localhost:5173"
+    echo "  🔧 Backend API:    http://localhost:3000"
+    echo "  📦 MinIO Console:  http://localhost:9090"
+    echo "  🔧 Jenkins:       http://localhost:8080"
+    echo "  🐘 PostgreSQL:    localhost:5432"
+    echo ""
+    print_status "MinIO Credentials:"
+    echo "  Username: adminminio"
+    echo "  Password: adminpassword"
+    echo ""
+    print_warning "Port-forwarding processes are running in background."
+    print_warning "To stop all services: $0 cleanup"
+    print_warning "To check logs: $0 logs <service-name>"
+    echo ""
+    print_success "¡Tu salud mental está a salvo! 🧠✨"
 }
 
 # Cleanup function
 cleanup() {
     print_status "Cleaning up completed jobs..."
     kubectl delete jobs -n learning-agent -l app!=keep 2>/dev/null || true
+}
+
+# Stop all port-forwarding processes
+stop_port_forwarding() {
+    print_status "Stopping all port-forwarding processes..."
+    pkill -f "kubectl port-forward" 2>/dev/null || true
+    print_success "Port-forwarding stopped"
 }
 
 # Main deployment function
@@ -194,13 +270,14 @@ main() {
     create_secrets
     
     deploy_postgres
-    deploy_minio
+    deploy_minio  # MinIO configuration is now included
     deploy_jenkins
     deploy_backend
     deploy_frontend
     
     wait_for_deployments
     cleanup
+    start_port_forwarding
     show_status
 }
 
@@ -211,6 +288,7 @@ case "${1:-deploy}" in
         ;;
     "cleanup")
         print_status "Cleaning up Learning Agent deployment..."
+        stop_port_forwarding
         kubectl delete namespace learning-agent 2>/dev/null || true
         print_success "Cleanup completed"
         ;;
@@ -225,20 +303,32 @@ case "${1:-deploy}" in
         fi
         kubectl logs -n learning-agent deployment/$2 --tail=50
         ;;
+    "port-forward")
+        print_status "Starting port-forwarding for all services..."
+        start_port_forwarding
+        show_status
+        ;;
+    "stop-forward")
+        stop_port_forwarding
+        ;;
     *)
-        echo "Usage: $0 [deploy|cleanup|status|logs <service>]"
+        echo "Usage: $0 [deploy|cleanup|status|logs <service>|port-forward|stop-forward]"
         echo ""
         echo "Commands:"
-        echo "  deploy   - Deploy the complete Learning Agent application (default)"
-        echo "  cleanup  - Remove the entire deployment"
-        echo "  status   - Show deployment status"
-        echo "  logs     - Show logs for a specific service"
+        echo "  deploy        - Deploy the complete Learning Agent application (default)"
+        echo "  cleanup       - Remove the entire deployment and stop port-forwarding"
+        echo "  status        - Show deployment status"
+        echo "  logs          - Show logs for a specific service"
+        echo "  port-forward  - Start port-forwarding for all services"
+        echo "  stop-forward  - Stop all port-forwarding processes"
         echo ""
         echo "Examples:"
-        echo "  $0                    # Deploy the application"
-        echo "  $0 deploy            # Deploy the application"
-        echo "  $0 status            # Check deployment status"
-        echo "  $0 logs backend      # View backend logs"
-        echo "  $0 cleanup           # Remove everything"
+        echo "  $0                     # Deploy the application with port-forwarding"
+        echo "  $0 deploy             # Deploy the application with port-forwarding"
+        echo "  $0 status             # Check deployment status"
+        echo "  $0 logs backend       # View backend logs"
+        echo "  $0 port-forward       # Start port-forwarding only"
+        echo "  $0 stop-forward       # Stop port-forwarding only"
+        echo "  $0 cleanup            # Remove everything"
         ;;
 esac

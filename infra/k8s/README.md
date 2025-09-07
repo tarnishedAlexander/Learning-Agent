@@ -171,6 +171,33 @@ Then access:
 - **MinIO Console**: http://localhost:9090
 - **Jenkins**: http://localhost:8080
 
+### MinIO API access for browser downloads
+
+When the backend generates signed URLs using the internal service name (`http://minio-service:9000`), the browser cannot resolve that hostname. You have two options:
+
+- Port-forward the MinIO API as well:
+
+```bash
+kubectl port-forward -n learning-agent service/minio-service 9000:9000
+kubectl port-forward -n learning-agent service/minio-service 9090:9090
+```
+
+- Or expose MinIO via Ingress/NodePort and use a public hostname.
+
+Then set the backend env var to rewrite signed URLs for clients:
+
+```env
+# backend/.env
+MINIO_ENDPOINT=http://minio-service:9000        # internal SDK endpoint
+MINIO_PUBLIC_ENDPOINT=http://localhost:9000     # public/browser endpoint (or your Ingress URL)
+MINIO_ACCESS_KEY=your_minio_user
+MINIO_SECRET_KEY=your_minio_password
+MINIO_BUCKET_NAME=documents
+MINIO_REGION=us-east-1
+```
+
+With this, the backend will return signed URLs using the public endpoint, and downloads from the frontend will work.
+
 ## 🛠️ Script Commands
 
 The `deploy.sh` script supports multiple commands:
