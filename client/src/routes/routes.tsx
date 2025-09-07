@@ -35,6 +35,7 @@ export const AppRoutes = () => {
 
             {/* Professor */}
             <Route element={<RoleRoute allowed={["docente"]} />}> 
+              <Route path="/professor" element={<TeacherCoursePage />} />
               <Route path="/courses" element={<TeacherCoursePage />} />
               <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
               <Route path="/exams/create" element={<ExamsCreatePage />} />
@@ -45,13 +46,14 @@ export const AppRoutes = () => {
 
             {/* Students */}
             <Route element={<RoleRoute allowed={["estudiante"]} />}> 
+              <Route path="/student" element={<ClassMenu />} />
               <Route path="/classes" element={<ClassMenu />} />
               <Route path="/reinforcement" element={<Reinforcement />} />
               <Route path="/exam" element={<Exam />} />
               <Route path="/interview" element={<Interview />} />
             </Route>
 
-            <Route path="/upload-pdf" element={<UploadDocumentPage />} />
+            <Route path="/document" element={<UploadDocumentPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
