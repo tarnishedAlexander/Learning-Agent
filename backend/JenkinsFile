@@ -1,58 +1,47 @@
-// Jenkinsfile restored to a functional declarative pipeline with proper stages and build context for backend module.
-// This version follows best practices for modular monorepos and CI/CD pipelines.
+pipeline {
+    agent any
+    tools { nodejs 'node20' }
 
-node {
-	stage('Checkout') {
-		checkout scm
-	pipeline {
-		agent any
-		tools { nodejs 'node20' }
+    environment {
+        CI = 'true'
+        NODE_ENV = 'production'
+        DOCKER_IMAGE = "your-dockerhub-username/learning-agent-backend:${env.BUILD_NUMBER}"
+        REGISTRY_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
+    }
 
-		environment {
-			CI = 'true'
-			NODE_ENV = 'production'
-			DOCKER_IMAGE = "your-dockerhub-username/learning-agent-backend:${env.BUILD_NUMBER}"
-			REGISTRY_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
-		}
-
-			steps {
-				withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-					sh '''
-					dir('backend') {
-						sh 'docker -v && docker info'
-						sh 'echo "Directorio actual:" && pwd'
-				}
-			}
-						sh 'echo "Contenido actual:" && ls -la'
-						sh "docker build -t $DOCKER_IMAGE ."
-					}
-				}
-			}
-			stage('Push Docker image') {
-				steps {
-					withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-						sh '''
-	echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-	docker push $DOCKER_IMAGE
-	'''
-					}
-				}
-			}
-		}
-	}
-						docker push $DOCKER_IMAGE
-					'''
-				}
-			}
-		}
-
-		// Opcional: Descomenta para trigger automático en Render si tienes el webhook
-		// stage('Deploy to Render') {
-		//   steps {
-		//     echo 'Trigger deploy in Render (webhook or API call)'
-		//     // Ejemplo:
-		//     // sh 'curl -X POST https://api.render.com/deploy/srv-xxxxxx?key=YOUR_WEBHOOK_KEY'
-		//   }
-		// }
-	}
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Docker image') {
+            steps {
+                dir('backend') {
+                    sh 'docker -v && docker info'
+                    sh 'echo "Directorio actual:" && pwd'
+                    sh 'echo "Contenido actual:" && ls -la'
+                    sh "docker build -t $DOCKER_IMAGE ."
+                }
+            }
+        }
+        stage('Push Docker image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                    sh '''
+                        echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        docker push $DOCKER_IMAGE
+                    '''
+                }
+            }
+        }
+        // Opcional: Descomenta para trigger automático en Render si tienes el webhook
+        // stage('Deploy to Render') {
+        //   steps {
+        //     echo 'Trigger deploy in Render (webhook or API call)'
+        //     // Ejemplo:
+        //     // sh 'curl -X POST https://api.render.com/deploy/srv-xxxxxx?key=YOUR_WEBHOOK_KEY'
+        //   }
+        // }
+    }
 }
