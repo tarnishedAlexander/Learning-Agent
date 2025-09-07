@@ -35,13 +35,12 @@ node {
 				steps {
 					withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
 						sh '''
-							echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-							docker push $DOCKER_IMAGE
-						'''
+	echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+	docker push $DOCKER_IMAGE
+	'''
 					}
 				}
 			}
-			// ...otros stages...
 		}
 	}
 						docker push $DOCKER_IMAGE
