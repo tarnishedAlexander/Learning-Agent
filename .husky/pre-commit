@@ -7,14 +7,14 @@ set -e
 #echo "Running backend lint..."
 #npm --prefix backend run lint
 
-#echo "Building frontend..."
-#npm --prefix client run build
-
-#echo "Building backend..."
-#npm --prefix backend run build
-
-echo "🔎 Running lint-staged..."
+echo "Running lint-staged..."
 npx lint-staged
 
-echo "🧪 Running backend tests..."
+echo "Running backend tests..."
 npm --prefix backend test -- --passWithNoTests
+
+echo "Building frontend..."
+npm --prefix client run build
+
+echo "Building backend..."
+npm --prefix backend run build
