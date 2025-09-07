@@ -15,17 +15,14 @@ node {
 			REGISTRY_CREDENTIALS = credentials('DOCKERHUB_CREDENTIALS')
 		}
 
-		stages {
-			stage('Checkout') {
-				steps {
-					checkout scm
-				}
-			}
-			stage('Build Docker Image') {
-				steps {
+			steps {
+				withCredentials([usernamePassword(credentialsId: 'DOCKERHUB_CREDENTIALS', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+					sh '''
 					dir('backend') {
 						sh 'docker -v && docker info'
 						sh 'echo "Directorio actual:" && pwd'
+				}
+			}
 						sh 'echo "Contenido actual:" && ls -la'
 						sh "docker build -t $DOCKER_IMAGE ."
 					}
