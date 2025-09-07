@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { RbacModule } from './modules/rbac/rbac.module';
@@ -22,7 +23,7 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
     InterviewModule,
     ReinforcementModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [AiConfigService],
 })
 export class AppModule {}
