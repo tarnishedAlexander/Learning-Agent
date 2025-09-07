@@ -69,7 +69,7 @@ async function main() {
       email: 'estudiante@example.com',
       password: estudiantePassword,
       isActive: true,
-      name: 'Patricio',
+      name: 'Patricio', 
       lastname: 'Estrella',
       roles: {
         create: [{ roleId: estudianteRole.id }],
@@ -102,93 +102,8 @@ async function main() {
       name: 'Admin',
       lastname: 'User',
     },
+
   });
-
-  // --- Crear Categorías Predefinidas ---
-  const categories = [
-    {
-      name: 'Matemáticas',
-      description:
-        'Documentos relacionados con matemáticas, álgebra, cálculo, geometría y estadística',
-      color: '#3b82f6',
-      icon: '📚',
-    },
-    {
-      name: 'Programación',
-      description:
-        'Documentos sobre desarrollo de software, algoritmos, lenguajes de programación',
-      color: '#10b981',
-      icon: '💻',
-    },
-    {
-      name: 'Historia',
-      description:
-        'Documentos históricos, biografías, eventos históricos y análisis temporal',
-      color: '#f59e0b',
-      icon: '🏛️',
-    },
-    {
-      name: 'Ciencias',
-      description:
-        'Documentos científicos, investigación, física, química, biología',
-      color: '#8b5cf6',
-      icon: '🔬',
-    },
-    {
-      name: 'Literatura',
-      description:
-        'Obras literarias, novelas, ensayos, poesía y análisis literario',
-      color: '#ec4899',
-      icon: '📖',
-    },
-    {
-      name: 'Medicina',
-      description:
-        'Documentos médicos, anatomía, tratamientos, investigación médica',
-      color: '#ef4444',
-      icon: '⚕️',
-    },
-    {
-      name: 'Economía',
-      description:
-        'Documentos económicos, finanzas, mercados, análisis económico',
-      color: '#06b6d4',
-      icon: '💰',
-    },
-    {
-      name: 'Derecho',
-      description: 'Documentos legales, leyes, jurisprudencia, contratos',
-      color: '#64748b',
-      icon: '⚖️',
-    },
-    {
-      name: 'Educación',
-      description:
-        'Documentos educativos, pedagogía, metodologías de enseñanza',
-      color: '#84cc16',
-      icon: '🎓',
-    },
-    {
-      name: 'General',
-      description: 'Documentos que no encajan en categorías específicas',
-      color: '#6b7280',
-      icon: '📄',
-    },
-  ];
-
-  for (const category of categories) {
-    await prisma.documentCategory.upsert({
-      where: { name: category.name },
-      update: {},
-      create: {
-        id: `cat-${category.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-        name: category.name,
-        description: category.description,
-        color: category.color,
-        icon: category.icon,
-      },
-    });
-  }
 }
 
 main()

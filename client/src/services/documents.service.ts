@@ -392,108 +392,7 @@ export const documentService = {
   },
 
   /**
-   * Categorizar un documento automáticamente
-   */
-  async categorizeDocument(
-    documentId: string,
-    options?: {
-      replaceExisting?: boolean;
-      confidenceThreshold?: number;
-      maxCategoriesPerDocument?: number;
-    }
-  ): Promise<{
-    success: boolean;
-    result?: {
-      documentId: string;
-      assignedCategories: Array<{
-        category: {
-          id: string;
-          name: string;
-          description: string;
-          color: string;
-          icon: string;
-        };
-        confidence: number;
-        reason: string;
-      }>;
-      processingTimeMs: number;
-    };
-    metadata?: {
-      processingTimeMs: number;
-      timestamp: string;
-    };
-    error?: string;
-    errorCode?: string;
-  }> {
-    try {
-      const response = await apiClient.post(
-        `/api/repository-documents/categorization/categorize/${documentId}`,
-        options || {}
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error categorizing document:', error);
-      throw new Error('Error al categorizar el documento');
-    }
-  },
-
-  /**
-   * Obtener todas las categorías disponibles
-   */
-  async getAvailableCategories(): Promise<{
-    success: boolean;
-    categories: Array<{
-      id: string;
-      name: string;
-      description: string;
-      color: string;
-      icon: string;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-    total: number;
-  }> {
-    try {
-      const response = await apiClient.get(
-        '/api/repository-documents/categorization/categories'
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error getting available categories:', error);
-      throw new Error('Error al obtener las categorías disponibles');
-    }
-  },
-
-  /**
-   * Obtener categorías asignadas a un documento
-   */
-  async getDocumentCategories(documentId: string): Promise<{
-    success: boolean;
-    documentId: string;
-    categories: Array<{
-      id: string;
-      name: string;
-      description: string;
-      color: string;
-      icon: string;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-    total: number;
-  }> {
-    try {
-      const response = await apiClient.get(
-        `/api/repository-documents/categorization/document/${documentId}/categories`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error getting document categories:', error);
-      throw new Error('Error al obtener las categorías del documento');
-    }
-  },
-
-  /**
-   * Procesamiento completo de un documento (upload + process + chunks + categorization)
+   * Procesamiento completo de un documento (upload + process + chunks)
    */
   async processDocumentComplete(
     file: File,
@@ -504,14 +403,12 @@ export const documentService = {
     processing: {
       textProcessed: boolean;
       chunksProcessed: boolean;
-      categorized: boolean;
       totalChunks: number;
-      totalCategories: number;
     };
   }> {
     try {
       // Paso 1: Upload
-      onProgress?.('upload', 20, 'Subiendo documento...');
+      onProgress?.('upload', 25, 'Subiendo documento...');
       const uploadResult = await this.uploadDocument(file);
       
       if (!uploadResult.data.id) {
@@ -519,33 +416,12 @@ export const documentService = {
       }
 
       // Paso 2: Procesar texto
-      onProgress?.('text', 40, 'Procesando texto...');
+      onProgress?.('text', 50, 'Procesando texto...');
       await this.processDocumentText(uploadResult.data.id);
 
       // Paso 3: Procesar chunks
-      onProgress?.('chunks', 60, 'Generando chunks...');
+      onProgress?.('chunks', 75, 'Generando chunks...');
       const chunksResult = await this.processDocumentChunks(uploadResult.data.id);
-
-      // Paso 4: Categorización automática
-      onProgress?.('categorization', 80, 'Categorizando documento...');
-      let categorized = false;
-      let totalCategories = 0;
-      
-      try {
-        const categorizationResult = await this.categorizeDocument(uploadResult.data.id, {
-          replaceExisting: false,
-          confidenceThreshold: 0.3,
-          maxCategoriesPerDocument: 3,
-        });
-        
-        if (categorizationResult.success) {
-          categorized = true;
-          totalCategories = categorizationResult.result?.assignedCategories?.length || 0;
-        }
-      } catch (categorizationError) {
-        console.warn('Error en categorización (no crítico):', categorizationError);
-        // No fallar todo el proceso por un error de categorización
-      }
 
       onProgress?.('complete', 100, 'Proceso completado');
 
@@ -555,9 +431,7 @@ export const documentService = {
         processing: {
           textProcessed: true,
           chunksProcessed: true,
-          categorized,
           totalChunks: chunksResult.data?.totalChunks || 0,
-          totalCategories,
         },
       };
     } catch (error) {

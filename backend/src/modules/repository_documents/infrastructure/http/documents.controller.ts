@@ -16,13 +16,13 @@ import {
 import { Request } from 'express';
 import type { AuthenticatedRequest } from '../http/middleware/auth.middleware';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ContextualLoggerService } from '../services/contextual-logger.service';
 import { ListDocumentsUseCase } from '../../application/queries/list-documents.usecase';
 import { DeleteDocumentUseCase } from '../../application/commands/delete-document.usecase';
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { ProcessDocumentTextUseCase } from '../../application/commands/process-document-text.usecase';
 import { ProcessDocumentChunksUseCase } from '../../application/commands/process-document-chunks.usecase';
-import { CategorizeDocumentUseCase } from '../../application/use-cases/categorize-document.use-case';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -43,7 +43,7 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
-    private readonly categorizeDocumentUseCase: CategorizeDocumentUseCase,
+
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -212,7 +212,24 @@ export class DocumentsController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB en bytes
+      },
+      fileFilter: (req, file, callback) => {
+        if (file.mimetype !== 'application/pdf') {
+          callback(
+            new BadRequestException('Solo se permiten archivos PDF'),
+            false,
+          );
+        } else {
+          callback(null, true);
+        }
+      },
+    }),
+  )
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: AuthenticatedRequest,
@@ -597,55 +614,20 @@ export class DocumentsController {
         },
       );
 
+      this.logger.error(
+        'Unexpected error in getDocumentChunks',
+        error instanceof Error ? error : errorMessage,
+        {
+          documentId,
+          operation: 'chunk_retrieval',
+          errorType: 'CHUNK_RETRIEVAL_ERROR',
+        },
+      );
+
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al obtener chunks',
-          error: 'Internal Server Error',
-          details: errorMessage,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
-   * Categoriza un documento automáticamente basado en su contenido
-   */
-  @Post(':id/categorize')
-  async categorizeDocument(
-    @Param('id') documentId: string,
-    @Body()
-    options?: {
-      replaceExisting?: boolean;
-      maxCategoriesPerDocument?: number;
-      confidenceThreshold?: number;
-    },
-  ): Promise<{
-    success: boolean;
-    result?: any;
-    error?: string;
-    metadata?: any;
-  }> {
-    try {
-      const result = await this.categorizeDocumentUseCase.execute({
-        documentId,
-        replaceExisting: options?.replaceExisting ?? false,
-        maxCategoriesPerDocument: options?.maxCategoriesPerDocument ?? 3,
-        confidenceThreshold: options?.confidenceThreshold ?? 0.5,
-      });
-
-      return result;
-    } catch (error) {
-      console.error(`Error categorizando documento ${documentId}:`, error);
-
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error desconocido';
-
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Error categorizando documento',
           error: 'Internal Server Error',
           details: errorMessage,
         },
