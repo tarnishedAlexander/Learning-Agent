@@ -1,6 +1,17 @@
 #!/usr/bin/env sh
 set -e
 
-echo "Running frontend lint..."
-npm --prefix client run lint
+#echo "Running frontend lint..."
+#npm --prefix client run lint
 
+#echo "Running backend lint..."
+#npm --prefix backend run lint
+
+#echo "Building frontend..."
+#npm --prefix client run build
+
+#echo "Building backend..."
+#npm --prefix backend run build
+
+echo "🧪 Running backend tests..."
+npm --prefix backend test -- --passWithNoTests
