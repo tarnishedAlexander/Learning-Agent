@@ -13,5 +13,8 @@ set -e
 #echo "Building backend..."
 #npm --prefix backend run build
 
+echo "🔎 Running lint-staged..."
+npx lint-staged
+
 echo "🧪 Running backend tests..."
 npm --prefix backend test -- --passWithNoTests
