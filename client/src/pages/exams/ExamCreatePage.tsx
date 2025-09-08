@@ -13,6 +13,7 @@ import { generateQuestions, createExamApproved, type GeneratedQuestion } from '.
 import AiResults from './AiResults';
 import { normalizeToQuestions, cloneQuestion, replaceQuestion, reorderQuestions } from './ai-utils';
 import { isValidGeneratedQuestion } from '../../utils/aiValidation';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const layoutStyle: CSSProperties = {
   display: 'flex',
