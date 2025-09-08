@@ -152,8 +152,8 @@ interface UploadButtonProps {
  *   onUpload={processDocument}
  *   fileConfig={{
  *     accept: ".pdf,application/pdf",
- *     maxSize: 10 * 1024 * 1024,
- *     validationMessage: "Solo archivos PDF de máximo 10MB"
+ *     maxSize: 100 * 1024 * 1024,
+ *     validationMessage: "Solo archivos PDF de máximo 100MB"
  *   }}
  *   processingConfig={{
  *     steps: [
