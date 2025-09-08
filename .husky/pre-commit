@@ -1,12 +1,6 @@
 #!/usr/bin/env sh
 set -e
 
-#echo "Running frontend lint..."
-#npm --prefix client run lint
-
-#echo "Running backend lint..."
-#npm --prefix backend run lint
-
 echo "Running lint-staged..."
 npx lint-staged
 
@@ -14,7 +8,15 @@ echo "Running backend tests..."
 npm --prefix backend test -- --passWithNoTests
 
 #echo "Building frontend..."
-#npm --prefix client run build
+#if npm --prefix client run build; then
+#  echo "Frontend build completed successfully"
+#else
+#  echo "Frontend build failed, but commit will continue"
+#fi
 
-#echo "Building backend..."
-#npm --prefix backend run build
+echo "Building backend..."
+if npm --prefix backend run build; then
+  echo "Backend build completed successfully"
+else
+  echo "Backend build failed, but commit will continue"
+fi
