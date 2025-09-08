@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CLASSES_REPO } from "../../tokens";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetClassByIdUseCase {

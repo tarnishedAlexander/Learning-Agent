@@ -3,7 +3,7 @@ import { TEACHER_REPO, USER_REPO } from "../../tokens";
 import type { UserRepositoryPort } from 'src/modules/identity/domain/ports/user.repository.port';
 import type { ProfessorRepositoryPort } from "../../domain/ports/teacher.repository.ports";
 import { TeacherInfoDTO } from "../../infrastructure/http/dtos/response.teacher-info.dto";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetTeacherInfoByIDUseCase {

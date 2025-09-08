@@ -3,8 +3,8 @@ import { USER_REPO, STUDENT_REPO, ROLE_REPO, HASHER } from '../../tokens';
 import type { StudentRepositoryPort } from '../../domain/ports/student.repository.ports';
 import type { UserRepositoryPort } from 'src/modules/identity/domain/ports/user.repository.port';
 import type { RoleRepositoryPort } from 'src/modules/rbac/domain/ports/role.repository.port';
-import { BcryptHasher } from 'src/modules/identity/infrastructure/crypto/bcrypt.hasher';
-import { InternalServerError } from 'src/shared/handler/errors';
+import { BcryptHasher } from '../../../identity/infrastructure/crypto/bcrypt.hasher';
+import { InternalServerError } from '../../../../shared/handler/errors';
 import { Student } from '../../domain/entities/student.entity';
 
 @Injectable()

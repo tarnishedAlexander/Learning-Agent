@@ -3,7 +3,7 @@ import { CLASSES_REPO, COURSE_REPO } from "../../tokens";
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetClassesByCourseUseCase {

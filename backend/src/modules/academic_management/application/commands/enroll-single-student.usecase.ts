@@ -3,7 +3,7 @@ import { ENROLLMENT_REPO, STUDENT_REPO, CLASSES_REPO } from "../../tokens";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
-import { AlreadyCreatedError, NotFoundError } from "src/shared/handler/errors";
+import { AlreadyCreatedError, NotFoundError } from "../../../../shared/handler/errors";
 import { CreateStudentProfileUseCase } from "./create-student-profile.usecase";
 
 @Injectable()
