@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import apiClient from "../api/apiClient";
 
 export type User = {
@@ -35,6 +35,18 @@ export const useUserStore = create<UserState>()(
       name: "user",
       partialize: (state) => ({ user: state.user }),
       version: 1,
+      storage: createJSONStorage(() => {
+        try {
+          const sessionRaw = sessionStorage.getItem('auth');
+          const localRaw = localStorage.getItem('auth');
+          const sessionHasToken = !!sessionRaw && JSON.parse(sessionRaw || '{}')?.accessToken;
+          const localHasToken = !!localRaw && JSON.parse(localRaw || '{}')?.accessToken;
+          if (sessionHasToken && !localHasToken) return sessionStorage;
+          return localStorage;
+        } catch {
+          return localStorage;
+        }
+      }),
     }
   )
 );

@@ -3,13 +3,16 @@ import { useNavigate } from "react-router-dom";
 import PageTemplate from "../../components/PageTemplate";
 import TestModal from "../../components/tests/TestModal"; 
 import { useStudentTest } from "../../hooks/useStudentTest";
+
 import TestRunner from "../../components/tests/TestRunner"; 
+
 
 export default function Test() {
   const navigate = useNavigate();
   const { isTestModalOpen, closeTestModal, startExam, questionCount } = useStudentTest();
   const [isExamStarted, setIsExamStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(1);
+
 
   const handleStartExam = (count: number) => {
     startExam(count);
@@ -24,6 +27,10 @@ export default function Test() {
     } else {
       navigate("/reinforcement");
     }
+  };
+
+  const handleTimeUp = () => {
+    navigate("/reinforcement");
   };
 
   return (
@@ -48,10 +55,12 @@ export default function Test() {
         />
       )}
 
+
       {isExamStarted && (
         <div style={{ width: "100%", minHeight: 300 }}>
           <TestRunner onAnswered={handleNextQuestion} />
         </div>
+
       )}
     </PageTemplate>
   );

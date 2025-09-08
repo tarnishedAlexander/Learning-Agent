@@ -1,7 +1,9 @@
+
 import React from "react";
 import { Card, Typography, theme, Alert, Button } from "antd";
 
 const { Title } = Typography;
+
 
 interface TestQuestionProps {
   onNext?: () => void;
@@ -16,7 +18,9 @@ export default function TestQuestion({
 }: TestQuestionProps) {
   const { token } = theme.useToken();
 
+
   const safeOptions = Array.isArray(options) ? options : [];
+
 
   const handleSelect = (_value: string) => {
     if (onNext) {
@@ -82,6 +86,26 @@ export default function TestQuestion({
     token.colorInfoHover,
   ];
 
+  useEffect(() => {
+    fetchQuestion();
+  }, []);
+
+  async function fetchQuestion() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_URL}${import.meta.env.VITE_TESTCHAT_URL}`
+      );
+      const testOp = (await res.json()) as MultipleSelectionTestResponse;
+      setMultSelectionTest({
+        question: testOp.question || "",
+        options: testOp.options || [],
+        correctAnswer: typeof testOp.correctAnswer === "number" ? testOp.correctAnswer : -1
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <div
       style={{
@@ -104,8 +128,10 @@ export default function TestQuestion({
           boxShadow: token.boxShadow,
         }}
       >
+
         <Title level={3} style={{ margin: 0, color: token.colorTextHeading }}>
           {question}
+
         </Title>
       </Card>
 
@@ -118,10 +144,12 @@ export default function TestQuestion({
           maxWidth: 800,
         }}
       >
+
         {safeOptions.map((label, index) => (
           <div
             key={index}
             onClick={() => handleSelect(String(index))}
+
             style={{
               backgroundColor: optionColors[index % optionColors.length],
               color: token.colorTextLightSolid,
@@ -144,7 +172,9 @@ export default function TestQuestion({
               (e.currentTarget as HTMLDivElement).style.boxShadow = token.boxShadow;
             }}
           >
+
             {label}
+
           </div>
         ))}
       </div>
