@@ -55,6 +55,7 @@ export class DocumentsController {
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
     private readonly checkDocumentSimilarityUseCase: CheckDocumentSimilarityUseCase,
+
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -1060,6 +1061,16 @@ export class DocumentsController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in getDocumentChunks',
+        error instanceof Error ? error : errorMessage,
+        {
+          documentId,
+          operation: 'chunk_retrieval',
+          errorType: 'CHUNK_RETRIEVAL_ERROR',
+        },
+      );
 
       this.logger.error(
         'Unexpected error in getDocumentChunks',

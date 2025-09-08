@@ -22,6 +22,7 @@ import { DocumentChunkRepositoryPort } from './domain/ports/document-chunk-repos
 // Controllers
 import { DocumentsController } from './infrastructure/http/documents.controller';
 import { EmbeddingsController } from './infrastructure/http/embeddings.controller';
+import { ContractDocumentsController } from './infrastructure/http/contract-documents.controller';
 
 // Infrastructure adapters
 import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
@@ -46,13 +47,19 @@ import { ProcessDocumentChunksUseCase } from './application/commands/process-doc
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
 import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
+
+// Contract use cases
+import { GetDocumentsBySubjectUseCase } from './application/queries/get-documents-by-subject.usecase';
+import { GetDocumentContentUseCase } from './application/queries/get-document-content.usecase';
+
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
 import { ContextualLoggerService } from './infrastructure/services/contextual-logger.service';
+
 @Module({
   imports: [PrismaModule, IdentityModule],
-  controllers: [DocumentsController, EmbeddingsController],
+  controllers: [DocumentsController, EmbeddingsController, ContractDocumentsController],
   providers: [
     // servicios de configuración
     AiConfigService,
@@ -241,6 +248,28 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         DOCUMENT_CHUNK_REPOSITORY_PORT,
       ],
     },
+
+    // Contract use cases
+    {
+      provide: GetDocumentsBySubjectUseCase,
+      useFactory: (
+        documentRepository: PrismaDocumentRepositoryAdapter,
+        storageAdapter: S3StorageAdapter,
+      ) => {
+        return new GetDocumentsBySubjectUseCase(
+          documentRepository,
+          storageAdapter,
+        );
+      },
+      inject: [DOCUMENT_REPOSITORY_PORT, DOCUMENT_STORAGE_PORT],
+    },
+    {
+      provide: GetDocumentContentUseCase,
+      useFactory: (documentRepository: PrismaDocumentRepositoryAdapter) => {
+        return new GetDocumentContentUseCase(documentRepository);
+      },
+      inject: [DOCUMENT_REPOSITORY_PORT],
+    },
   ],
   exports: [
     // casos de uso originales
@@ -256,7 +285,11 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     SearchDocumentsUseCase,
     CheckDocumentSimilarityUseCase,
 
-    // servicios de dominio
+    // Casos de uso para el contrato
+    GetDocumentsBySubjectUseCase,
+    GetDocumentContentUseCase,
+
+    // Servicios de dominio
     DocumentChunkingService,
     DocumentEmbeddingService,
 
@@ -274,24 +307,18 @@ export class DocumentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(LoggingMiddleware)
-      .forRoutes('api/documents', 'api/repository-documents/embeddings');
+      .forRoutes(
+        'api/documents', 
+        'api/repository-documents/embeddings',
+        'api/v1/documentos'
+      );
 
-    consumer.apply(AuthMiddleware).forRoutes(
-      { path: 'api/documents/upload', method: RequestMethod.POST },
-      { path: 'api/documents/check-similarity', method: RequestMethod.POST },
-      { path: 'api/documents/upload-with-check', method: RequestMethod.POST },
-      { path: 'api/documents/confirm-upload', method: RequestMethod.POST },
-      { path: 'api/documents/:id', method: RequestMethod.DELETE },
-      { path: 'api/documents/download/:id', method: RequestMethod.GET },
-      {
-        path: 'api/documents/:documentId/process-text',
-        method: RequestMethod.POST,
-      },
-      {
-        path: 'api/documents/:documentId/process-chunks',
-        method: RequestMethod.POST,
-      },
-      { path: 'api/documents/:documentId/chunks', method: RequestMethod.GET },
-    );
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes(
+        { path: 'api/documents/upload', method: RequestMethod.POST },
+        { path: 'api/v1/documentos/materias/*/documentos', method: RequestMethod.GET },
+        { path: 'api/v1/documentos/*/contenido', method: RequestMethod.GET }
+      );
   }
 }

@@ -151,6 +151,10 @@ model Document {
   uploadedBy       String
   uploader         User                      @relation(fields: [uploadedBy], references: [id])
   
+  // Relación opcional con Course/Materia para el contrato de documentos
+  courseId         String?
+  course           Course?                   @relation(fields: [courseId], references: [id])
+  
   // Relations para RAG
   chunks           DocumentChunk[]
   categories       DocumentCategoryMapping[]
@@ -170,6 +174,7 @@ model Document {
   @@index([fileHash])
   @@index([textHash])
   @@index([contentType])
+  @@index([courseId])
 }
 
 model DocumentChunk {
@@ -366,6 +371,9 @@ model Course {
   teacherId     String
   teacher       TeacherProfile    @relation(fields: [teacherId], references: [userId])
   classes       Classes[]
+  
+  // Relación con documentos para el contrato
+  documents     Document[]
 
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
