@@ -95,7 +95,7 @@ export class ContextualLoggerService {
     operation: 'create' | 'process' | 'retrieve',
     documentId: string,
     chunkCount?: number,
-    additionalContext?: Record<string, any>
+    additionalContext?: Record<string, any>,
   ) {
     this.setContext({
       action: `chunk_${operation}`,
@@ -113,7 +113,7 @@ export class ContextualLoggerService {
   logEmbeddingOperation(
     operation: 'generate' | 'search',
     documentId?: string,
-    additionalContext?: Record<string, any>
+    additionalContext?: Record<string, any>,
   ) {
     this.setContext({
       action: `embedding_${operation}`,

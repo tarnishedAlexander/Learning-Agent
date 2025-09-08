@@ -95,7 +95,8 @@ interface UploadProgressInfo {
 interface ChunkedUploadButtonProps {
   onPostUploadProcess?: (
     document: ChunkedUploadResult['document'],
-    onProgress?: (step: string, progress: number, message: string) => void
+    onProgress?: (step: string, progress: number, message: string) => void,
+    uploadStatus?: string // Agregar parámetro para el status del upload
   ) => Promise<unknown>;
   fileConfig: FileConfig;
   processingConfig: ProcessingConfig;
@@ -356,7 +357,8 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 return { ...s, status: 'finish' };
               }
             }));
-          }
+          },
+          result.status // Pasar el status del upload
         );
 
         setCurrentPhase('success');
@@ -372,6 +374,15 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       setProcessingProgress(0);
       const errorMessage = error instanceof Error ? error.message : 'Error en el procesamiento';
       setError(errorMessage);
+      
+      // Mostrar Alert para errores de duplicados (409)
+      if (errorMessage.includes('duplicado') || errorMessage.includes('Duplicate') || errorMessage.includes('similar')) {
+        message.error({
+          content: `Documento duplicado detectado: ${errorMessage}`,
+          duration: 8,
+          style: { marginTop: '10vh' }
+        });
+      }
       
       setProcessingSteps(prev => prev.map(s => 
         s.status === 'process' ? { ...s, status: 'error' } : s

@@ -1,4 +1,14 @@
 /**
+ * Generated data during similarity check that can be reused
+ */
+export interface GeneratedSimilarityData {
+  chunks: any[];
+  embeddings: number[][];
+  extractedText: string;
+  chunkingConfig?: any;
+}
+
+/**
  * Result of checking document similarity
  */
 export class DocumentSimilarityResult {
@@ -12,6 +22,7 @@ export class DocumentSimilarityResult {
     public readonly existingDocument?: DocumentMatch,
     public readonly similarCandidates?: SimilarDocumentCandidate[],
     public readonly message?: string,
+    public readonly generatedData?: GeneratedSimilarityData,
   ) {}
 }
 
@@ -67,6 +78,8 @@ export class CheckDocumentSimilarityRequest {
       maxCandidates?: number;
       /** Use sampling for faster check */
       useSampling?: boolean;
+      /** Return generated chunks and embeddings for reuse */
+      returnGeneratedData?: boolean;
     },
   ) {}
 }

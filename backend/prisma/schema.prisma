@@ -326,6 +326,8 @@ model Exam {
   questions       ExamQuestion[]
 
   @@index([subject])
+
+  savedExam      SavedExam?
 }
 
 // === Preguntas de Examen ===
@@ -334,6 +336,30 @@ enum QuestionKind {
   TRUE_FALSE
   OPEN_ANALYSIS
   OPEN_EXERCISE
+}
+// Estado de publicación del examen guardado
+enum ExamStorageStatus {
+  Guardado
+  Publicado
+}
+
+model SavedExam {
+  id        Int               @id @default(autoincrement())
+  title     String
+  content   Json
+  status    ExamStorageStatus @default(Guardado)
+
+  examId    String?           @unique
+  exam      Exam?             @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  // FK “lógicas” (sin relación Prisma)
+  courseId  String
+  teacherId String
+
+  createdAt DateTime          @default(now())
+
+  @@index([courseId, createdAt])
+  @@index([teacherId, createdAt])
 }
 
 model ExamQuestion {

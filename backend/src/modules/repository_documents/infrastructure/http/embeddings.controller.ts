@@ -191,7 +191,7 @@ export class EmbeddingsController {
       const processingTime = Date.now() - startTime;
 
       if (!result.success) {
-        this.logger.error(`❌ Error generando embeddings: ${result.error}`);
+        this.logger.error(`Error generando embeddings: ${result.error}`);
         throw new HttpException(
           {
             message: result.error,
@@ -203,7 +203,7 @@ export class EmbeddingsController {
       }
 
       this.logger.log(
-        `✅ Embeddings generados exitosamente para ${documentId} en ${processingTime}ms`,
+        `Embeddings generados exitosamente para ${documentId} en ${processingTime}ms`,
       );
 
       return {
@@ -215,7 +215,7 @@ export class EmbeddingsController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Error en controlador de embeddings:`, error);
+      this.logger.error(`Error en controlador de embeddings:`, error);
 
       if (error instanceof HttpException) {
         throw error;
@@ -257,7 +257,7 @@ export class EmbeddingsController {
           query: 'algoritmos de machine learning',
           searchOptions: {
             limit: 15,
-            similarityThreshold: 0.8,
+            similarityThreshold: 0.6,
             chunkTypes: ['paragraph'],
           },
           includeMetadata: true,
@@ -320,7 +320,7 @@ export class EmbeddingsController {
 
       // Validación adicional de entrada
       if (!dto || !dto.query || typeof dto.query !== 'string') {
-        this.logger.error(`❌ Validación fallida:`, {
+        this.logger.error(`Validación fallida:`, {
           dto: !!dto,
           query: dto?.query,
           queryType: typeof dto?.query,
@@ -340,7 +340,7 @@ export class EmbeddingsController {
         );
       }
 
-      this.logger.log(`🔍 Iniciando búsqueda semántica: "${dto.query}"`);
+      this.logger.log(`Iniciando búsqueda semántica: "${dto.query}"`);
       const startTime = Date.now();
 
       // Ejecutar caso de uso
@@ -349,7 +349,7 @@ export class EmbeddingsController {
       const processingTime = Date.now() - startTime;
 
       if (!result.success) {
-        this.logger.error(`❌ Error en búsqueda semántica: ${result.error}`);
+        this.logger.error(`Error en búsqueda semántica: ${result.error}`);
         throw new HttpException(
           {
             message: result.error,
@@ -376,7 +376,7 @@ export class EmbeddingsController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Error en controlador de búsqueda:`, error);
+      this.logger.error(`Error en controlador de búsqueda:`, error);
 
       if (error instanceof HttpException) {
         throw error;

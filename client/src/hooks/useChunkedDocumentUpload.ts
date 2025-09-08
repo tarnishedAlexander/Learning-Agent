@@ -11,7 +11,8 @@ export const useChunkedDocumentUpload = () => {
   
   const processDocumentComplete = useCallback(async (
     document: ChunkedUploadResult['document'],
-    onProgress?: (step: string, progress: number, message: string) => void
+    onProgress?: (step: string, progress: number, message: string) => void,
+    uploadStatus?: string // Agregar parámetro para el status del upload
   ): Promise<{
     success: boolean;
     document: Document;
@@ -36,8 +37,50 @@ export const useChunkedDocumentUpload = () => {
         uploadedAt: document.uploadedAt,
       };
 
+      // Si el documento fue subido con optimización (status 'uploaded') o restaurado (status 'restored'),
+      // es probable que ya esté completamente procesado
+      if (uploadStatus === 'uploaded' || uploadStatus === 'restored') {
+        // Verificar si ya tiene chunks para determinar si necesita procesamiento
+        try {
+          const chunksInfo = await documentService.getDocumentChunks(document.id);
+          if (chunksInfo.data && chunksInfo.data.total > 0) {
+            // El documento ya tiene chunks, no necesita post-procesamiento
+            onProgress?.('complete', 100, uploadStatus === 'restored' 
+              ? 'Documento restaurado y ya procesado' 
+              : 'Documento ya procesado');
+            return {
+              success: true,
+              document: documentForProcessing,
+              processing: {
+                textProcessed: true,
+                chunksProcessed: true,
+                totalChunks: chunksInfo.data.total,
+              },
+            };
+          }
+        } catch {
+          // Si no puede obtener chunks, proceder con procesamiento normal
+          console.log('No se pudieron obtener chunks, procediendo con procesamiento...');
+        }
+      }
+
+      // Procesamiento normal para documentos que necesitan post-procesamiento
       onProgress?.('text', 33, 'Procesando texto del documento...');
-      await documentService.processDocumentText(document.id);
+      try {
+        await documentService.processDocumentText(document.id);
+      } catch (textError: unknown) {
+        // Si el documento ya está procesado, ignorar el error 400
+        if (textError && typeof textError === 'object' && 'response' in textError) {
+          const errorResponse = textError as { response?: { status?: number } };
+          if (errorResponse.response?.status === 400) {
+            console.log('Documento ya procesado, continuando...');
+          } else {
+            throw textError;
+          }
+        } else {
+          throw textError;
+        }
+      }
 
       onProgress?.('chunks', 66, 'Generando chunks del documento...');
       const chunksResult = await documentService.processDocumentChunks(document.id);
@@ -78,7 +121,11 @@ export const useChunkedDocumentUpload = () => {
         throw new Error(uploadResult.error || 'Error en la subida chunked');
       }
 
-      const processingResult = await processDocumentComplete(uploadResult.document);
+      const processingResult = await processDocumentComplete(
+        uploadResult.document, 
+        undefined, 
+        uploadResult.status
+      );
       
       return processingResult;
     } catch (error) {

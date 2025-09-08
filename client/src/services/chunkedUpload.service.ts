@@ -42,6 +42,7 @@ export interface ChunkedUploadResult {
   };
   sessionId: string;
   error?: string;
+  status?: 'uploaded' | 'restored' | 'duplicate_found' | 'similar_found';
 }
 
 class ChunkedUploadService {
@@ -178,7 +179,8 @@ class ChunkedUploadService {
       return {
         success: true,
         document: result.data,
-        sessionId
+        sessionId,
+        status: result.status, // Pasar el status del backend
       };
 
     } catch (error) {
