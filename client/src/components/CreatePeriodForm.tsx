@@ -180,24 +180,30 @@ export function CreatePeriodForm({
   }, {} as Record<string, { start: Dayjs; end: Dayjs; type: string }>);
 
   const disabledDateBegin = (current: Dayjs) => {
-    const { semester, dateEnd } = formik.values;
+    const { semester } = formik.values;
     if (!semester || !ranges[semester]) return true;
 
-    const { start, end } = ranges[semester];
+    const { start, end, type } = ranges[semester];
     const minDate = start.isAfter(today) ? start : today;
-    let maxDate = end;
 
-    if (dateEnd) {
-      let temp = dayjs(dateEnd);
-      let days = 0;
-      while (days < MIN_BUSINESS_DAYS) {
-        temp = temp.subtract(1, "day");
-        if (temp.day() !== 0 && temp.day() !== 6) days++;
-      }
-      maxDate = temp;
+    if (type === "SPECIAL") {
+      return (
+        current.isBefore(minDate, "day") ||
+        current.isAfter(end, "day") ||
+        current.day() === 0 ||
+        current.day() === 6
+      );
     }
 
-    // Bloquear fines de semana
+    // Calcular fecha máxima para elegir inicio:
+    let temp = end.clone();
+    let days = 0;
+    while (days < MIN_BUSINESS_DAYS) {
+      temp = temp.subtract(1, "day");
+      if (temp.day() !== 0 && temp.day() !== 6) days++;
+    }
+    const maxDate = temp;
+
     return (
       current.isBefore(minDate, "day") ||
       current.isAfter(maxDate, "day") ||
@@ -210,21 +216,33 @@ export function CreatePeriodForm({
     const { semester, dateBegin } = formik.values;
     if (!semester || !ranges[semester]) return true;
 
-    const { start, end } = ranges[semester];
-    let minDate = start.isAfter(today) ? start : today;
-    const maxDate = end;
+    const { start, end, type } = ranges[semester];
 
-    if (dateBegin) {
-      let temp = dayjs(dateBegin);
-      let days = 0;
-      while (days < MIN_BUSINESS_DAYS) {
-        temp = temp.add(1, "day");
-        if (temp.day() !== 0 && temp.day() !== 6) days++;
-      }
-      minDate = temp;
+    if (type === "SPECIAL") {
+      return (
+        current.isBefore(start, "day") ||
+        current.isAfter(end, "day") ||
+        current.day() === 0 ||
+        current.day() === 6
+      );
     }
 
-    // Bloquear fines de semana
+    if (!dateBegin) return true;
+
+    const beginDate = dayjs(dateBegin);
+
+    // Calcular fecha mínima válida
+    let temp = beginDate.clone();
+    let days = 0;
+    while (days < MIN_BUSINESS_DAYS) {
+      temp = temp.add(1, "day");
+      if (temp.day() !== 0 && temp.day() !== 6) days++;
+    }
+    const minDate = temp;
+
+    // Máxima fecha posible es fin del periodo
+    const maxDate = end;
+
     return (
       current.isBefore(minDate, "day") ||
       current.isAfter(maxDate, "day") ||
@@ -237,41 +255,33 @@ export function CreatePeriodForm({
     field: "dateBegin" | "dateEnd",
     value: Dayjs | null
   ) => {
+    const { semester } = formik.values;
+    if (!semester || !ranges[semester]) return;
+
+    const { start, end, type } = ranges[semester];
+
     if (value) {
       const isoDate = value.format("YYYY-MM-DD");
       formik.setFieldValue(field, isoDate);
 
       if (field === "dateBegin") {
-        let temp = value.clone();
-        let days = 0;
-
-        // Avanzar MIN_BUSINESS_DAYS días hábiles
-        while (days < MIN_BUSINESS_DAYS) {
-          temp = temp.add(1, "day");
-          const day = temp.day();
-          if (day !== 0 && day !== 6) days++;
+        if (type === "SPECIAL") {
+          formik.setFieldValue("dateBegin", start.format("YYYY-MM-DD"));
+          formik.setFieldValue("dateEnd", end.format("YYYY-MM-DD"));
+        } else {
+          let temp = value.clone();
+          let days = 0;
+          while (days < MIN_BUSINESS_DAYS && temp.isBefore(end)) {
+            temp = temp.add(1, "day");
+            if (temp.day() !== 0 && temp.day() !== 6) days++;
+          }
+          if (temp.isAfter(end)) temp = end;
+          formik.setFieldValue("dateEnd", temp.format("YYYY-MM-DD"));
         }
-
-        // Si la fecha cae fin de semana se mueve al lunes
-        if (temp.day() === 6) temp = temp.add(2, "day");
-        if (temp.day() === 0) temp = temp.add(1, "day");
-
-        formik.setFieldValue("dateEnd", temp.format("YYYY-MM-DD"));
-      }
-
-      const selectedSemester = Object.keys(ranges).find((sem) => {
-        const { start, end } = ranges[sem];
-        return value.isBetween(start, end, "day", "[]");
-      });
-
-      if (selectedSemester && selectedSemester !== formik.values.semester) {
-        formik.setFieldValue("semester", selectedSemester);
       }
     } else {
       formik.setFieldValue(field, "");
-      if (field === "dateBegin") {
-        formik.setFieldValue("dateEnd", "");
-      }
+      if (field === "dateBegin") formik.setFieldValue("dateEnd", "");
     }
   };
 
