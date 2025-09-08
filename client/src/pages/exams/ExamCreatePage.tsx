@@ -245,7 +245,7 @@ const onSave = async () => {
   return (
     <PageTemplate
       title="Exámenes"
-      subtitle="Creador de exámenes"
+      subtitle="Creación de exámenes"
       breadcrumbs={[
         { label: 'Home', href: '/' },
         { label: 'Gestión de Exámenes', href: '/exams' },
