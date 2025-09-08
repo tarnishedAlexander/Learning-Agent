@@ -5,6 +5,7 @@ import ExamTable from '../../components/exams/ExamTable';
 import { useNavigate } from 'react-router-dom';
 import type { ExamSummary } from '../../store/examsStore';
 
+
 const { Title, Text } = Typography;
 
 type Props = {
