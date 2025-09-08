@@ -7,49 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/**
- * ===========================
- * Auth and User
- * ===========================
- */
-
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  lastname  String
-  email     String   @unique
-  password  String
-  isActive  Boolean  @default(true)
-
-  // relation 1:N
-  roles    UserRole[]
-  sessions UserSession[]
-
-  //Profiles 1:1
-  teacherProfile TeacherProfile? @relation("UserTeacherProfile")
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  lastname       String
+  name           String
+  documents      Document[]
   studentProfile StudentProfile? @relation("UserStudentProfile")
-
-  // Documentos subidos
-  documents Document[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  teacherProfile TeacherProfile? @relation("UserTeacherProfile")
+  roles          UserRole[]
+  sessions       UserSession[]
 }
-
-/**
- * ===========================
- * Role and permission (RBAC)
- * ===========================
- */
 
 model Role {
   id          String           @id @default(uuid())
   name        String           @unique
   description String?
-  users       UserRole[]
-  permissions RolePermission[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       UserRole[]
 }
 
 model Permission {
@@ -59,15 +40,14 @@ model Permission {
   description String?
   roles       RolePermission[]
 
-  // Key unique
   @@unique([action, resource], map: "action_resource")
 }
 
 model UserRole {
   userId String
   roleId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@index([roleId])
@@ -76,95 +56,71 @@ model UserRole {
 model RolePermission {
   roleId       String
   permissionId String
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
 }
 
-/**
- * ===========================
- * Profile 1:1
- * ===========================
- */
-
 model TeacherProfile {
-  userId       String  @id
-  user         User    @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
-  title        String? // Ing., Mgr., PhD, etc.
+  userId       String   @id
+  academicUnit String?
+  title        String?
   bio          String?
-  academicUnit String?  // departamento/escuela
-
-  // relation 1:N
-  courses      Course[]
-  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  courses      Course[]
+  user         User     @relation("UserTeacherProfile", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model StudentProfile {
-  userId        String  @id
-  user          User    @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
-  code          String  @unique
-  career        String? // Sistemas, Arquitectura....
+  userId        String       @id
+  code          String       @unique
+  career        String?
   admissionYear Int?
-  // relation 1:N
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   enrollment    Enrollment[]
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  user          User         @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
 }
-
-/**
- * ===========================
- * Sessions (login)
- * ===========================
- */
 
 model UserSession {
   id            String   @id @default(uuid())
   userId        String
   token         String
   refresh_token String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
   expiresAt     DateTime
   ipAddress     String?
   userAgent     String?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
 }
 
 model Document {
-  id          String   @id @default(uuid())
-  originalName String
-  storedName   String   @unique
-  s3Key        String
-  size         Int
-  contentType  String
-  fileHash         String                    @unique // Hash SHA-256 del archivo
-  textHash         String?                   @unique // Hash SHA-256 del texto normalizado
-  extractedText    String?                   @db.Text // Texto extraído
-  status           DocumentStatus            @default(UPLOADED)
-  
-  // Metadata del documento
-  uploadedBy       String
-  uploader         User                      @relation(fields: [uploadedBy], references: [id])
-  
-  // Relations para RAG
-  chunks           DocumentChunk[]
-  categories       DocumentCategoryMapping[]
-  processingJobs   ProcessingJob[]
-  
-  // Información adicional extraída
-  pageCount        Int?                      // Número de páginas (PDFs)
-  documentTitle    String?                   // Título extraído del documento
-  documentAuthor   String?                   // Autor extraído
-  language         String?                   // Idioma detectado
+  id             String                    @id @default(uuid())
+  originalName   String
+  storedName     String                    @unique
+  s3Key          String
+  size           Int
+  contentType    String
+  uploadedAt     DateTime                  @default(now())
+  documentAuthor String?
+  documentTitle  String?
+  extractedText  String?
+  fileHash       String                    @unique
+  language       String?
+  pageCount      Int?
+  status         DocumentStatus            @default(UPLOADED)
+  updatedAt      DateTime                  @updatedAt
+  uploadedBy     String
+  textHash       String?                   @unique
+  uploader       User                      @relation(fields: [uploadedBy], references: [id])
+  categories     DocumentCategoryMapping[]
+  processingJobs ProcessingJob[]
+  chunks         DocumentChunk[]
 
-  uploadedAt   DateTime @default(now())
-  updatedAt        DateTime                  @updatedAt
-  
   @@index([status])
   @@index([uploadedBy])
   @@index([fileHash])
@@ -173,232 +129,182 @@ model Document {
 }
 
 model DocumentChunk {
-  id              String    @id @default(uuid())
-  documentId      String
-  document        Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  
-  content         String    @db.Text         // Contenido del chunk
-  chunkIndex      Int                        // Índice del chunk en el documento
-  startPosition   Int                        // Posición de inicio en el texto original
-  endPosition     Int                        // Posición de fin en el texto original
-  pageNumber      Int?                       // Página de origen (si aplica)
-  type            String    @default("text") // Tipo de chunk (text, heading, list, etc.)
-  
-  // Metadata estadística
-  wordCount       Int       @default(0)      // Número de palabras
-  charCount       Int       @default(0)      // Número de caracteres
-  
-  // pgvector para embeddings
-  embedding       Unsupported("public.vector(1536)")? // OpenAI embeddings (1536 dimensiones)
-  
-  // Metadata adicional del chunk
-  metadata        Json?                      // Información contextual adicional
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id            String                 @id @default(uuid())
+  documentId    String
+  content       String
+  chunkIndex    Int
+  startPosition Int
+  endPosition   Int
+  pageNumber    Int?
+  type          String                 @default("text")
+  wordCount     Int                    @default(0)
+  charCount     Int                    @default(0)
+  embedding     Unsupported("vector")?
+  metadata      Json?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  document      Document               @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@unique([documentId, chunkIndex])
   @@index([documentId])
   @@index([type])
   @@index([wordCount])
-  // Índice HNSW para búsqueda vectorial eficiente
-  // CREATE INDEX CONCURRENTLY document_chunks_embedding_hnsw_idx ON "DocumentChunk" USING hnsw (embedding vector_cosine_ops);
   @@map("document_chunks")
 }
 
 model DocumentCategory {
-  id          String                      @id @default(uuid())
-  name        String                      @unique
+  id          String                    @id @default(uuid())
+  name        String                    @unique
   description String?
-  color       String?                     // Color para UI
-  icon        String?                     // Icono para UI
-  
+  color       String?
+  icon        String?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
   documents   DocumentCategoryMapping[]
-  
-  createdAt   DateTime                    @default(now())
-  updatedAt   DateTime                    @updatedAt
 }
 
 model DocumentCategoryMapping {
-  documentId   String
-  categoryId   String
-  document     Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  category     DocumentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime         @default(now())
-  
+  documentId String
+  categoryId String
+  createdAt  DateTime         @default(now())
+  category   DocumentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  document   Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@id([documentId, categoryId])
 }
 
 model ProcessingJob {
   id           String           @id @default(uuid())
   documentId   String
-  document     Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  
   jobType      ProcessingType
   status       ProcessingStatus @default(PENDING)
-  errorMessage String?          @db.Text
-  progress     Int              @default(0)     // Progreso 0-100
-  
-  // Detalles específicos del job
-  jobDetails   Json?            // Configuración específica del job
-  result       Json?            // Resultado del procesamiento
-  
+  errorMessage String?
+  progress     Int              @default(0)
+  jobDetails   Json?
+  result       Json?
   startedAt    DateTime?
   completedAt  DateTime?
   createdAt    DateTime         @default(now())
-  
+  document     Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@index([documentId, jobType])
   @@index([status])
   @@index([createdAt])
 }
 
-/**
- * ===========================
- * Enums para Document Processing
- * ===========================
- */
-
-enum DocumentStatus {
-  UPLOADED      // Archivo subido, esperando procesamiento
-  PROCESSING    // En proceso de extracción/chunking/embedding
-  PROCESSED     // Completamente procesado y listo para búsqueda
-  ERROR         // Error en el procesamiento
-  DELETED       // Marcado como eliminado
-}
-
-enum ProcessingType {
-  TEXT_EXTRACTION       // Extraer texto del archivo
-  CHUNKING             // Dividir texto en chunks
-  EMBEDDING_GENERATION // Generar embeddings vectoriales
-  FULL_PROCESSING      // Procesamiento completo (todos los pasos)
-  REPROCESSING         // Reprocesar documento existente
-}
-
-enum ProcessingStatus {
-  PENDING      // Esperando en cola
-  RUNNING      // Ejecutándose actualmente
-  COMPLETED    // Completado exitosamente
-  FAILED       // Falló con error
-  CANCELLED    // Cancelado manualmente
-  RETRYING     // Reintentando después de fallo
-}
-
-enum ChunkType {
-  TEXT         // Chunk de texto normal
-  TITLE        // Título o encabezado
-  TABLE        // Contenido de tabla
-  LIST         // Lista o enumeración
-  CODE         // Código o texto técnico
-  FORMULA      // Fórmula matemática
-  METADATA     // Metadatos del documento
-}
-
-/**
- * ===========================
- * Exams generation
- * ===========================
- */
-
 model Exam {
-  id             String   @id @default(uuid())
-  subject        String
-  difficulty     String
-  attempts       Int
-  totalQuestions Int
-  timeMinutes    Int
-  reference      String?  @db.Text
-
-  // distribución por tipo
-  
-  mcqCount          Int   @default(0) // opción múltiple
-  trueFalseCount    Int   @default(0) // verdadero/falso
-  openAnalysisCount Int   @default(0) // abiertas: análisis
-  openExerciseCount Int   @default(0) // abiertas: ejercicio
-  approvedAt      DateTime?  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  questions       ExamQuestion[]
+  id                String         @id @default(uuid())
+  subject           String
+  difficulty        String
+  attempts          Int
+  totalQuestions    Int
+  timeMinutes       Int
+  reference         String?
+  createdAt         DateTime       @default(now())
+  mcqCount          Int            @default(0)
+  openAnalysisCount Int            @default(0)
+  openExerciseCount Int            @default(0)
+  trueFalseCount    Int            @default(0)
+  approvedAt        DateTime?
+  updatedAt         DateTime       @updatedAt
+  questions         ExamQuestion[]
 
   @@index([subject])
-}
-
-// === Preguntas de Examen ===
-enum QuestionKind {
-  MULTIPLE_CHOICE
-  TRUE_FALSE
-  OPEN_ANALYSIS
-  OPEN_EXERCISE
 }
 
 model ExamQuestion {
   id                 String       @id @default(cuid())
   examId             String
-  exam               Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
-
   kind               QuestionKind
   text               String
-
-  // Campos específicos por tipo
-  options            Json?        // MCQ
-  correctOptionIndex Int?         // MCQ
-  correctBoolean     Boolean?     // TRUE_FALSE
-  expectedAnswer     String?      // OPEN_*
-
+  options            Json?
+  correctOptionIndex Int?
+  correctBoolean     Boolean?
+  expectedAnswer     String?
   order              Int
-
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
+  exam               Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
 
-  @@unique([examId, order])       // no dos preguntas con el mismo orden en un examen
+  @@unique([examId, order])
   @@index([examId, order])
 }
 
-/* ===========================
-   Academic Management (classes and enrollment)
-   =========================== */
-
 model Course {
-  id            String            @id @default(uuid())
-  name          String
-  isActive      Boolean           @default(true)
-
-  teacherId     String
-  teacher       TeacherProfile    @relation(fields: [teacherId], references: [userId])
-  classes       Classes[]
-
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id        String         @id @default(uuid())
+  name      String
+  isActive  Boolean        @default(true)
+  teacherId String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  classes   Classes[]
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [userId])
 }
 
 model Classes {
-  id            String            @id @default(uuid())
-  name          String
-  semester      String
-  isActive      Boolean           @default(true)
-  dateBegin     DateTime
-  dateEnd       DateTime
-
-  // relation 1:N
-  enrollment    Enrollment[]
-
-  courseId      String            
-  course        Course            @relation(fields: [courseId], references: [id])
-  
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt @default(now())
+  id         String       @id @default(uuid())
+  name       String
+  semester   String
+  isActive   Boolean      @default(true)
+  dateBegin  DateTime
+  dateEnd    DateTime
+  courseId   String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+  course     Course       @relation(fields: [courseId], references: [id])
+  enrollment Enrollment[]
 }
 
-// relation N:N - StudentProfile-Classes
 model Enrollment {
-  studentId     String
-  student       StudentProfile    @relation(fields: [studentId], references: [userId])
-  classId       String
-  class         Classes           @relation(fields: [classId], references: [id])
-  isActive      Boolean           @default(true)
-
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  studentId String
+  classId   String
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  class     Classes        @relation(fields: [classId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [userId])
 
   @@id([studentId, classId])
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  ERROR
+  DELETED
+}
+
+enum ProcessingType {
+  TEXT_EXTRACTION
+  CHUNKING
+  EMBEDDING_GENERATION
+  FULL_PROCESSING
+  REPROCESSING
+}
+
+enum ProcessingStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  RETRYING
+}
+
+enum ChunkType {
+  TEXT
+  TITLE
+  TABLE
+  LIST
+  CODE
+  FORMULA
+  METADATA
+}
+
+enum QuestionKind {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_ANALYSIS
+  OPEN_EXERCISE
 }

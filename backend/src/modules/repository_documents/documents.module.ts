@@ -12,6 +12,7 @@ import {
   DOCUMENT_CHUNK_REPOSITORY_PORT,
   EMBEDDING_GENERATOR_PORT,
   VECTOR_SEARCH_PORT,
+  DELETED_DOCUMENT_REPOSITORY_PORT,
 } from './tokens';
 
 // Domain ports
@@ -31,6 +32,7 @@ import { SemanticTextChunkingAdapter } from './infrastructure/chunking/semantic-
 import { PrismaDocumentChunkRepositoryAdapter } from './infrastructure/persistence/prisma-document-chunk-repository.adapter';
 import { OpenAIEmbeddingAdapter } from './infrastructure/ai/openai-embedding.adapter';
 import { PgVectorSearchAdapter } from './infrastructure/search/pgvector-search.adapter';
+import { PrismaDeletedDocumentRepositoryAdapter } from './infrastructure/persistence/prisma-deleted-document-repository.adapter';
 
 // Domain services
 import { DocumentChunkingService } from './domain/services/document-chunking.service';
@@ -46,6 +48,7 @@ import { ProcessDocumentChunksUseCase } from './application/commands/process-doc
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
 import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
+import { CheckDeletedDocumentUseCase } from './application/use-cases/check-deleted-document.usecase';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
@@ -72,6 +75,10 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       provide: DOCUMENT_CHUNK_REPOSITORY_PORT,
       useClass: PrismaDocumentChunkRepositoryAdapter,
     },
+    {
+      provide: DELETED_DOCUMENT_REPOSITORY_PORT,
+      useClass: PrismaDeletedDocumentRepositoryAdapter,
+    },
 
     // nuevos adaptadores para fase 3
     {
@@ -92,7 +99,6 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       inject: [PrismaService, EMBEDDING_GENERATOR_PORT],
     },
 
-    // token legacy para compatibilidad hacia atrás
     { provide: FILE_STORAGE_REPO, useClass: S3StorageAdapter },
 
     // servicios de dominio
@@ -152,10 +158,19 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       useFactory: (
         storageAdapter: S3StorageAdapter,
         documentRepository: PrismaDocumentRepositoryAdapter,
+        chunkingService: DocumentChunkingService,
       ) => {
-        return new UploadDocumentUseCase(storageAdapter, documentRepository);
+        return new UploadDocumentUseCase(
+          storageAdapter,
+          documentRepository,
+          chunkingService,
+        );
       },
-      inject: [DOCUMENT_STORAGE_PORT, DOCUMENT_REPOSITORY_PORT],
+      inject: [
+        DOCUMENT_STORAGE_PORT,
+        DOCUMENT_REPOSITORY_PORT,
+        DocumentChunkingService,
+      ],
     },
     {
       provide: DownloadDocumentUseCase,
@@ -241,6 +256,28 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         DOCUMENT_CHUNK_REPOSITORY_PORT,
       ],
     },
+    {
+      provide: CheckDeletedDocumentUseCase,
+      useFactory: (
+        documentRepository: PrismaDocumentRepositoryAdapter,
+        deletedDocumentRepository: PrismaDeletedDocumentRepositoryAdapter,
+        textExtraction: PdfTextExtractionAdapter,
+        documentStorage: S3StorageAdapter,
+      ) => {
+        return new CheckDeletedDocumentUseCase(
+          documentRepository,
+          deletedDocumentRepository,
+          textExtraction,
+          documentStorage,
+        );
+      },
+      inject: [
+        DOCUMENT_REPOSITORY_PORT,
+        DELETED_DOCUMENT_REPOSITORY_PORT,
+        TEXT_EXTRACTION_PORT,
+        DOCUMENT_STORAGE_PORT,
+      ],
+    },
   ],
   exports: [
     // casos de uso originales
@@ -255,6 +292,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     GenerateDocumentEmbeddingsUseCase,
     SearchDocumentsUseCase,
     CheckDocumentSimilarityUseCase,
+    CheckDeletedDocumentUseCase,
 
     // servicios de dominio
     DocumentChunkingService,
@@ -268,6 +306,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     DOCUMENT_CHUNK_REPOSITORY_PORT,
     EMBEDDING_GENERATOR_PORT,
     VECTOR_SEARCH_PORT,
+    DELETED_DOCUMENT_REPOSITORY_PORT,
   ],
 })
 export class DocumentsModule implements NestModule {
@@ -276,22 +315,21 @@ export class DocumentsModule implements NestModule {
       .apply(LoggingMiddleware)
       .forRoutes('api/documents', 'api/repository-documents/embeddings');
 
-    consumer.apply(AuthMiddleware).forRoutes(
-      { path: 'api/documents/upload', method: RequestMethod.POST },
-      { path: 'api/documents/check-similarity', method: RequestMethod.POST },
-      { path: 'api/documents/upload-with-check', method: RequestMethod.POST },
-      { path: 'api/documents/confirm-upload', method: RequestMethod.POST },
-      { path: 'api/documents/:id', method: RequestMethod.DELETE },
-      { path: 'api/documents/download/:id', method: RequestMethod.GET },
-      {
-        path: 'api/documents/:documentId/process-text',
-        method: RequestMethod.POST,
-      },
-      {
-        path: 'api/documents/:documentId/process-chunks',
-        method: RequestMethod.POST,
-      },
-      { path: 'api/documents/:documentId/chunks', method: RequestMethod.GET },
-    );
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes(
+        { path: 'api/documents/upload', method: RequestMethod.POST },
+        { path: 'api/documents/:id', method: RequestMethod.DELETE },
+        { path: 'api/documents/download/:id', method: RequestMethod.GET },
+        {
+          path: 'api/documents/:documentId/process-text',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'api/documents/:documentId/process-chunks',
+          method: RequestMethod.POST,
+        },
+        { path: 'api/documents/:documentId/chunks', method: RequestMethod.GET },
+      );
   }
 }

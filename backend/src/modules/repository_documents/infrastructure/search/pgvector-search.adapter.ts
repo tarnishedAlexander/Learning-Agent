@@ -118,7 +118,29 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
       }
 
       // ejecutar consulta de búsqueda vectorial
+      console.log(`🔍 PgVector DEBUG: Ejecutando consulta con params:`, {
+        queryVectorLength: queryVector.length,
+        similarityThreshold: finalOptions.similarityThreshold,
+        limit: finalOptions.limit,
+        hasThreshold: !!finalOptions.similarityThreshold
+      });
+      
       const results = await this.prisma.$queryRawUnsafe(query, ...params);
+      
+      console.log(`PgVector DEBUG: Resultados obtenidos: ${(results as any[]).length}`);
+      if ((results as any[]).length > 0) {
+        console.log(`🔍 PgVector DEBUG: Primer resultado:`, {
+          documentId: (results as any[])[0].documentId,
+          similarity: (results as any[])[0].similarity_score,
+          chunkId: (results as any[])[0].id
+        });
+      } else {
+        // DEBUG: Verificar si hay chunks con embeddings en la BD
+        const totalChunksWithEmbeddings = await this.prisma.$queryRawUnsafe(
+          'SELECT COUNT(*) as count FROM document_chunks WHERE embedding IS NOT NULL'
+        );
+        console.log(`🔍 PgVector DEBUG: Total chunks con embeddings en BD:`, totalChunksWithEmbeddings);
+      }
 
       // mapear resultados a la interfaz esperada
       const mappedResults = (results as any[]).map((row) => ({
@@ -147,7 +169,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
         processingTimeMs: 0, // calcular tiempo real
       };
     } catch (error) {
-      console.error('❌ Error en búsqueda vectorial:', error);
+      console.error('Error en búsqueda vectorial:', error);
       throw this.handleSearchError(error, 'searchByVector');
     }
   }
@@ -323,7 +345,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
 
     // verificar dimensiones típicas
     if (![256, 512, 1024, 1536, 3072].includes(vector.length)) {
-      console.warn(`⚠️ Dimensiones inusuales del vector: ${vector.length}`);
+      console.warn(`Dimensiones inusuales del vector: ${vector.length}`);
     }
   }
 
