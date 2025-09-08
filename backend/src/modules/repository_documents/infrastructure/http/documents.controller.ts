@@ -43,7 +43,6 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
-    private readonly categorizeDocumentUseCase: CategorizeDocumentUseCase,
     private readonly logger: ContextualLoggerService,
   ) {}
 
