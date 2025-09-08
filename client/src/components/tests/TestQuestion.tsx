@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card, Typography, theme } from "antd";
 
 const { Title } = Typography;
 
-interface MultipleSelectionTestResponse {
-  question: string;
-  options: string[];
-  correctAnswer: number;
+interface Option {
+  label: string;
+  value: string;
 }
 
 interface TestQuestionProps {
@@ -15,11 +14,13 @@ interface TestQuestionProps {
 
 export default function TestQuestion({ onNext }: TestQuestionProps) {
   const { token } = theme.useToken();
-  const [multSelectionTest, setMultSelectionTest] = useState<MultipleSelectionTestResponse>({
-    question: "",
-    options: [],
-    correctAnswer: -1
-  });
+
+  const options: Option[] = [
+    { label: "O(n²)", value: "A" },
+    { label: "O(n log n)", value: "B" },
+    { label: "O(n)", value: "C" },
+    { label: "O(log n)", value: "D" }
+  ];
 
   const handleSelect = (value: string) => {
     setTimeout(() => {
@@ -33,26 +34,6 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
     token.colorInfo,
     token.colorInfoHover
   ];
-
-  useEffect(() => {
-    fetchQuestion();
-  }, []);
-
-  async function fetchQuestion() {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_URL}${import.meta.env.VITE_TESTCHAT_URL}`
-      );
-      const testOp = (await res.json()) as MultipleSelectionTestResponse;
-      setMultSelectionTest({
-        question: testOp.question || "",
-        options: testOp.options || [],
-        correctAnswer: typeof testOp.correctAnswer === "number" ? testOp.correctAnswer : -1
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   return (
     <div
@@ -83,7 +64,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
             color: token.colorTextHeading
           }}
         >
-          {multSelectionTest.question}
+          ¿Cuál de estas complejidades es más eficiente para ordenar una lista grande?
         </Title>
       </Card>
 
@@ -96,10 +77,10 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
           maxWidth: 800
         }}
       >
-        {multSelectionTest.options.map((opt, index) => (
+        {options.map((opt, index) => (
           <div
-            key={index}
-            onClick={() => handleSelect(opt)}
+            key={opt.value}
+            onClick={() => handleSelect(opt.value)}
             style={{
               backgroundColor: optionColors[index],
               color: token.colorTextLightSolid,
@@ -122,7 +103,7 @@ export default function TestQuestion({ onNext }: TestQuestionProps) {
               (e.currentTarget as HTMLDivElement).style.boxShadow = token.boxShadow;
             }}
           >
-            {opt}
+            {opt.label}
           </div>
         ))}
       </div>
