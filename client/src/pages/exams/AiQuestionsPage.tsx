@@ -17,9 +17,27 @@ const { Title } = Typography;
 const layoutStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 16,
+  gap: 30,
   alignItems: 'center',
-  padding: '24px 16px',
+  padding: 'clamp(24px, 3.2vw, 40px) 16px',
+};
+
+const TEXT_KEYS = ['text', 'statement', 'question', 'prompt', 'enunciado', 'descripcion', 'description', 'body', 'content'];
+const OPT_KEYS = ['options', 'choices', 'alternativas', 'opciones', 'answers'];
+const pickTextLike = (q: any) => {
+  for (const k of TEXT_KEYS) {
+    const v = q?.[k];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return '';
+};
+const pickOptionsLike = (q: any) => {
+  for (const k of OPT_KEYS) {
+    const v = q?.[k];
+    if (Array.isArray(v) && v.length) return v.map(String);
+  }
+  return undefined;
+
 };
 
 function normalizeToQuestions(res: any): GeneratedQuestion[] {
@@ -34,8 +52,8 @@ function normalizeToQuestions(res: any): GeneratedQuestion[] {
         out.push({
           id: q.id ?? `${t}_${idx}_${Date.now()}`,
           type: t,
-          text: q.text ?? '',
-          options: q.options ?? undefined,
+          text: pickTextLike(q),
+          options: pickOptionsLike(q),
           include: q.include ?? true,
         } as GeneratedQuestion);
       });
@@ -223,15 +241,14 @@ export default function ExamsCreatePage() {
     <PageTemplate
       title="Exámenes"
       subtitle="Creador de exámenes"
-      user={{ name: 'Nora Watson', role: 'Sales Manager', avatarUrl: 'https://i.pravatar.cc/128?img=5' }}
-      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exams' }, { label: 'Crear', href: '/exams/create' }]}
+      breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Exámenes', href: '/exams' }, { label: 'Crear', href: '/exams/create' },{ label: 'Gestión de Exámenes',href: '/exams'}]}
     >
       <div
         className="pantalla-scroll w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
-        style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px', background: token.colorBgLayout, color: token.colorText }}
+        style={{ maxWidth: 1200, margin: '0 auto', padding: '30px 30px', background: token.colorBgLayout, color: token.colorText }}
       >
-        <section className="card" style={{ ...cardStyle, width: '100%', maxWidth: 1000, margin: '0 auto' }}>
-          <Title level={3} style={{ margin: 0, color: token.colorTextHeading }}>Crear nuevo examen</Title>
+        <section className="card" style={{ ...cardStyle, maxWidth: 'clamp(720px, 92vw, 1000px)',margin: '0 auto' }}>
+          <Title level={4} style={{ margin: 0, color: token.colorPrimary }}>Crear nuevo examen</Title>
           <div style={layoutStyle}>
             <ExamForm ref={formRef} onToast={pushToast} onGenerateAI={handleAIPropose} />
           </div>
