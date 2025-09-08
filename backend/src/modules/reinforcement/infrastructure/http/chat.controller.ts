@@ -15,7 +15,6 @@ export class ChatController {
   @Post()
   @HttpCode(200)
   async chatWithIA(@Body() dto: ChatRequest): Promise<ChatResponse> {
-    console.log('pregunta recibida', dto);
     const response = await this.deepseekPort.generateResponse(dto.question);
     return response;
   }

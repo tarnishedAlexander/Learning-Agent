@@ -5,28 +5,42 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log('==> Seed iniciado');
   // --- Crear Roles ---
-  const docenteRole = await prisma.role.upsert({
+  let docenteRole, estudianteRole;
+  try {
+    docenteRole = await prisma.role.upsert({
     where: { name: 'docente' },
     update: {},
     create: {
       name: 'docente',
       description: 'Docente que dicta materias',
     },
-  });
-
-  const estudianteRole = await prisma.role.upsert({
-    where: { name: 'estudiante' },
-    update: {},
-    create: {
-      name: 'estudiante',
-      description: 'Estudiante inscrito en materias',
-    },
-  });
+    });
+    estudianteRole = await prisma.role.upsert({
+      where: { name: 'estudiante' },
+      update: {},
+      create: {
+        name: 'estudiante',
+        description: 'Estudiante inscrito en materias',
+      },
+    });
+    console.log('==> Roles creados');
+  } catch (err) {
+    console.error('Error creando roles:', err);
+    throw err;
+  }
 
   // --- Hash de contraseñas ---
-  const docentePassword = await bcrypt.hash('Docente123!', 10);
-  const estudiantePassword = await bcrypt.hash('Estudiante123!', 10);
+  let docentePassword, estudiantePassword;
+  try {
+    docentePassword = await bcrypt.hash('Docente123!', 10);
+    estudiantePassword = await bcrypt.hash('Estudiante123!', 10);
+    console.log('==> Contraseñas hasheadas');
+  } catch (err) {
+    console.error('Error hasheando contraseñas:', err);
+    throw err;
+  }
 
   // --- Crear usuario docente ---
   const docente = await prisma.user.upsert({
@@ -282,4 +296,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    console.log('Seed ejecutado');
   });

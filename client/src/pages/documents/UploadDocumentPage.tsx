@@ -46,8 +46,8 @@ const UploadDocumentPage: React.FC = () => {
 
   const fileConfig = {
     accept: ".pdf",
-    maxSize: 10 * 1024 * 1024, // 10MB
-    validationMessage: "Solo se permiten archivos PDF de hasta 10MB"
+    maxSize: 100 * 1024 * 1024, // 100MB
+    validationMessage: "Solo se permiten archivos PDF de hasta 100MB"
   };
 
   const processingConfig = {
