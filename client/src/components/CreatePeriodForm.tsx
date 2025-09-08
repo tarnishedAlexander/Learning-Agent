@@ -19,12 +19,6 @@ dayjs.extend(customParseFormat);
 const { Option } = Select;
 const MIN_BUSINESS_DAYS = 25;
 
-const allowYearTileIfSameYear = (current: Dayjs, minDate: Dayjs) => {
-  const y = minDate.year();
-  const dec31 = dayjs(`${y}-12-31`);
-  return current.isSame(dec31, "day");
-};
-
 const periodValidationSchema = yup.object({
   semester: yup
     .string()
@@ -58,26 +52,6 @@ export function CreatePeriodForm({
   course,
   loading = false,
 }: CreatePeriodFormProps) {
-  const currentYear = new Date().getFullYear();
-
-  const ranges = {
-    [`PRIMERO ${currentYear}`]: {
-      start: dayjs(`${currentYear}-01-25`),
-      end: dayjs(`${currentYear}-06-30`),
-    },
-    [`SEGUNDO ${currentYear}`]: {
-      start: dayjs(`${currentYear}-07-25`),
-      end: dayjs(`${currentYear}-12-31`),
-    },
-    [`PRIMERO ${currentYear + 1}`]: {
-      start: dayjs(`${currentYear + 1}-01-25`),
-      end: dayjs(`${currentYear + 1}-06-30`),
-    },
-    [`SEGUNDO ${currentYear + 1}`]: {
-      start: dayjs(`${currentYear + 1}-07-25`),
-      end: dayjs(`${currentYear + 1}-12-31`),
-    },
-  };
 
   const countBusinessDays = (start: Dayjs, end: Dayjs) => {
     let days = 0;
@@ -133,12 +107,51 @@ export function CreatePeriodForm({
     formik.resetForm();
   };
 
+  const today = dayjs();
+  const currentYear = today.year();
+  const isFirstHalf = today.month() < 6;
+
+  const availableSemesters = isFirstHalf
+    ? [
+        {
+          name: `PRIMERO ${currentYear}`,
+          start: `${currentYear}-01-25`,
+          end: `${currentYear}-06-30`,
+        },
+        {
+          name: `SEGUNDO ${currentYear}`,
+          start: `${currentYear}-07-25`,
+          end: `${currentYear}-12-31`,
+        },
+      ]
+    : [
+        {
+          name: `SEGUNDO ${currentYear}`,
+          start: `${currentYear}-07-25`,
+          end: `${currentYear}-12-31`,
+        },
+        {
+          name: `PRIMERO ${currentYear + 1}`,
+          start: `${currentYear + 1}-01-25`,
+          end: `${currentYear + 1}-06-30`,
+        },
+      ];
+
+  // Convertimos a un objeto para facilitar el manejo de rangos
+  const ranges = availableSemesters.reduce((acc, sem) => {
+    acc[sem.name] = {
+      start: dayjs(sem.start),
+      end: dayjs(sem.end),
+    };
+    return acc;
+  }, {} as Record<string, { start: Dayjs; end: Dayjs }>);
+
   const disabledDateBegin = (current: Dayjs) => {
     const { semester, dateEnd } = formik.values;
     if (!semester || !ranges[semester]) return true;
 
     const { start, end } = ranges[semester];
-    const minDate = start;
+    const minDate = start.isAfter(today) ? start : today;
     let maxDate = end;
 
     if (dateEnd) {
@@ -146,23 +159,12 @@ export function CreatePeriodForm({
       let days = 0;
       while (days < MIN_BUSINESS_DAYS) {
         temp = temp.subtract(1, "day");
-        const d = temp.day();
-        if (d !== 0 && d !== 6) days++;
+        if (temp.day() !== 0 && temp.day() !== 6) days++;
       }
       maxDate = temp;
     }
 
-    let out =
-      current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
-
-    if (
-      out &&
-      current.year() === minDate.year() &&
-      allowYearTileIfSameYear(current, minDate)
-    ) {
-      out = false;
-    }
-    return out;
+    return current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
   };
 
   const disabledDateEnd = (current: Dayjs) => {
@@ -170,7 +172,7 @@ export function CreatePeriodForm({
     if (!semester || !ranges[semester]) return true;
 
     const { start, end } = ranges[semester];
-    let minDate = start;
+    let minDate = start.isAfter(today) ? start : today;
     const maxDate = end;
 
     if (dateBegin) {
@@ -178,23 +180,12 @@ export function CreatePeriodForm({
       let days = 0;
       while (days < MIN_BUSINESS_DAYS) {
         temp = temp.add(1, "day");
-        const d = temp.day();
-        if (d !== 0 && d !== 6) days++;
+        if (temp.day() !== 0 && temp.day() !== 6) days++;
       }
       minDate = temp;
     }
 
-    let out =
-      current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
-
-    if (
-      out &&
-      current.year() === minDate.year() &&
-      allowYearTileIfSameYear(current, minDate)
-    ) {
-      out = false;
-    }
-    return out;
+    return current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
   };
 
   const handleDateChange = (
@@ -269,18 +260,11 @@ export function CreatePeriodForm({
               onBlur={() => formik.setFieldTouched("semester", true)}
               style={{ width: "100%" }}
             >
-              <Option value={`PRIMERO ${currentYear}`}>
-                PRIMERO {currentYear}
-              </Option>
-              <Option value={`SEGUNDO ${currentYear}`}>
-                SEGUNDO {currentYear}
-              </Option>
-              <Option value={`PRIMERO ${currentYear + 1}`}>
-                PRIMERO {currentYear + 1}
-              </Option>
-              <Option value={`SEGUNDO ${currentYear + 1}`}>
-                SEGUNDO {currentYear + 1}
-              </Option>
+              {availableSemesters.map((sem) => (
+                <Option key={sem.name} value={sem.name}>
+                  {sem.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
 
