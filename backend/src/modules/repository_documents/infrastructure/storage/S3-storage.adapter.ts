@@ -76,7 +76,6 @@ export class S3StorageAdapter implements DocumentStoragePort {
       // Subir archivo a MinIO
       await this.s3Client.send(putObjectCommand);
       const url = `${this.endpoint}/${this.bucketName}/${fileName}`;
-      console.log(`Documento subido exitosamente a ${url}`);
       // Crear entidad Document (versión simple para compatibilidad)
       const document = new Document(
         '', // id - será asignado por el caso de uso
