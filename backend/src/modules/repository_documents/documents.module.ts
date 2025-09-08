@@ -46,24 +46,28 @@ import { ProcessDocumentTextUseCase } from './application/commands/process-docum
 import { ProcessDocumentChunksUseCase } from './application/commands/process-document-chunks.usecase';
 import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/generate-document-embeddings.use-case';
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
+import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
+
 // Contract use cases
 import { GetDocumentsBySubjectUseCase } from './application/queries/get-documents-by-subject.usecase';
 import { GetDocumentContentUseCase } from './application/queries/get-document-content.usecase';
+
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
 import { ContextualLoggerService } from './infrastructure/services/contextual-logger.service';
+
 @Module({
   imports: [PrismaModule, IdentityModule],
   controllers: [DocumentsController, EmbeddingsController, ContractDocumentsController],
   providers: [
-    // Servicios de configuración
+    // servicios de configuración
     AiConfigService,
 
-    // Servicios de logging
+    // servicios de logging
     ContextualLoggerService,
 
-    // Infrastructure adapters
+    // adaptadores de infraestructura
     { provide: DOCUMENT_STORAGE_PORT, useClass: S3StorageAdapter },
     {
       provide: DOCUMENT_REPOSITORY_PORT,
@@ -76,7 +80,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       useClass: PrismaDocumentChunkRepositoryAdapter,
     },
 
-    // Nuevos adapters para Phase 3
+    // nuevos adaptadores para fase 3
     {
       provide: EMBEDDING_GENERATOR_PORT,
       useFactory: (aiConfig: AiConfigService) => {
@@ -95,10 +99,10 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       inject: [PrismaService, EMBEDDING_GENERATOR_PORT],
     },
 
-    // Legacy token for backward compatibility
+    // token legacy para compatibilidad hacia atrás
     { provide: FILE_STORAGE_REPO, useClass: S3StorageAdapter },
 
-    // Domain services
+    // servicios de dominio
     {
       provide: DocumentChunkingService,
       useFactory: (
@@ -129,7 +133,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       ],
     },
 
-    // Use cases
+    // casos de uso
     {
       provide: ListDocumentsUseCase,
       useFactory: (
@@ -216,6 +220,34 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       },
       inject: [DocumentEmbeddingService],
     },
+    {
+      provide: CheckDocumentSimilarityUseCase,
+      useFactory: (
+        documentRepository: PrismaDocumentRepositoryAdapter,
+        textExtraction: PdfTextExtractionAdapter,
+        chunkingStrategy: SemanticTextChunkingAdapter,
+        embeddingGenerator: EmbeddingGeneratorPort,
+        vectorSearch: VectorSearchPort,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
+      ) => {
+        return new CheckDocumentSimilarityUseCase(
+          documentRepository,
+          textExtraction,
+          chunkingStrategy,
+          embeddingGenerator,
+          vectorSearch,
+          chunkRepository,
+        );
+      },
+      inject: [
+        DOCUMENT_REPOSITORY_PORT,
+        TEXT_EXTRACTION_PORT,
+        CHUNKING_STRATEGY_PORT,
+        EMBEDDING_GENERATOR_PORT,
+        VECTOR_SEARCH_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+      ],
+    },
 
     // Contract use cases
     {
@@ -240,7 +272,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     },
   ],
   exports: [
-    // Casos de uso originales
+    // casos de uso originales
     ListDocumentsUseCase,
     DeleteDocumentUseCase,
     UploadDocumentUseCase,
@@ -248,9 +280,10 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     ProcessDocumentTextUseCase,
     ProcessDocumentChunksUseCase,
 
-    // Nuevos casos de uso para embeddings
+    // nuevos casos de uso para embeddings
     GenerateDocumentEmbeddingsUseCase,
     SearchDocumentsUseCase,
+    CheckDocumentSimilarityUseCase,
 
     // Casos de uso para el contrato
     GetDocumentsBySubjectUseCase,
@@ -260,7 +293,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     DocumentChunkingService,
     DocumentEmbeddingService,
 
-    // Tokens de puertos (para testing o extensión)
+    // tokens de puertos (para testing o extensión)
     DOCUMENT_REPOSITORY_PORT,
     TEXT_EXTRACTION_PORT,
     DOCUMENT_STORAGE_PORT,
