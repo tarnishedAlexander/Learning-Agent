@@ -52,7 +52,6 @@ export function CreatePeriodForm({
   course,
   loading = false,
 }: CreatePeriodFormProps) {
-
   const countBusinessDays = (start: Dayjs, end: Dayjs) => {
     let days = 0;
     let current = start.clone();
@@ -164,7 +163,13 @@ export function CreatePeriodForm({
       maxDate = temp;
     }
 
-    return current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
+    // Bloquear fines de semana
+    return (
+      current.isBefore(minDate, "day") ||
+      current.isAfter(maxDate, "day") ||
+      current.day() === 0 ||
+      current.day() === 6
+    );
   };
 
   const disabledDateEnd = (current: Dayjs) => {
@@ -185,7 +190,13 @@ export function CreatePeriodForm({
       minDate = temp;
     }
 
-    return current.isBefore(minDate, "day") || current.isAfter(maxDate, "day");
+    // Bloquear fines de semana
+    return (
+      current.isBefore(minDate, "day") ||
+      current.isAfter(maxDate, "day") ||
+      current.day() === 0 ||
+      current.day() === 6
+    );
   };
 
   const handleDateChange = (
@@ -200,11 +211,16 @@ export function CreatePeriodForm({
         let temp = value.clone();
         let days = 0;
 
+        // Avanzar MIN_BUSINESS_DAYS días hábiles
         while (days < MIN_BUSINESS_DAYS) {
           temp = temp.add(1, "day");
           const day = temp.day();
           if (day !== 0 && day !== 6) days++;
         }
+
+        // Si la fecha cae fin de semana se mueve al lunes
+        if (temp.day() === 6) temp = temp.add(2, "day");
+        if (temp.day() === 0) temp = temp.add(1, "day");
 
         formik.setFieldValue("dateEnd", temp.format("YYYY-MM-DD"));
       }
