@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import {
   Controller,
   Get,
@@ -23,6 +24,7 @@ import { DeleteDocumentUseCase } from '../../application/commands/delete-documen
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { ProcessDocumentTextUseCase } from '../../application/commands/process-document-text.usecase';
 import { ProcessDocumentChunksUseCase } from '../../application/commands/process-document-chunks.usecase';
+import { CheckDocumentSimilarityUseCase } from '../../application/use-cases/check-document-similarity.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -32,7 +34,16 @@ import {
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
 import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
+import {
+  CheckDocumentSimilarityResponseDto,
+  ExistingDocumentDto,
+  SimilarDocumentDto,
+  CheckDocumentSimilarityRequestDto,
+  UploadWithConfirmationResponseDto,
+  ConfirmUploadRequestDto,
+} from './dtos/check-document-similarity.dto';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
+import { CheckDocumentSimilarityRequest } from '../../domain/value-objects/document-similarity-check.vo';
 
 @Controller('api/documents')
 export class DocumentsController {
@@ -43,6 +54,7 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
+    private readonly checkDocumentSimilarityUseCase: CheckDocumentSimilarityUseCase,
 
     private readonly logger: ContextualLoggerService,
   ) {}
@@ -211,6 +223,379 @@ export class DocumentsController {
     }
   }
 
+  @Post('check-similarity')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB en bytes
+      },
+      fileFilter: (req, file, callback) => {
+        if (file.mimetype !== 'application/pdf') {
+          callback(
+            new BadRequestException('Solo se permiten archivos PDF'),
+            false,
+          );
+        } else {
+          callback(null, true);
+        }
+      },
+    }),
+  )
+  async checkDocumentSimilarity(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() options: CheckDocumentSimilarityRequestDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CheckDocumentSimilarityResponseDto> {
+    try {
+      if (!file) {
+        throw new BadRequestException('No se ha proporcionado ningún archivo');
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new BadRequestException('Usuario no autenticado');
+      }
+
+      this.logger.setContext({ userId });
+      this.logger.logDocumentOperation('upload', undefined, {
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      });
+
+      const request = new CheckDocumentSimilarityRequest(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        userId,
+        {
+          skipEmbeddings: options.skipEmbeddings,
+          similarityThreshold: options.similarityThreshold,
+          maxCandidates: options.maxCandidates,
+          useSampling: options.useSampling,
+        },
+      );
+
+      const result = await this.checkDocumentSimilarityUseCase.execute(request);
+
+      // mapear resultado del dominio a dto
+      let existingDocumentDto: ExistingDocumentDto | undefined;
+      if (result.existingDocument) {
+        existingDocumentDto = new ExistingDocumentDto(
+          result.existingDocument.id,
+          result.existingDocument.originalName,
+          result.existingDocument.documentTitle || null,
+          result.existingDocument.documentAuthor || null,
+          result.existingDocument.uploadedAt,
+          result.existingDocument.uploadedBy,
+          result.existingDocument.matchType,
+        );
+      }
+
+      const similarCandidatesDto: SimilarDocumentDto[] =
+        result.similarCandidates?.map(
+          (candidate) =>
+            new SimilarDocumentDto(
+              candidate.id,
+              candidate.originalName,
+              candidate.documentTitle || null,
+              candidate.documentAuthor || null,
+              candidate.uploadedAt,
+              candidate.uploadedBy,
+              candidate.similarityScore,
+              {
+                avgSimilarity: candidate.avgSimilarity,
+                coverage: candidate.coverage,
+                matchedChunks: candidate.matchedChunks,
+                totalChunks: candidate.totalChunks,
+              },
+            ),
+        ) || [];
+
+      const message = this.getSimilarityMessage(
+        result.status,
+        result.similarCandidates?.length || 0,
+      );
+
+      this.logger.log('Document similarity check completed', {
+        fileName: file.originalname,
+        status: result.status,
+        candidatesFound: similarCandidatesDto.length,
+      });
+
+      return new CheckDocumentSimilarityResponseDto(
+        result.status,
+        message,
+        existingDocumentDto,
+        similarCandidatesDto,
+      );
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in checkDocumentSimilarity',
+        error instanceof Error ? error : errorMessage,
+        {
+          fileName: file?.originalname,
+          errorType: 'UNEXPECTED_ERROR',
+        },
+      );
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message:
+            'Error interno del servidor durante la verificación de similitud',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  private getSimilarityMessage(
+    status: string,
+    candidatesCount: number,
+  ): string {
+    switch (status) {
+      case 'exact_match':
+        return 'Se encontró un documento idéntico en el sistema';
+      case 'text_match':
+        return 'Se encontró un documento con contenido textual idéntico';
+      case 'candidates':
+        return `Se encontraron ${candidatesCount} documento(s) similar(es)`;
+      case 'no_match':
+        return 'No se encontraron documentos similares';
+      default:
+        return 'Verificación completada';
+    }
+  }
+
+  @Post('upload-with-check')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB en bytes
+      },
+      fileFilter: (req, file, callback) => {
+        if (file.mimetype !== 'application/pdf') {
+          callback(
+            new BadRequestException('Solo se permiten archivos PDF'),
+            false,
+          );
+        } else {
+          callback(null, true);
+        }
+      },
+    }),
+  )
+  async uploadDocumentWithCheck(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() options: CheckDocumentSimilarityRequestDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<UploadDocumentResponseDto | UploadWithConfirmationResponseDto> {
+    try {
+      if (!file) {
+        throw new BadRequestException('No se ha proporcionado ningún archivo');
+      }
+
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new BadRequestException('Usuario no autenticado');
+      }
+
+      this.logger.setContext({ userId });
+      this.logger.logDocumentOperation('upload', undefined, {
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+      });
+
+      // primero verificar similitud
+      const checkRequest = new CheckDocumentSimilarityRequest(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        userId,
+        {
+          skipEmbeddings: options.skipEmbeddings,
+          similarityThreshold: options.similarityThreshold || 0.8,
+          maxCandidates: options.maxCandidates || 10,
+          useSampling: options.useSampling ?? true,
+        },
+      );
+
+      const similarityResult =
+        await this.checkDocumentSimilarityUseCase.execute(checkRequest);
+
+      // si hay coincidencia exacta, rechazar subida
+      if (similarityResult.status === 'exact_match') {
+        throw new BadRequestException(
+          'Este archivo ya existe exactamente en el sistema',
+        );
+      }
+
+      // si se encontraron candidatos similares, devolver confirmación
+      if (
+        similarityResult.status === 'candidates' &&
+        similarityResult.similarCandidates &&
+        similarityResult.similarCandidates.length > 0
+      ) {
+        const candidatesDto = similarityResult.similarCandidates.map(
+          (candidate) =>
+            new SimilarDocumentDto(
+              candidate.id,
+              candidate.originalName,
+              candidate.documentTitle || null,
+              candidate.documentAuthor || null,
+              candidate.uploadedAt,
+              candidate.uploadedBy,
+              candidate.similarityScore,
+              {
+                avgSimilarity: candidate.avgSimilarity,
+                coverage: candidate.coverage,
+                matchedChunks: candidate.matchedChunks,
+                totalChunks: candidate.totalChunks,
+              },
+            ),
+        );
+
+        // almacenar archivo temporalmente (implementar almacenamiento temporal si se desea)
+        const fileHash = createHash('sha256').update(file.buffer).digest('hex');
+
+        return new UploadWithConfirmationResponseDto(
+          'confirm_required',
+          `Se encontraron ${candidatesDto.length} documento(s) similar(es). ¿Desea continuar con la subida?`,
+          fileHash,
+          candidatesDto,
+          {
+            originalName: file.originalname,
+            size: file.size,
+            mimeType: file.mimetype,
+          },
+        );
+      }
+
+      // sin conflictos, proceder con la subida
+      const document = await this.uploadDocumentUseCase.execute(file, userId);
+
+      this.logger.log('Document uploaded successfully', {
+        documentId: document.id,
+        fileName: document.fileName,
+        originalName: document.originalName,
+        size: document.size,
+      });
+
+      return {
+        id: document.id,
+        fileName: document.fileName,
+        originalName: document.originalName,
+        mimeType: document.mimeType,
+        size: document.size,
+        downloadUrl: document.url,
+        uploadedAt: document.uploadedAt,
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in uploadDocumentWithCheck',
+        error instanceof Error ? error : errorMessage,
+        {
+          fileName: file?.originalname,
+          errorType: 'UNEXPECTED_ERROR',
+        },
+      );
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor durante la subida del documento',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('confirm-upload')
+  confirmUpload(
+    @Body() request: ConfirmUploadRequestDto,
+    @Req() req: AuthenticatedRequest,
+  ): UploadDocumentResponseDto | { message: string } {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new BadRequestException('Usuario no autenticado');
+      }
+
+      if (request.userId !== userId) {
+        throw new BadRequestException('Usuario no autorizado');
+      }
+
+      if (!request.forceSave) {
+        return { message: 'Upload cancelado por el usuario' };
+      }
+
+      // aquí debería recuperarse el archivo almacenado temporalmente
+      // por ahora, devolvemos un mensaje indicando la limitación
+      // en una implementación completa, se almacenaría y recuperaría el archivo aquí
+
+      throw new BadRequestException(
+        'La confirmación de subida requiere almacenamiento temporal del archivo. Use el endpoint upload-with-check para verificar similitud.',
+      );
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in confirmUpload',
+        error instanceof Error ? error : errorMessage,
+        {
+          fileHash: request.fileHash,
+          errorType: 'UNEXPECTED_ERROR',
+        },
+      );
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor durante la confirmación',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -232,6 +617,7 @@ export class DocumentsController {
   )
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: { skipValidation?: string; forceUpload?: string },
     @Req() req: AuthenticatedRequest,
   ): Promise<UploadDocumentResponseDto> {
     try {
@@ -248,6 +634,8 @@ export class DocumentsController {
         hasUser: !!req.user,
         userId: req.user?.id,
         headers: req.headers,
+        skipValidation: body?.skipValidation,
+        forceUpload: body?.forceUpload,
       });
 
       if (!file) {
@@ -257,6 +645,76 @@ export class DocumentsController {
       const userId = req.user?.id;
       if (!userId) {
         throw new BadRequestException('Usuario no autenticado');
+      }
+
+      // validación de similitud automática (a menos que se omita)
+      const shouldSkipValidation =
+        body?.skipValidation === 'true' || body?.forceUpload === 'true';
+
+      if (!shouldSkipValidation) {
+        this.logger.log('Running similarity check before upload', {
+          fileName: file.originalname,
+          fileSize: file.size,
+        });
+
+        const similarityRequest = new CheckDocumentSimilarityRequest(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          userId,
+          {
+            similarityThreshold: 0.95,
+            maxCandidates: 5,
+            skipEmbeddings: false,
+            useSampling: true,
+          },
+        );
+
+        const similarityResult =
+          await this.checkDocumentSimilarityUseCase.execute(similarityRequest);
+
+        // si hay duplicados exactos o de contenido, rechazar subida
+        if (
+          similarityResult.status === 'exact_match' ||
+          similarityResult.status === 'text_hash_match'
+        ) {
+          this.logger.warn('Upload blocked due to exact duplicate found', {
+            fileName: file.originalname,
+            status: similarityResult.status,
+            existingDocumentId: similarityResult.existingDocument?.id,
+          });
+
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.CONFLICT,
+              message:
+                similarityResult.status === 'exact_match'
+                  ? 'Este archivo ya existe en el sistema'
+                  : 'Ya existe un documento con el mismo contenido',
+              error: 'Document Duplicate',
+              details: {
+                status: similarityResult.status,
+                existingDocument: similarityResult.existingDocument,
+              },
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        // si hay candidatos similares, informar pero permitir subida
+        if (
+          similarityResult.status === 'candidates' &&
+          similarityResult.similarCandidates &&
+          similarityResult.similarCandidates.length > 0
+        ) {
+          this.logger.warn('Similar documents found but allowing upload', {
+            fileName: file.originalname,
+            candidatesCount: similarityResult.similarCandidates.length,
+          });
+
+          // opcional: podrías rechazar aquí según la lógica de negocio
+          // por ahora, solo registramos y continuamos
+        }
       }
 
       this.logger.setContext({ userId });
@@ -292,7 +750,7 @@ export class DocumentsController {
         throw error;
       }
 
-      // Error inesperado
+      // error inesperado
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
@@ -551,8 +1009,8 @@ export class DocumentsController {
   @Get(':documentId/chunks')
   async getDocumentChunks(
     @Param('documentId') documentId: string,
-    // @Query('limit') limit?: number,
-    // @Query('offset') offset?: number,
+    // @query('limit') limit?: number,
+    // @query('offset') offset?: number,
   ) {
     try {
       if (!documentId) {
@@ -561,7 +1019,7 @@ export class DocumentsController {
 
       this.logger.logChunkOperation('retrieve', documentId);
 
-      // Usar el servicio de chunking para obtener chunks con estadísticas
+      // usar el servicio de chunking para obtener chunks con estadísticas
       const result =
         await this.processDocumentChunksUseCase[
           'chunkingService'
@@ -582,9 +1040,9 @@ export class DocumentsController {
             id: chunk.id,
             content:
               chunk.content.substring(0, 200) +
-              (chunk.content.length > 200 ? '...' : ''), // Preview
+              (chunk.content.length > 200 ? '...' : ''), // vista previa
             chunkIndex: chunk.chunkIndex,
-            type: chunk.type, // Usar 'type' no 'chunkType'
+            type: chunk.type, // usar 'type' no 'chunkType'
             contentLength: chunk.content.length,
             metadata: chunk.metadata,
             createdAt: chunk.createdAt,

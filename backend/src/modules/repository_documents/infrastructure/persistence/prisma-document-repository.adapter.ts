@@ -23,6 +23,7 @@ export class PrismaDocumentRepositoryAdapter implements DocumentRepositoryPort {
           size: document.size,
           contentType: document.mimeType,
           fileHash: document.fileHash,
+          textHash: document.textHash,
           extractedText: document.extractedText,
           status: document.status as any,
           uploadedBy: document.uploadedBy,
@@ -67,6 +68,21 @@ export class PrismaDocumentRepositoryAdapter implements DocumentRepositoryPort {
         `Error finding document by hash ${fileHash}: ${error.message}`,
       );
       throw new Error(`Failed to find document by hash: ${error.message}`);
+    }
+  }
+
+  async findByTextHash(textHash: string): Promise<Document | undefined> {
+    try {
+      const document = await this.prisma.document.findUnique({
+        where: { textHash },
+      });
+
+      return document ? this.mapToDomain(document) : undefined;
+    } catch (error) {
+      this.logger.error(
+        `Error finding document by text hash ${textHash}: ${error.message}`,
+      );
+      throw new Error(`Failed to find document by text hash: ${error.message}`);
     }
   }
 
@@ -249,6 +265,7 @@ export class PrismaDocumentRepositoryAdapter implements DocumentRepositoryPort {
       prismaDocument.language,
       prismaDocument.uploadedAt,
       prismaDocument.updatedAt,
+      prismaDocument.textHash,
     );
   }
 
