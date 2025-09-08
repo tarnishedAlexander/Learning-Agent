@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 import useStudents from "../../hooks/useStudents";
 import { useUserStore } from "../../store/userStore";
 import useCourses from "../../hooks/useCourses";
-import UploadButton from '../../components/shared/UploadButton';
+import UploadButton from "../../components/shared/UploadButton";
 import { processFile } from "../../utils/enrollGroupByFile";
 import type { StudentInfo } from "../../interfaces/studentInterface";
 import CourseExamsPanel from "../courses/CourseExamsPanel";
@@ -42,9 +42,14 @@ export function CourseDetailPage() {
   const navigate = useNavigate();
   const user = useUserStore((s) => s.user);
 
-  const { fetchClassById, actualClass, updateClass, softDeleteClass } = useClasses();
+  const { fetchClassById, actualClass, updateClass, softDeleteClass } =
+    useClasses();
   const { students, fetchStudentsByClass } = useStudents();
-  const { enrollSingleStudent, enrollGroupStudents, softDeleteSingleEnrollment } = useEnrollment();
+  const {
+    enrollSingleStudent,
+    enrollGroupStudents,
+    softDeleteSingleEnrollment,
+  } = useEnrollment();
   const { actualCourse, getCourseByID } = useCourses();
   const { teacherInfo, fetchTeacherInfoById } = useTeacher();
 
@@ -52,7 +57,11 @@ export function CourseDetailPage() {
   const [safetyModalOpen, setSafetyModalOpen] = useState(false);
   const [singleStudentFormOpen, setSingleStudentFormOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [safetyModalConfig, setSafetyModalConfig] = useState({ title: "", message: "", onConfirm: () => { } });
+  const [safetyModalConfig, setSafetyModalConfig] = useState({
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const [parsedStudents, setParsedStudents] = useState<
     Array<
@@ -69,32 +78,32 @@ export function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchPeriod = async () => {
-    if (!id) return
+    if (!id) return;
 
     const res = await fetchClassById(id);
     if (res.state == "error") {
-      message.error(res.message)
+      message.error(res.message);
     }
   };
 
   const fetchCourse = async () => {
-    if (!actualClass?.courseId) return
+    if (!actualClass?.courseId) return;
 
     const courseID = actualClass.courseId;
     const res = await getCourseByID(courseID);
     if (res.state == "error") {
-      message.error(res.message)
+      message.error(res.message);
     }
   };
 
   const fetchTeacher = async () => {
-    if (!actualCourse?.teacherId) return
+    if (!actualCourse?.teacherId) return;
 
     const res = await fetchTeacherInfoById(actualCourse.teacherId);
     if (res.state == "error") {
-      message.error(res.message)
+      message.error(res.message);
     }
-  }
+  };
 
   const fetchStudents = useCallback(async () => {
     if (!id) return;
@@ -105,46 +114,44 @@ export function CourseDetailPage() {
     }
   }, [id, fetchStudentsByClass]);
 
-
   useEffect(() => {
     const preparePeriods = async () => {
-      if (!id) return
-      setLoading(true)
+      if (!id) return;
+      setLoading(true);
       await fetchPeriod();
-    }
+    };
     preparePeriods();
   }, [id]);
 
   useEffect(() => {
     const prepareCourse = async () => {
-      if (!actualClass?.courseId) return
+      if (!actualClass?.courseId) return;
       await fetchCourse();
-    }
+    };
     prepareCourse();
-  }, [actualClass])
+  }, [actualClass]);
 
   useEffect(() => {
     const prepareTeacher = async () => {
-      if (!actualCourse?.teacherId) return
+      if (!actualCourse?.teacherId) return;
       await fetchTeacher();
-      setLoading(false)
-    }
+      setLoading(false);
+    };
     prepareTeacher();
-  }, [actualCourse])
+  }, [actualCourse]);
 
   useEffect(() => {
     fetchStudents();
   }, [fetchStudents]);
 
-
   const handleEditClass = async (values: Clase) => {
     const data = await updateClass(values);
     if (data.state == "success") {
-      message.success(data.message)
+      message.success(data.message);
     } else if (data.state == "info") {
-      message.info(data.message)
+      message.info(data.message);
     } else {
-      message.error(data.message)
+      message.error(data.message);
     }
 
     setEditModalOpen(false);
@@ -167,20 +174,20 @@ export function CourseDetailPage() {
       }
       const res = await softDeleteClass(id);
       if (res.state == "error") {
-        message.error(res.message)
-        return
+        message.error(res.message);
+        return;
       }
       if (res.state == "info") {
-        message.info(res.message)
-        return
+        message.info(res.message);
+        return;
       }
 
       message.success(res.message);
       setTimeout(() => {
         if (user?.roles.includes("docente")) {
-          navigate("/courses")
+          navigate("/courses");
         } else {
-          navigate("/")
+          navigate("/");
         }
       }, 2000);
     } catch {
@@ -231,23 +238,25 @@ export function CourseDetailPage() {
 
     const result = await enrollGroupStudents({
       classId: id,
-      studentRows: payloadRows
+      studentRows: payloadRows,
     });
     if (result.state == "success") {
-      console.log(result.data)
+      console.log(result.data);
       const totalRows = result.data.totalRows;
       const successRows = result.data.successRows;
       const existingRows = result.data.existingRows;
       const errorRows = result.data.errorRows;
 
-      message.success(`Procesadas ${totalRows} filas`)
-      message.info(`Éxito: ${successRows} · Ya inscritos: ${existingRows} · Errores: ${errorRows}`)
+      message.success(`Procesadas ${totalRows} filas`);
+      message.info(
+        `Éxito: ${successRows} · Ya inscritos: ${existingRows} · Errores: ${errorRows}`
+      );
 
       setPreviewModalOpen(false);
       setParsedStudents([]);
       setDuplicates([]);
       fetchClassById(id);
-      await fetchStudents()
+      await fetchStudents();
     } else {
       message.error(result.message);
     }
@@ -262,32 +271,32 @@ export function CourseDetailPage() {
       onConfirm: () => handleDeleteSingleEnrollment(record),
     });
     setSafetyModalOpen(true);
-  }
+  };
 
   const handleDeleteSingleEnrollment = async (record: StudentInfo) => {
     if (!id || !record) {
-      message.error("Ha ocurrido un error")
+      message.error("Ha ocurrido un error");
       setSafetyModalOpen(false);
-      return
+      return;
     }
     const classData = {
       studentId: record.userId,
-      classId: id
-    }
-    const res = await softDeleteSingleEnrollment(classData)
+      classId: id,
+    };
+    const res = await softDeleteSingleEnrollment(classData);
     if (res.state == "error") {
-      message.error(res.message)
+      message.error(res.message);
       setSafetyModalOpen(false);
-      return
+      return;
     }
-    message.success(res.message)
-    await fetchStudents()
+    message.success(res.message);
+    await fetchStudents();
     setSafetyModalOpen(false);
-  }
+  };
 
   const goToExams = () => {
-    navigate(`/exams`)
-  }
+    navigate(`/exams`);
+  };
 
   const studentsColumns = [
     {
@@ -337,8 +346,8 @@ export function CourseDetailPage() {
             Eliminar
           </Button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   if (loading) {
@@ -384,7 +393,10 @@ export function CourseDetailPage() {
       breadcrumbs={[
         { label: "Home", href: "/" },
         { label: "Materias", href: "/courses" },
-        { label: actualCourse?.name || "Materia", href: `/courses/${courseId}/periods` },
+        {
+          label: actualCourse?.name || "Materia",
+          href: `/courses/${courseId}/periods`,
+        },
         { label: actualClass.name },
       ]}
       actions={
@@ -453,37 +465,65 @@ export function CourseDetailPage() {
               }
               key="general"
             >
-              <div style={{ padding: '32px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div style={{ padding: "32px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "24px",
+                  }}
+                >
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Nombre del curso:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>{actualClass.name}</Text>
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Nombre del curso:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        {actualClass.name}
+                      </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Gestión (semestre):</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>{actualClass.semester}</Text>
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Gestión (semestre):
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        {actualClass.semester}
+                      </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Fecha de inicio:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>{dayjs(actualClass.dateBegin).format("DD/MM/YYYY")}</Text>
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Fecha de inicio:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        {dayjs(actualClass.dateBegin).format("DD/MM/YYYY")}
+                      </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Fecha final:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>{dayjs(actualClass.dateEnd).format("DD/MM/YYYY")}</Text>
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Fecha final:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        {dayjs(actualClass.dateEnd).format("DD/MM/YYYY")}
+                      </Text>
                     </div>
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '14px' }}>Docente asignado:</Text>
-                    <div style={{ marginTop: '8px', marginBottom: '20px' }}>
-                      <Text style={{ fontSize: '16px' }}>
-                        {teacherInfo ? `${teacherInfo.name} ${teacherInfo.lastname}` : actualClass.teacherId ? "Cargando..." : "No asignado"}
+                    <Text strong style={{ fontSize: "14px" }}>
+                      Docente asignado:
+                    </Text>
+                    <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                      <Text style={{ fontSize: "16px" }}>
+                        {teacherInfo
+                          ? `${teacherInfo.name} ${teacherInfo.lastname}`
+                          : actualClass.teacherId
+                          ? "Cargando..."
+                          : "No asignado"}
                       </Text>
                     </div>
                   </div>
@@ -492,9 +532,7 @@ export function CourseDetailPage() {
                       Horarios:
                     </Text>
                     <div style={{ marginTop: "8px", marginBottom: "20px" }}>
-                      <Text style={{ fontSize: "16px" }}>
-                        Por definir
-                      </Text>
+                      <Text style={{ fontSize: "16px" }}>Por definir</Text>
                     </div>
                   </div>
                 </div>
@@ -552,25 +590,37 @@ export function CourseDetailPage() {
                       <div style={{ marginTop: "24px" }}>
                         <UploadButton
                           buttonConfig={{
-                            variant: 'fill',
-                            className: 'color: white '
+                            variant: "fill",
+                            className: "color: white ",
                           }}
                           onUpload={async (file, onProgress) => {
-                            const students = await processFile(file, onProgress);
+                            const students = await processFile(
+                              file,
+                              onProgress
+                            );
                             return students;
                           }}
                           fileConfig={{
                             accept: ".csv,.xlsx,.xls",
                             maxSize: 1 * 1024 * 1024,
-                            validationMessage: "Solo se permiten archivos .xlsx o .csv de hasta 1MB"
+                            validationMessage:
+                              "Solo se permiten archivos .xlsx o .csv de hasta 1MB",
                           }}
                           processingConfig={{
                             steps: [
-                              { key: 'upload', title: 'Subir archivo', description: 'Subiendo archivo' },
-                              { key: 'parse', title: 'Parsear datos', description: 'Procesando información' },
+                              {
+                                key: "upload",
+                                title: "Subir archivo",
+                                description: "Subiendo archivo",
+                              },
+                              {
+                                key: "parse",
+                                title: "Parsear datos",
+                                description: "Procesando información",
+                              },
                             ],
                             processingText: "Procesando tabla...",
-                            successText: "Tabla procesada correctamente"
+                            successText: "Tabla procesada correctamente",
                           }}
                           onUploadSuccess={(students) => {
                             if (Array.isArray(students)) {
@@ -579,7 +629,9 @@ export function CourseDetailPage() {
                               const seen = new Set<string>();
                               const dupSet = new Set<string>();
                               for (const s of students) {
-                                const k = String(s.codigo || "").trim().toLowerCase();
+                                const k = String(s.codigo || "")
+                                  .trim()
+                                  .toLowerCase();
                                 if (!k) continue;
                                 if (seen.has(k)) dupSet.add(String(s.codigo));
                                 else seen.add(k);
@@ -598,14 +650,22 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <InboxOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <InboxOutlined
+                    style={{ marginRight: "6px", fontSize: "14px" }}
+                  />
                   <span>Materiales</span>
                 </span>
               }
               key="materials"
             >
-              <div style={{ textAlign: 'center', padding: '64px' }}>
+              <div style={{ textAlign: "center", padding: "64px" }}>
                 <Empty description="Funcionalidad de materiales en desarrollo">
                   <Button
                     type="primary"
@@ -620,8 +680,16 @@ export function CourseDetailPage() {
 
             <TabPane
               tab={
-                <span style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
-                  <BookOutlined style={{ marginRight: '6px', fontSize: '14px' }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 4px",
+                  }}
+                >
+                  <BookOutlined
+                    style={{ marginRight: "6px", fontSize: "14px" }}
+                  />
                   <span>Gestión de Exámenes</span>
                 </span>
               }
@@ -652,7 +720,7 @@ export function CourseDetailPage() {
               }
               key="syllabus"
             >
-              <div style={{ textAlign: 'center', padding: '64px' }}>
+              <div style={{ textAlign: "center", padding: "64px" }}>
                 <Empty description="Sílabo no disponible">
                   <Button type="primary" disabled style={{ marginTop: "16px" }}>
                     Subir Sílabo
@@ -673,7 +741,9 @@ export function CourseDetailPage() {
 
         <SafetyModal
           open={safetyModalOpen}
-          onCancel={() => { setSafetyModalOpen(false); }}
+          onCancel={() => {
+            setSafetyModalOpen(false);
+          }}
           onConfirm={safetyModalConfig.onConfirm}
           title={safetyModalConfig.title}
           message={safetyModalConfig.message}

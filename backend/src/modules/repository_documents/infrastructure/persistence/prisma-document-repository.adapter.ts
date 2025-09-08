@@ -252,6 +252,93 @@ export class PrismaDocumentRepositoryAdapter implements DocumentRepositoryPort {
     );
   }
 
+  async findByCourseId(
+    courseId: string,
+    offset: number = 0,
+    limit: number = 10,
+    tipo?: string,
+  ): Promise<Document[]> {
+    try {
+      const where: any = {
+        courseId,
+        status: {
+          not: 'DELETED' as any,
+        },
+      };
+
+      // Filtrar por tipo si se proporciona
+      if (tipo) {
+        where.contentType = {
+          contains: tipo,
+          mode: 'insensitive',
+        };
+      }
+
+      const documents = await this.prisma.document.findMany({
+        where,
+        skip: offset,
+        take: limit,
+        orderBy: { uploadedAt: 'desc' },
+      });
+
+      return documents.map((doc) => this.mapToDomain(doc));
+    } catch (error) {
+      this.logger.error(
+        `Error finding documents by courseId ${courseId}: ${error.message}`,
+      );
+      throw new Error(`Failed to find documents by courseId: ${error.message}`);
+    }
+  }
+
+  async countByCourseId(courseId: string, tipo?: string): Promise<number> {
+    try {
+      const where: any = {
+        courseId,
+        status: {
+          not: 'DELETED' as any,
+        },
+      };
+
+      // Filtrar por tipo si se proporciona
+      if (tipo) {
+        where.contentType = {
+          contains: tipo,
+          mode: 'insensitive',
+        };
+      }
+
+      return await this.prisma.document.count({
+        where,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error counting documents by courseId ${courseId}: ${error.message}`,
+      );
+      throw new Error(`Failed to count documents by courseId: ${error.message}`);
+    }
+  }
+
+  async associateWithCourse(
+    documentId: string,
+    courseId: string,
+  ): Promise<Document | undefined> {
+    try {
+      const updatedDocument = await this.prisma.document.update({
+        where: { id: documentId },
+        data: { courseId },
+      });
+
+      return this.mapToDomain(updatedDocument);
+    } catch (error) {
+      this.logger.error(
+        `Error associating document ${documentId} with course ${courseId}: ${error.message}`,
+      );
+      throw new Error(
+        `Failed to associate document with course: ${error.message}`,
+      );
+    }
+  }
+
   /**
    * Construye la URL del documento basada en la configuración de S3
    */
