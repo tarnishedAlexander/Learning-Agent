@@ -22,7 +22,6 @@ export class UpdateExamQuestionCommandHandler {
 
         // lock edits if approved, uncomment console line to test
         if (exam.approvedAt) {
-            //console.log('exam.approvedAt =', exam.approvedAt); 
             throw new BadRequestException('This exam is already approved. Questions cannot be edited.');
         }
 

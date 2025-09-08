@@ -1,8 +1,11 @@
 
+
 import React from "react";
 import { Card, Typography, theme, Alert, Button } from "antd";
 
 const { Title } = Typography;
+
+
 
 
 interface TestQuestionProps {
@@ -19,6 +22,7 @@ export default function TestQuestion({
   const { token } = theme.useToken();
 
 
+
   const safeOptions = Array.isArray(options) ? options : [];
 
 
@@ -28,6 +32,7 @@ export default function TestQuestion({
     } else {
       setTimeout(() => window.location.reload(), 300);
     }
+
   };
 
   if (safeOptions.length === 0) {
@@ -86,26 +91,6 @@ export default function TestQuestion({
     token.colorInfoHover,
   ];
 
-  useEffect(() => {
-    fetchQuestion();
-  }, []);
-
-  async function fetchQuestion() {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_URL}${import.meta.env.VITE_TESTCHAT_URL}`
-      );
-      const testOp = (await res.json()) as MultipleSelectionTestResponse;
-      setMultSelectionTest({
-        question: testOp.question || "",
-        options: testOp.options || [],
-        correctAnswer: typeof testOp.correctAnswer === "number" ? testOp.correctAnswer : -1
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   return (
     <div
       style={{
@@ -129,8 +114,10 @@ export default function TestQuestion({
         }}
       >
 
+
         <Title level={3} style={{ margin: 0, color: token.colorTextHeading }}>
           {question}
+
 
         </Title>
       </Card>
@@ -145,10 +132,12 @@ export default function TestQuestion({
         }}
       >
 
+
         {safeOptions.map((label, index) => (
           <div
             key={index}
             onClick={() => handleSelect(String(index))}
+
 
             style={{
               backgroundColor: optionColors[index % optionColors.length],
@@ -173,7 +162,9 @@ export default function TestQuestion({
             }}
           >
 
+
             {label}
+
 
           </div>
         ))}
