@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * ===========================
+ * Auth and User
+ * ===========================
+ */
+
 model User {
   id             String          @id @default(uuid())
   email          String          @unique
@@ -22,6 +28,12 @@ model User {
   roles          UserRole[]
   sessions       UserSession[]
 }
+
+/**
+ * ===========================
+ * Role and permission (RBAC)
+ * ===========================
+ */
 
 model Role {
   id          String           @id @default(uuid())
@@ -62,6 +74,12 @@ model RolePermission {
   @@id([roleId, permissionId])
 }
 
+/**
+ * ===========================
+ * Profile 1:1
+ * ===========================
+ */
+
 model TeacherProfile {
   userId       String   @id
   academicUnit String?
@@ -84,6 +102,12 @@ model StudentProfile {
   user          User         @relation("UserStudentProfile", fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/**
+ * ===========================
+ * Sessions (login)
+ * ===========================
+ */
+
 model UserSession {
   id            String   @id @default(uuid())
   userId        String
@@ -98,6 +122,12 @@ model UserSession {
   @@index([userId, expiresAt])
 }
 
+/**
+ * ===========================
+ * Document Management and RAG
+ * ===========================
+ */
+
 model Document {
   id             String                    @id @default(uuid())
   originalName   String
@@ -108,7 +138,7 @@ model Document {
   uploadedAt     DateTime                  @default(now())
   documentAuthor String?
   documentTitle  String?
-  extractedText  String?
+  extractedText  String?                   @db.Text
   fileHash       String                    @unique
   language       String?
   pageCount      Int?
@@ -116,6 +146,11 @@ model Document {
   updatedAt      DateTime                  @updatedAt
   uploadedBy     String
   textHash       String?                   @unique
+  
+  // Relación opcional con Course/Materia para el contrato de documentos
+  courseId       String?
+  course         Course?                   @relation(fields: [courseId], references: [id])
+  
   uploader       User                      @relation(fields: [uploadedBy], references: [id])
   categories     DocumentCategoryMapping[]
   processingJobs ProcessingJob[]
@@ -126,12 +161,13 @@ model Document {
   @@index([fileHash])
   @@index([textHash])
   @@index([contentType])
+  @@index([courseId])
 }
 
 model DocumentChunk {
   id            String                 @id @default(uuid())
   documentId    String
-  content       String
+  content       String                 @db.Text
   chunkIndex    Int
   startPosition Int
   endPosition   Int
@@ -178,7 +214,7 @@ model ProcessingJob {
   documentId   String
   jobType      ProcessingType
   status       ProcessingStatus @default(PENDING)
-  errorMessage String?
+  errorMessage String?          @db.Text
   progress     Int              @default(0)
   jobDetails   Json?
   result       Json?
@@ -192,6 +228,12 @@ model ProcessingJob {
   @@index([createdAt])
 }
 
+/**
+ * ===========================
+ * Exams generation
+ * ===========================
+ */
+
 model Exam {
   id                String         @id @default(uuid())
   subject           String
@@ -199,7 +241,7 @@ model Exam {
   attempts          Int
   totalQuestions    Int
   timeMinutes       Int
-  reference         String?
+  reference         String?        @db.Text
   createdAt         DateTime       @default(now())
   mcqCount          Int            @default(0)
   openAnalysisCount Int            @default(0)
@@ -230,6 +272,12 @@ model ExamQuestion {
   @@index([examId, order])
 }
 
+/**
+ * ===========================
+ * Academic Management (classes and enrollment)
+ * ===========================
+ */
+
 model Course {
   id        String         @id @default(uuid())
   name      String
@@ -239,6 +287,9 @@ model Course {
   updatedAt DateTime       @updatedAt
   classes   Classes[]
   teacher   TeacherProfile @relation(fields: [teacherId], references: [userId])
+  
+  // Relación con documentos para el contrato
+  documents Document[]
 }
 
 model Classes {
@@ -266,6 +317,12 @@ model Enrollment {
 
   @@id([studentId, classId])
 }
+
+/**
+ * ===========================
+ * Enums
+ * ===========================
+ */
 
 enum DocumentStatus {
   UPLOADED

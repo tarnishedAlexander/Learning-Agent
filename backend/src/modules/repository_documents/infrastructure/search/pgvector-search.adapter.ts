@@ -118,7 +118,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
       }
 
       // ejecutar consulta de búsqueda vectorial
-      console.log(`🔍 PgVector DEBUG: Ejecutando consulta con params:`, {
+      console.log(`PgVector DEBUG: Ejecutando consulta con params:`, {
         queryVectorLength: queryVector.length,
         similarityThreshold: finalOptions.similarityThreshold,
         limit: finalOptions.limit,
@@ -129,7 +129,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
       
       console.log(`PgVector DEBUG: Resultados obtenidos: ${(results as any[]).length}`);
       if ((results as any[]).length > 0) {
-        console.log(`🔍 PgVector DEBUG: Primer resultado:`, {
+        console.log(`PgVector DEBUG: Primer resultado:`, {
           documentId: (results as any[])[0].documentId,
           similarity: (results as any[])[0].similarity_score,
           chunkId: (results as any[])[0].id
@@ -442,7 +442,7 @@ export class PgVectorSearchAdapter implements VectorSearchPort {
     // });
     // return result?.embedding ? { embedding: JSON.parse(result.embedding) } : null;
 
-    console.log('🔍 Obteniendo embedding para chunk:', chunkId);
+    console.log('Obteniendo embedding para chunk:', chunkId);
     return null; // Simular por ahora
   }
 
