@@ -28,9 +28,9 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
   const common: NavItem[] = [
     { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
     {
-      key: "/upload-pdf",
+      key: "/document",
       icon: <CloudUploadOutlined />,
-      label: <Link to="/upload-pdf">Documentos</Link>,
+      label: <Link to="/document">Documentos</Link>,
     },
     {
       key: "/settings",
@@ -46,12 +46,12 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
     {
       key: "/courses",
       icon: <SolutionOutlined />,
-      label: <Link to="/courses">Materias</Link>,
+      label: <Link to="/professor/courses">Materias</Link>,
     },
     {
       key: "/exams/create",
       icon: <FileAddOutlined />,
-      label: <Link to="/exams/create">Crear Examen</Link>,
+      label: <Link to="/professor/exams/create">Crear Examen</Link>,
     },
   ];
 
@@ -59,7 +59,7 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
     {
       key: "/classes",
       icon: <BookOutlined />,
-      label: <Link to="/classes">Clases</Link>,
+      label: <Link to="/studentclasses">Clases</Link>,
     },
   ];
 
