@@ -34,24 +34,24 @@ export const AppRoutes = () => {
             <Route path="settings" element={<SettingsPage />} />
 
             {/* Professor */}
-            <Route path = "/professor"element={<RoleRoute allowed={["docente"]} />}> 
-              <Route path="courses" element={<TeacherCoursePage />} />
-              <Route path="courses/:courseId/periods" element={<CoursePeriodsPage />} />
-              <Route path="exams/create" element={<ExamsCreatePage />} />
-              <Route path="exams" element={<ExamManagementPage />} />
-              <Route path="classes/:id/students" element={<StudentsByClass />} />
-              <Route path="classes/:id" element={<CourseDetailPage />} />
+            <Route element={<RoleRoute allowed={["docente"]} />}> 
+              <Route path="/courses" element={<TeacherCoursePage />} />
+              <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
+              <Route path="/exams/create" element={<ExamsCreatePage />} />
+              <Route path="/exams" element={<ExamManagementPage />} />
+              <Route path="/classes/:id/students" element={<StudentsByClass />} />
+              <Route path="/courses/:courseId/periods/:id" element={<CourseDetailPage />} />
             </Route>
 
             {/* Students */}
-            <Route path = "/student" element={<RoleRoute allowed={["estudiante"]} />}> 
-              <Route path="classes" element={<ClassMenu />} />
-              <Route path="reinforcement" element={<Reinforcement />} />
-              <Route path="test" element={<Test/>} />
-              <Route path="interview" element={<Interview />} />
+            <Route element={<RoleRoute allowed={["estudiante"]} />}> 
+              <Route path="/classes" element={<ClassMenu />} />
+              <Route path="/reinforcement" element={<Reinforcement />} />
+              <Route path="/test" element={<Test />} />
+              <Route path="/interview" element={<Interview />} />
             </Route>
 
-            <Route path="/document" element={<UploadDocumentPage />} />
+            <Route path="/upload-pdf" element={<UploadDocumentPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>

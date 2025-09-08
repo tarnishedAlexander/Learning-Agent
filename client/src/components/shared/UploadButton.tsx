@@ -551,8 +551,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                   icon={<PlusOutlined />}
                   onClick={handleManualSelect}
                   style={{
-                    backgroundColor: isDark ? token.colorPrimary : '#1890ff',
-                    borderColor: isDark ? token.colorPrimary : '#1890ff',
+                    backgroundColor: 'var(--ant-color-primary)',
+                    borderColor: 'var(--ant-color-primary)',
                     borderRadius: '6px',
                     fontWeight: '500'
                   }}
@@ -568,7 +568,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
               padding: isSmallScreen ? '30px 16px' : '40px 20px',
               backgroundColor: isDark ? token.colorBgElevated : '#f6ffed',
               borderRadius: '8px',
-              border: `2px solid ${isDark ? token.colorSuccess : '#52c41a'}`
+              border: `2px solid ${isDark ? token.colorSuccess : 'var(--ant-color-success)'}`
             }}>
               <CheckCircleOutlined style={{ 
                 fontSize: isSmallScreen ? '48px' : '64px', 
@@ -602,8 +602,8 @@ const UploadButton: React.FC<UploadButtonProps> = ({
                 type="primary"
                 onClick={handleCloseModal}
                 style={{
-                  backgroundColor: isDark ? token.colorSuccess : '#52c41a',
-                  borderColor: isDark ? token.colorSuccess : '#52c41a',
+                  backgroundColor: isDark ? token.colorSuccess : 'var(--ant-color-success)',
+                  borderColor: isDark ? token.colorSuccess : 'var(--ant-color-success)',
                   marginTop: '16px'
                 }}
                 size={isSmallScreen ? "middle" : "large"}
