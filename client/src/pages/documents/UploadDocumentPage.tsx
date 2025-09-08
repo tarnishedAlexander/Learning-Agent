@@ -2,11 +2,12 @@ import React, { useCallback, useState } from "react";
 import { Card, message, Row, Col, Grid, theme as antTheme } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import PageTemplate from "../../components/PageTemplate";
-import UploadButton from "../../components/shared/UploadButton";
+import ChunkedUploadButton from "../../components/shared/ChunkedUploadButton";
 import { DocumentTable } from "../../components/documents/DocumentTable";
 import { PdfPreviewSidebar } from "../../components/documents/PdfPreviewSidebar";
 import { DocumentDataSidebar } from "../../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../../hooks/useDocuments";
+import { useChunkedDocumentUpload } from "../../hooks/useChunkedDocumentUpload";
 import { useUserStore } from "../../store/userStore";
 import { useThemeStore } from "../../store/themeStore";
 import type { Document } from "../../interfaces/documentInterface";
@@ -14,7 +15,8 @@ import type { Document } from "../../interfaces/documentInterface";
 const { useBreakpoint } = Grid;
 
 const UploadDocumentPage: React.FC = () => {
-  const { documents, loading, downloadDocument, deleteDocument, loadDocuments, processDocumentComplete } = useDocuments();
+  const { documents, loading, downloadDocument, deleteDocument, loadDocuments } = useDocuments();
+  const { processDocumentComplete } = useChunkedDocumentUpload();
   const user = useUserStore((s) => s.user);
   const isStudent = Boolean(user?.roles?.includes?.("estudiante"));
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -47,6 +49,7 @@ const UploadDocumentPage: React.FC = () => {
   const fileConfig = {
     accept: ".pdf",
     maxSize: 100 * 1024 * 1024, // 100MB
+    chunkSize: 2 * 1024 * 1024, // 2MB chunks para mejor rendimiento
     validationMessage: "Solo se permiten archivos PDF de hasta 100MB"
   };
 
@@ -71,16 +74,6 @@ const UploadDocumentPage: React.FC = () => {
       setRefreshing(false);
     }
   }, [loadDocuments]);
-
-  const handleUploadDocument = useCallback(async (file: File, onProgress?: (step: string, progress: number, message: string) => void) => {
-    try {
-      const result = await processDocumentComplete(file, onProgress);
-      return result;
-    } catch (error) {
-      console.error("Error processing document:", error);
-      throw error;
-    }
-  }, [processDocumentComplete]);
 
   const handleDownload = useCallback(async (doc: Document) => {
     try {
@@ -218,7 +211,7 @@ const UploadDocumentPage: React.FC = () => {
                         minWidth: "fit-content",
                         paddingTop: isSmallScreen ? '6px' : '4px'
                       }}>
-                        <UploadButton
+                        <ChunkedUploadButton
                           fileConfig={fileConfig}
                           processingConfig={processingConfig}
                           buttonConfig={{
@@ -229,9 +222,9 @@ const UploadDocumentPage: React.FC = () => {
                           }}
                           modalConfig={{
                             title: "Cargar Nuevo Documento",
-                            width: isMobileScreen ? (typeof window !== 'undefined' ? window.innerWidth * 0.9 : 600) : 600
+                            width: isMobileScreen ? (typeof window !== 'undefined' ? window.innerWidth * 0.9 : 600) : 700
                           }}
-                          onUpload={handleUploadDocument}
+                          onPostUploadProcess={processDocumentComplete}
                           onUploadSuccess={handleUploadSuccess}
                         />
                       </div>
