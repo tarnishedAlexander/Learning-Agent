@@ -7,14 +7,8 @@ import type {
 } from '../services/chunkedUpload.service';
 import type { Document } from '../interfaces/documentInterface';
 
-/**
- * Hook personalizado para manejo de upload chunked integrado con el procesamiento de documentos
- */
 export const useChunkedDocumentUpload = () => {
   
-  /**
-   * Función de procesamiento post-upload compatible con el componente ChunkedUploadButton
-   */
   const processDocumentComplete = useCallback(async (
     document: ChunkedUploadResult['document'],
     onProgress?: (step: string, progress: number, message: string) => void
@@ -32,7 +26,6 @@ export const useChunkedDocumentUpload = () => {
     }
 
     try {
-      // Convertir el documento del resultado chunked al formato esperado
       const documentForProcessing: Document = {
         id: document.id,
         fileName: document.fileName,
@@ -43,15 +36,12 @@ export const useChunkedDocumentUpload = () => {
         uploadedAt: document.uploadedAt,
       };
 
-      // Paso 1: Procesar texto
       onProgress?.('text', 33, 'Procesando texto del documento...');
       await documentService.processDocumentText(document.id);
 
-      // Paso 2: Procesar chunks
       onProgress?.('chunks', 66, 'Generando chunks del documento...');
       const chunksResult = await documentService.processDocumentChunks(document.id);
 
-      // Paso 3: Completado
       onProgress?.('complete', 100, 'Procesamiento completado');
 
       return {
@@ -69,9 +59,6 @@ export const useChunkedDocumentUpload = () => {
     }
   }, []);
 
-  /**
-   * Función de upload completo con chunks y procesamiento
-   */
   const uploadAndProcessDocument = useCallback(async (
     file: File,
     options: ChunkedUploadOptions = {}
@@ -85,14 +72,12 @@ export const useChunkedDocumentUpload = () => {
     };
   }> => {
     try {
-      // Realizar upload chunked
       const uploadResult = await chunkedUploadService.uploadFileWithChunks(file, options);
       
       if (!uploadResult.success || !uploadResult.document) {
         throw new Error(uploadResult.error || 'Error en la subida chunked');
       }
 
-      // Procesar el documento
       const processingResult = await processDocumentComplete(uploadResult.document);
       
       return processingResult;
@@ -102,9 +87,6 @@ export const useChunkedDocumentUpload = () => {
     }
   }, [processDocumentComplete]);
 
-  /**
-   * Función para cancelar upload
-   */
   const cancelUpload = useCallback(async (sessionId: string): Promise<void> => {
     try {
       await chunkedUploadService.cancelUpload(sessionId);
@@ -114,23 +96,14 @@ export const useChunkedDocumentUpload = () => {
     }
   }, []);
 
-  /**
-   * Función para obtener estadísticas de upload
-   */
   const getUploadStats = useCallback((sessionId: string) => {
     return chunkedUploadService.getUploadStats(sessionId);
   }, []);
 
-  /**
-   * Función para verificar si un upload está en progreso
-   */
   const isUploadInProgress = useCallback((sessionId: string): boolean => {
     return chunkedUploadService.isUploadInProgress(sessionId);
   }, []);
 
-  /**
-   * Función para limpiar sesiones completadas
-   */
   const cleanupCompletedSessions = useCallback((): void => {
     chunkedUploadService.cleanupCompletedSessions();
   }, []);
