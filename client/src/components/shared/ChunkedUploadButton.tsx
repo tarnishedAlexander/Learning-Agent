@@ -44,155 +44,69 @@ const { Text, Title } = Typography;
 const { Step } = Steps;
 const { useBreakpoint } = Grid;
 
-/**
- * Configuración de un paso del procesamiento
- */
 interface ProcessingStep {
-  /** Clave única del paso */
   key: string;
-  /** Título del paso */
   title: string;
-  /** Descripción del paso */
   description: string;
 }
 
-/**
- * Configuración de archivos aceptados
- */
 interface FileConfig {
-  /** Tipos de archivo aceptados (ej: ".pdf", ".docx", ".jpg") */
   accept: string;
-  /** Tamaño máximo en bytes */
   maxSize: number;
-  /** Mensaje de validación personalizado */
   validationMessage?: string;
-  /** Tamaño de chunk para upload chunked (opcional) */
   chunkSize?: number;
 }
 
-/**
- * Configuración del procesamiento
- */
 interface ProcessingConfig {
-  /** Lista de pasos del procesamiento */
   steps: ProcessingStep[];
-  /** Texto que aparece durante el procesamiento */
   processingText?: string;
-  /** Texto de éxito al completar */
   successText?: string;
 }
 
-/**
- * Configuración del botón de subida
- */
 interface ButtonConfig {
-  /** Mostrar texto "Subir Archivo" junto al ícono */
   showText?: boolean;
-  /** Ancho del botón en píxeles */
   width?: number;
-  /** Alto del botón en píxeles */
   height?: number;
-  /** Estilo del botón */
   variant?: 'fill' | 'ghost' | 'text' | 'link';
-  /** Tamaño del botón */
   size?: 'small' | 'middle' | 'large';
-  /** Forma del botón */
   shape?: 'default' | 'circle' | 'round';
-  /** Si el botón está deshabilitado */
   disabled?: boolean;
-  /** Clases CSS adicionales */
   className?: string;
 }
 
-/**
- * Configuración del modal
- */
 interface ModalConfig {
-  /** Título del modal */
   title?: string;
-  /** Ancho del modal */
   width?: number;
 }
 
-/**
- * Estado interno de cada paso de procesamiento
- */
 interface ProcessingStepState extends ProcessingStep {
   status: 'wait' | 'process' | 'finish' | 'error';
 }
 
-/**
- * Información detallada del progreso del upload
- */
 interface UploadProgressInfo {
   uploadedBytes: number;
   totalBytes: number;
-  speed: number; // bytes por segundo
-  timeRemaining: number; // segundos
+  speed: number;
+  timeRemaining: number;
   chunksUploaded: number;
   totalChunks: number;
 }
 
-/**
- * Props del componente ChunkedUploadButton
- */
 interface ChunkedUploadButtonProps {
-  /** Función que se ejecuta después del upload chunked exitoso para procesamiento adicional */
   onPostUploadProcess?: (
     document: ChunkedUploadResult['document'],
     onProgress?: (step: string, progress: number, message: string) => void
   ) => Promise<unknown>;
-  /** Configuración de archivos aceptados */
   fileConfig: FileConfig;
-  /** Configuración del procesamiento */
   processingConfig: ProcessingConfig;
-  /** Configuración del botón */
   buttonConfig?: ButtonConfig;
-  /** Configuración del modal */
   modalConfig?: ModalConfig;
-  /** Callback que se ejecuta antes de mostrar el modal */
   onUploadStart?: (file: File) => void;
-  /** Callback que se ejecuta después de procesar exitosamente */
   onUploadSuccess?: (result: unknown) => void;
-  /** Callback que se ejecuta si hay error en el procesamiento */
   onUploadError?: (error: Error) => void;
-  /** Callback que se ejecuta cuando se cierra el modal */
   onModalClose?: () => void;
-  /** Si el botón está deshabilitado externamente */
   disabled?: boolean;
 }
-
-/**
- * ChunkedUploadButton - Componente avanzado para subida de archivos con chunks
- * 
- * Características principales:
- * - Upload chunked con progreso detallado
- * - Cancelación de upload en cualquier momento
- * - Reintento automático para chunks fallidos
- * - Manejo robusto de errores con opción de reintentar
- * - Información detallada de velocidad y tiempo restante
- * - Compatibilidad completa con el componente anterior
- * 
- * @example
- * ```tsx
- * <ChunkedUploadButton
- *   fileConfig={{
- *     accept: ".pdf",
- *     maxSize: 100 * 1024 * 1024,
- *     chunkSize: 2 * 1024 * 1024, // 2MB chunks
- *     validationMessage: "Solo archivos PDF de máximo 100MB"
- *   }}
- *   processingConfig={{
- *     steps: [
- *       { key: 'upload', title: 'Subir Archivo', description: 'Subiendo por chunks' },
- *       { key: 'process', title: 'Procesar', description: 'Procesando contenido' }
- *     ]
- *   }}
- *   onPostUploadProcess={processDocumentComplete}
- *   onUploadSuccess={() => message.success("Archivo procesado")}
- * />
- * ```
- */
 const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
   onPostUploadProcess,
   fileConfig,
@@ -205,35 +119,29 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
   onModalClose,
   disabled = false
 }) => {
-  // Estados principales
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadSessionId, setUploadSessionId] = useState<string | null>(null);
   
-  // Estados de progreso
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadProgressInfo, setUploadProgressInfo] = useState<UploadProgressInfo | null>(null);
   const [currentPhase, setCurrentPhase] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle');
   const [currentStep, setCurrentStep] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   
-  // Estados de procesamiento
   const [processingSteps, setProcessingSteps] = useState<ProcessingStepState[]>([]);
   const [processingProgress, setProcessingProgress] = useState<number>(0);
   
-  // Referencias para control de tiempo
   const uploadStartTime = useRef<number>(0);
   const lastProgressUpdate = useRef<number>(0);
   const speedHistory = useRef<number[]>([]);
 
-  // Hooks de tema y responsividad
   const screens = useBreakpoint();
   const isSmallScreen = !screens.lg;
   const { token } = antTheme.useToken();
   const { theme } = useThemeStore();
   const isDark = theme === 'dark';
 
-  // Configuración por defecto del botón
   const {
     showText = true,
     width,
@@ -245,22 +153,17 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     className = ''
   } = buttonConfig;
 
-  // Configuración por defecto del modal
   const {
     title = 'Cargar Nuevo Archivo',
     width: modalWidth = 700
   } = modalConfig;
 
-  // Configuración por defecto del procesamiento
   const {
     processingText = 'Procesando archivo...',
     successText = '¡Archivo procesado exitosamente!'
   } = processingConfig;
 
-  // Color del componente
   const FIXED_COLOR = token.colorBgElevated === '#141d47' ? '#5b6ef0' : '#1A2A80';
-
-  // Inicializar pasos de procesamiento
   React.useEffect(() => {
     setProcessingSteps(
       processingConfig.steps.map(step => ({
@@ -270,7 +173,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     );
   }, [processingConfig.steps]);
 
-  // Calcular velocidad de upload
   const calculateUploadSpeed = useCallback((uploadedBytes: number): number => {
     const now = Date.now();
     if (uploadStartTime.current === 0) {
@@ -278,17 +180,15 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       return 0;
     }
 
-    const timeDiff = (now - lastProgressUpdate.current) / 1000; // segundos
+    const timeDiff = (now - lastProgressUpdate.current) / 1000;
     if (timeDiff > 0) {
       const speed = uploadedBytes / ((now - uploadStartTime.current) / 1000);
       speedHistory.current.push(speed);
       
-      // Mantener solo los últimos 10 valores para suavizar
       if (speedHistory.current.length > 10) {
         speedHistory.current.shift();
       }
       
-      // Promedio de velocidades para suavizar fluctuaciones
       const avgSpeed = speedHistory.current.reduce((sum, s) => sum + s, 0) / speedHistory.current.length;
       lastProgressUpdate.current = now;
       return avgSpeed;
@@ -297,7 +197,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     return 0;
   }, []);
 
-  // Formatear bytes para mostrar
   const formatBytes = useCallback((bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -306,7 +205,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }, []);
 
-  // Formatear tiempo restante
   const formatTimeRemaining = useCallback((seconds: number): string => {
     if (!isFinite(seconds) || seconds <= 0) return 'Calculando...';
     
@@ -323,7 +221,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     }
   }, []);
 
-  // Mapeo de variantes a props de Ant Design
   const getButtonProps = (): ButtonProps => {
     const baseProps: ButtonProps = {
       icon: <CloudUploadOutlined />,
@@ -351,9 +248,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     }
   };
 
-  // Validar archivo
   const validateFile = (file: File): string | null => {
-    // Verificar tipo de archivo
     const acceptedTypes = fileConfig.accept.split(',').map(type => type.trim());
     const isValidType = acceptedTypes.some(type => {
       if (type.startsWith('.')) {
@@ -366,7 +261,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       return fileConfig.validationMessage || `Solo se permiten archivos: ${fileConfig.accept}`;
     }
 
-    // Verificar tamaño
     if (file.size > fileConfig.maxSize) {
       const maxSizeMB = (fileConfig.maxSize / 1024 / 1024).toFixed(1);
       return `El archivo es demasiado grande. Máximo permitido: ${maxSizeMB} MB`;
@@ -375,18 +269,15 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     return null;
   };
 
-  // Manejo del clic en el botón
   const handleButtonClick = useCallback(() => {
     setModalOpen(true);
     resetUploader();
   }, []);
 
-  // Callback para progreso de upload chunked
   const handleUploadProgress = useCallback((progress: ChunkedUploadProgress) => {
     setUploadProgress(progress.progress);
     setCurrentStep(progress.message);
     
-    // Actualizar información detallada de progreso
     if (progress.uploadedBytes && progress.totalBytes) {
       const speed = calculateUploadSpeed(progress.uploadedBytes);
       const timeRemaining = speed > 0 ? (progress.totalBytes - progress.uploadedBytes) / speed : 0;
@@ -396,13 +287,12 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
         totalBytes: progress.totalBytes,
         speed,
         timeRemaining,
-        chunksUploaded: 0, // Se actualizará con la info de la sesión
+        chunksUploaded: 0,
         totalChunks: 0
       });
     }
   }, [calculateUploadSpeed]);
 
-  // Manejo de selección de archivo
   const handleFileSelect = (file: RcFile): boolean => {
     const validationError = validateFile(file);
     if (validationError) {
@@ -414,10 +304,9 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     setError(null);
     onUploadStart?.(file);
     handleFileUpload(file);
-    return false; // Prevenir subida automática
+    return false;
   };
 
-  // Procesamiento del archivo con upload chunked
   const handleFileUpload = useCallback(async (file: File) => {
     try {
       setCurrentPhase('uploading');
@@ -427,9 +316,8 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       lastProgressUpdate.current = Date.now();
       speedHistory.current = [];
 
-      // Configurar opciones de upload chunked
       const options: ChunkedUploadOptions = {
-        chunkSize: fileConfig.chunkSize || 2 * 1024 * 1024, // 2MB por defecto
+        chunkSize: fileConfig.chunkSize || 2 * 1024 * 1024,
         maxRetries: 3,
         onProgress: handleUploadProgress,
         onChunkComplete: (chunkIndex, totalChunks) => {
@@ -441,7 +329,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
         }
       };
 
-      // Realizar upload chunked
       const result = await chunkedUploadService.uploadFileWithChunks(file, options);
       
       if (!result.success) {
@@ -450,7 +337,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
 
       setUploadSessionId(result.sessionId);
 
-      // Si hay procesamiento post-upload, ejecutarlo
       if (onPostUploadProcess && result.document) {
         setCurrentPhase('processing');
         setProcessingProgress(0);
@@ -461,7 +347,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
             setCurrentStep(message);
             setProcessingProgress(progress);
             
-            // Actualizar el estado de los pasos
             setProcessingSteps(prev => prev.map(s => {
               if (s.key === step) {
                 return { ...s, status: progress === 100 ? 'finish' : 'process' };
@@ -488,7 +373,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       const errorMessage = error instanceof Error ? error.message : 'Error en el procesamiento';
       setError(errorMessage);
       
-      // Marcar el paso actual como error
       setProcessingSteps(prev => prev.map(s => 
         s.status === 'process' ? { ...s, status: 'error' } : s
       ));
@@ -503,7 +387,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     onUploadError
   ]);
 
-  // Cancelar upload
   const handleCancelUpload = useCallback(async () => {
     if (uploadSessionId && currentPhase === 'uploading') {
       try {
@@ -517,7 +400,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     }
   }, [uploadSessionId, currentPhase]);
 
-  // Reintentar upload
   const handleRetryUpload = useCallback(() => {
     if (selectedFile) {
       resetUploader();
@@ -527,7 +409,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     }
   }, [selectedFile, handleFileUpload]);
 
-  // Selección manual de archivo
   const handleManualSelect = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -549,20 +430,16 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     input.click();
   };
 
-  // Cerrar modal
   const handleCloseModal = useCallback(() => {
-    // Cancelar upload si está en progreso
     if (currentPhase === 'uploading' && uploadSessionId) {
       handleCancelUpload();
     }
     
     setModalOpen(false);
     onModalClose?.();
-    // Reset después de cerrar para evitar parpadeos
     setTimeout(resetUploader, 300);
   }, [currentPhase, uploadSessionId, handleCancelUpload, onModalClose]);
 
-  // Resetear uploader
   const resetUploader = () => {
     setSelectedFile(null);
     setUploadProgress(0);
@@ -578,7 +455,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     setProcessingSteps(prev => prev.map(s => ({ ...s, status: 'wait' as const })));
   };
 
-  // Renderizar información de progreso detallada
   const renderUploadProgressInfo = () => {
     if (!uploadProgressInfo || currentPhase !== 'uploading') return null;
 
@@ -634,7 +510,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     );
   };
 
-  // Renderizar pasos de procesamiento
   const renderProcessingSteps = () => {
     if (currentPhase === 'idle') return null;
 
@@ -690,7 +565,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     );
   };
 
-  // Renderizar controles del upload
   const renderUploadControls = () => {
     if (currentPhase === 'idle' || currentPhase === 'success') return null;
 
@@ -725,7 +599,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
 
   return (
     <>
-      {/* Botón de subida */}
       <Button
         {...getButtonProps()}
         onClick={handleButtonClick}
@@ -734,7 +607,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
         {showText && 'Subir Archivo'}
       </Button>
 
-      {/* Modal de subida */}
       <Modal
         title={
           <div style={{ 
@@ -766,7 +638,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
         <div style={{ padding: isSmallScreen ? '16px 0' : '24px 0' }}>
           {currentPhase === 'idle' ? (
             <>
-              {/* Zona de arrastre */}
               <Dragger
                 name="file"
                 multiple={false}
@@ -937,8 +808,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                  currentPhase === 'uploading' ? 'Subiendo archivo...' : processingText}
               </Text>
 
-              {/* Progreso de upload */}
-              {currentPhase === 'uploading' && (
+              {uploadProgress > 0 && currentPhase === 'uploading' && (
                 <Progress
                   percent={uploadProgress}
                   strokeColor="#3B38A0"
@@ -951,8 +821,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 />
               )}
 
-              {/* Progreso de procesamiento */}
-              {currentPhase === 'processing' && (
+              {processingProgress > 0 && currentPhase === 'processing' && (
                 <Progress
                   percent={processingProgress}
                   strokeColor="#3B38A0"
@@ -965,16 +834,12 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 />
               )}
 
-              {/* Información detallada de progreso */}
               {renderUploadProgressInfo()}
 
-              {/* Pasos de procesamiento */}
               {renderProcessingSteps()}
 
-              {/* Controles */}
               {renderUploadControls()}
 
-              {/* Error específico */}
               {error && (
                 <Alert
                   message="Error en el procesamiento"
@@ -998,7 +863,6 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
 
 export default ChunkedUploadButton;
 
-// Exportar tipos para uso externo
 export type { 
   ChunkedUploadButtonProps,
   FileConfig, 

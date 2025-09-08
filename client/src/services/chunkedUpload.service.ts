@@ -8,13 +8,13 @@ export interface ChunkedUploadProgress {
   message: string;
   uploadedBytes?: number;
   totalBytes?: number;
-  speed?: number; // bytes per second
-  timeRemaining?: number; // seconds
+  speed?: number;
+  timeRemaining?: number;
 }
 
 export interface ChunkedUploadOptions {
-  chunkSize?: number; // Tamaño del chunk en bytes (default: 1MB)
-  maxRetries?: number; // Máximo número de reintentos por chunk
+  chunkSize?: number;
+  maxRetries?: number;
   onProgress?: (progress: ChunkedUploadProgress) => void;
   onChunkComplete?: (chunkIndex: number, totalChunks: number) => void;
 }
@@ -53,9 +53,6 @@ class ChunkedUploadService {
     this.API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/";
   }
 
-  /**
-   * Obtener token de autenticación
-   */
   private async getAuthToken(): Promise<string> {
     const authData = localStorage.getItem("auth");
     if (!authData) {
@@ -70,7 +67,6 @@ class ChunkedUploadService {
         throw new Error('Token de acceso no encontrado. Por favor, inicia sesión nuevamente.');
       }
 
-      // Verificar que el token sea válido
       await meAPI(token);
       return token;
     } catch {
@@ -78,14 +74,11 @@ class ChunkedUploadService {
     }
   }
 
-  /**
-   * Iniciar una sesión de upload chunked
-   */
   async initializeUploadSession(
     file: File, 
     options: ChunkedUploadOptions = {}
   ): Promise<{ sessionId: string; session: ChunkedUploadSession }> {
-    const { chunkSize = 1024 * 1024 } = options; // 1MB por defecto
+    const { chunkSize = 1024 * 1024 } = options;
     
     try {
       const token = await this.getAuthToken();
@@ -103,14 +96,11 @@ class ChunkedUploadService {
         fileSize: file.size
       };
 
-      // Guardar la sesión
       this.uploadSessions.set(sessionId, session);
 
-      // Crear cancel token para esta sesión
       const cancelTokenSource = axios.CancelToken.source();
       this.cancelTokens.set(sessionId, cancelTokenSource);
 
-      // Inicializar en el backend
       await axios.post(
         `${this.API_URL}api/documents/upload/init`,
         {
@@ -137,133 +127,6 @@ class ChunkedUploadService {
     }
   }
 
-  /**
-   * Subir un chunk específico
-   * TODO: Usar cuando el backend soporte chunked upload
-   */
-  /*
-  private async uploadChunk(
-    sessionId: string,
-    file: File,
-    chunkIndex: number,
-    options: ChunkedUploadOptions = {}
-  ): Promise<void> {
-    const session = this.uploadSessions.get(sessionId);
-    if (!session) {
-      throw new Error('Sesión de upload no encontrada');
-    }
-
-    const cancelTokenSource = this.cancelTokens.get(sessionId);
-    if (!cancelTokenSource) {
-      throw new Error('Token de cancelación no encontrado');
-    }
-
-    const { maxRetries = 3 } = options;
-    const start = chunkIndex * session.chunkSize;
-    const end = Math.min(start + session.chunkSize, file.size);
-    const chunk = file.slice(start, end);
-
-    let attempt = 0;
-    while (attempt < maxRetries) {
-      try {
-        const token = await this.getAuthToken();
-        const formData = new FormData();
-        formData.append('chunk', chunk);
-        formData.append('sessionId', sessionId);
-        formData.append('chunkIndex', chunkIndex.toString());
-
-        await axios.post(
-          `${this.API_URL}api/documents/upload/chunk`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-            cancelToken: cancelTokenSource.token,
-            onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-              if (progressEvent.total) {
-                const chunkProgress = (progressEvent.loaded / progressEvent.total) * 100;
-                const overallProgress = ((session.uploadedChunks.length + (chunkProgress / 100)) / session.totalChunks) * 100;
-                
-                options.onProgress?.({
-                  stepKey: 'upload',
-                  progress: Math.round(overallProgress),
-                  message: `Subiendo chunk ${chunkIndex + 1} de ${session.totalChunks}`,
-                  uploadedBytes: session.uploadedChunks.length * session.chunkSize + progressEvent.loaded,
-                  totalBytes: file.size,
-                });
-              }
-            }
-          }
-        );
-
-        // Marcar chunk como completado
-        session.uploadedChunks.push(chunkIndex);
-        options.onChunkComplete?.(chunkIndex, session.totalChunks);
-        return;
-
-      } catch (error) {
-        attempt++;
-        if (axios.isCancel(error)) {
-          throw new Error('Upload cancelado por el usuario');
-        }
-        
-        if (attempt >= maxRetries) {
-          throw new Error(`Error al subir chunk ${chunkIndex} después de ${maxRetries} intentos`);
-        }
-        
-        // Esperar antes del siguiente intento
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-      }
-    }
-  }
-  */
-
-  /**
-   * Finalizar la sesión de upload
-   * TODO: Usar cuando el backend soporte chunked upload
-   */
-  /*
-  private async finalizeUploadSession(sessionId: string): Promise<ChunkedUploadResult['document']> {
-    const session = this.uploadSessions.get(sessionId);
-    if (!session) {
-      throw new Error('Sesión de upload no encontrada');
-    }
-
-    const cancelTokenSource = this.cancelTokens.get(sessionId);
-    if (!cancelTokenSource) {
-      throw new Error('Token de cancelación no encontrado');
-    }
-
-    try {
-      const token = await this.getAuthToken();
-      
-      const response = await axios.post(
-        `${this.API_URL}api/documents/upload/finalize`,
-        { sessionId },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          cancelToken: cancelTokenSource.token
-        }
-      );
-
-      session.completed = true;
-      return response.data;
-    } catch (error) {
-      console.error('Error finalizing upload session:', error);
-      throw new Error('Error al finalizar la subida');
-    }
-  }
-  */
-
-  /**
-   * Subir archivo completo con chunks
-   * NOTA: Por ahora simula chunked upload usando el servicio normal
-   * TODO: Implementar verdadero chunked upload cuando el backend esté listo
-   */
   async uploadFileWithChunks(
     file: File,
     options: ChunkedUploadOptions = {}
@@ -271,7 +134,6 @@ class ChunkedUploadService {
     const sessionId = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     try {
-      // Validar archivo
       if (!file) {
         throw new Error('No se ha seleccionado ningún archivo');
       }
@@ -280,11 +142,9 @@ class ChunkedUploadService {
         throw new Error('El archivo está vacío');
       }
 
-      // Por ahora, simular progreso chunked pero usar upload normal
-      const { chunkSize = 1024 * 1024 } = options; // 1MB por defecto
+      const { chunkSize = 1024 * 1024 } = options;
       const totalChunks = Math.ceil(file.size / chunkSize);
       
-      // Simular progreso por chunks
       for (let i = 0; i < totalChunks; i++) {
         const progress = Math.round(((i + 1) / totalChunks) * 100);
         const uploadedBytes = Math.min((i + 1) * chunkSize, file.size);
@@ -299,11 +159,9 @@ class ChunkedUploadService {
         
         options.onChunkComplete?.(i, totalChunks);
         
-        // Simular tiempo de upload por chunk
         await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      // Usar el servicio de documentos normal para la subida real
       const { documentService } = await import('./documents.service');
       const result = await documentService.uploadDocument(file);
 
@@ -334,19 +192,14 @@ class ChunkedUploadService {
     }
   }
 
-  /**
-   * Cancelar upload
-   */
   async cancelUpload(sessionId: string): Promise<void> {
     try {
-      // Cancelar todas las requests pendientes
       const cancelTokenSource = this.cancelTokens.get(sessionId);
       if (cancelTokenSource) {
         cancelTokenSource.cancel('Upload cancelado por el usuario');
         this.cancelTokens.delete(sessionId);
       }
 
-      // Notificar al backend para limpiar archivos temporales
       try {
         const token = await this.getAuthToken();
         await axios.post(
@@ -357,39 +210,28 @@ class ChunkedUploadService {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
-            timeout: 5000 // Timeout corto para no bloquear la UI
+            timeout: 5000
           }
         );
       } catch (error) {
-        // No es crítico si falla la limpieza del backend
         console.warn('Error notificando cancelación al backend:', error);
       }
 
-      // Limpiar datos locales
       this.uploadSessions.delete(sessionId);
     } catch (error) {
       console.error('Error canceling upload:', error);
     }
   }
 
-  /**
-   * Obtener información de la sesión
-   */
   getUploadSession(sessionId: string): ChunkedUploadSession | null {
     return this.uploadSessions.get(sessionId) || null;
   }
 
-  /**
-   * Verificar si un upload está en progreso
-   */
   isUploadInProgress(sessionId: string): boolean {
     const session = this.uploadSessions.get(sessionId);
     return session ? !session.completed : false;
   }
 
-  /**
-   * Limpiar todas las sesiones completadas
-   */
   cleanupCompletedSessions(): void {
     for (const [sessionId, session] of this.uploadSessions.entries()) {
       if (session.completed) {
@@ -399,9 +241,6 @@ class ChunkedUploadService {
     }
   }
 
-  /**
-   * Obtener estadísticas del progreso
-   */
   getUploadStats(sessionId: string): {
     uploadedChunks: number;
     totalChunks: number;
@@ -425,5 +264,4 @@ class ChunkedUploadService {
   }
 }
 
-// Instancia singleton
 export const chunkedUploadService = new ChunkedUploadService();
