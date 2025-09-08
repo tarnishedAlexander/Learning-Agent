@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './core/prisma/prisma.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { DocumentsModule } from './modules/repository_documents/documents.module';
@@ -12,7 +13,6 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
 
 @Module({
   imports: [
-    PrismaModule,
     RbacModule,
     IdentityModule,
     ConfigModule.forRoot({ isGlobal: true }),
@@ -22,7 +22,7 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
     InterviewModule,
     ReinforcementModule,
   ],
-  controllers: [],
-  providers: [AiConfigService],
+  controllers: [AppController],
+  providers: [AiConfigService, AppService],
 })
 export class AppModule {}

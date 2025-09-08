@@ -32,7 +32,6 @@ export class DsAdapter implements DeepseekPort {
         'singleQuestion.v1',
         vars,
       );
-      console.log(prompt);
       const completion = await this.deepseek.chat.completions.create({
         model: 'deepseek-chat',
         messages: [
@@ -112,7 +111,6 @@ export class DsAdapter implements DeepseekPort {
         'interview-advice.v1',
         vars,
       );
-      console.log('mensaje', prompt);
       const completion = await this.deepseek.chat.completions.create({
         model: 'deepseek-chat',
         messages: [
@@ -139,7 +137,6 @@ export class DsAdapter implements DeepseekPort {
       const coachingResponse: AdviceResponse = JSON.parse(
         responseContent,
       ) as AdviceResponse;
-      console.log('resp advice', coachingResponse);
       return coachingResponse;
     } catch (error) {
       console.error('OpenAI Error in generateAdvise:', error);
