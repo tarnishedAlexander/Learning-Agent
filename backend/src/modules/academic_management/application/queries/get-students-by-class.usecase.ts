@@ -5,7 +5,7 @@ import type { StudentRepositoryPort } from "../../domain/ports/student.repositor
 import type { UserRepositoryPort } from 'src/modules/identity/domain/ports/user.repository.port';
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { UserInfoDTO } from "../../infrastructure/http/dtos/response.user-info.dto";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetStudentsByClassUseCase {
