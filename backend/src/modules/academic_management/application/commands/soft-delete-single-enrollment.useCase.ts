@@ -4,7 +4,7 @@ import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.rep
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { Enrollment } from "../../domain/entities/enrollment.entity";
-import { ConflictError, ForbiddenError, NotFoundError } from "src/shared/handler/errors";
+import { ConflictError, ForbiddenError, NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class SoftDeleteSingleEnrollmentUseCase {

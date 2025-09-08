@@ -7,6 +7,7 @@ jest.mock('../../../../shared/handler/errors', () => ({
 import { CreateClassUseCase } from './create-class.usecase';
 import { NotFoundError, ForbiddenError } from '../../../../shared/handler/errors';
 import { Classes } from '../../domain/entities/classes.entity';
+import { Logger } from '@nestjs/common/services/logger.service';
 
 describe('CreateClassUseCase', () => {
   let useCase: CreateClassUseCase;
@@ -20,6 +21,12 @@ describe('CreateClassUseCase', () => {
     classRepo = { create: jest.fn() };
 
     useCase = new CreateClassUseCase(teacherRepo, classRepo, courseRepo);
+
+    // Silenciar logs de errores en consola
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Si usas Logger de NestJS:
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
   });
 
   it('should create a class when teacher and course exist and match', async () => {

@@ -1,5 +1,6 @@
 import { CreateCourseUseCase } from './create-course.usecase';
 import { NotFoundError } from '../../../../shared/handler/errors';
+import { Logger } from '@nestjs/common/services/logger.service';
 
 describe('CreateCourseUseCase', () => {
   let useCase: CreateCourseUseCase;
@@ -11,6 +12,12 @@ describe('CreateCourseUseCase', () => {
     teacherRepo = { findByUserId: jest.fn() };
 
     useCase = new CreateCourseUseCase(courseRepo, teacherRepo);
+    // Silenciar logs de errores en consola
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Si usas Logger de NestJS:
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+  
   });
 
   it('should create a course when teacher exists', async () => {
