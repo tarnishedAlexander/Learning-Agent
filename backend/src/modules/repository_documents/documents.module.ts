@@ -54,13 +54,13 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
   imports: [PrismaModule, IdentityModule],
   controllers: [DocumentsController, EmbeddingsController],
   providers: [
-    // Servicios de configuración
+    // servicios de configuración
     AiConfigService,
 
-    // Servicios de logging
+    // servicios de logging
     ContextualLoggerService,
 
-    // Infrastructure adapters
+    // adaptadores de infraestructura
     { provide: DOCUMENT_STORAGE_PORT, useClass: S3StorageAdapter },
     {
       provide: DOCUMENT_REPOSITORY_PORT,
@@ -73,7 +73,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       useClass: PrismaDocumentChunkRepositoryAdapter,
     },
 
-    // Nuevos adapters para Phase 3
+    // nuevos adaptadores para fase 3
     {
       provide: EMBEDDING_GENERATOR_PORT,
       useFactory: (aiConfig: AiConfigService) => {
@@ -92,10 +92,10 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       inject: [PrismaService, EMBEDDING_GENERATOR_PORT],
     },
 
-    // Legacy token for backward compatibility
+    // token legacy para compatibilidad hacia atrás
     { provide: FILE_STORAGE_REPO, useClass: S3StorageAdapter },
 
-    // Domain services
+    // servicios de dominio
     {
       provide: DocumentChunkingService,
       useFactory: (
@@ -126,7 +126,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       ],
     },
 
-    // Use cases
+    // casos de uso
     {
       provide: ListDocumentsUseCase,
       useFactory: (
@@ -243,7 +243,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     },
   ],
   exports: [
-    // Casos de uso originales
+    // casos de uso originales
     ListDocumentsUseCase,
     DeleteDocumentUseCase,
     UploadDocumentUseCase,
@@ -251,16 +251,16 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     ProcessDocumentTextUseCase,
     ProcessDocumentChunksUseCase,
 
-    // Nuevos casos de uso para embeddings
+    // nuevos casos de uso para embeddings
     GenerateDocumentEmbeddingsUseCase,
     SearchDocumentsUseCase,
     CheckDocumentSimilarityUseCase,
 
-    // Servicios de dominio
+    // servicios de dominio
     DocumentChunkingService,
     DocumentEmbeddingService,
 
-    // Tokens de puertos (para testing o extensión)
+    // tokens de puertos (para testing o extensión)
     DOCUMENT_REPOSITORY_PORT,
     TEXT_EXTRACTION_PORT,
     DOCUMENT_STORAGE_PORT,
@@ -276,8 +276,22 @@ export class DocumentsModule implements NestModule {
       .apply(LoggingMiddleware)
       .forRoutes('api/documents', 'api/repository-documents/embeddings');
 
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes({ path: 'api/documents/upload', method: RequestMethod.POST });
+    consumer.apply(AuthMiddleware).forRoutes(
+      { path: 'api/documents/upload', method: RequestMethod.POST },
+      { path: 'api/documents/check-similarity', method: RequestMethod.POST },
+      { path: 'api/documents/upload-with-check', method: RequestMethod.POST },
+      { path: 'api/documents/confirm-upload', method: RequestMethod.POST },
+      { path: 'api/documents/:id', method: RequestMethod.DELETE },
+      { path: 'api/documents/download/:id', method: RequestMethod.GET },
+      {
+        path: 'api/documents/:documentId/process-text',
+        method: RequestMethod.POST,
+      },
+      {
+        path: 'api/documents/:documentId/process-chunks',
+        method: RequestMethod.POST,
+      },
+      { path: 'api/documents/:documentId/chunks', method: RequestMethod.GET },
+    );
   }
 }

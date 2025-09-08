@@ -278,7 +278,7 @@ export class DocumentsController {
 
       const result = await this.checkDocumentSimilarityUseCase.execute(request);
 
-      // Map domain result to DTO
+      // mapear resultado del dominio a dto
       let existingDocumentDto: ExistingDocumentDto | undefined;
       if (result.existingDocument) {
         existingDocumentDto = new ExistingDocumentDto(
@@ -421,7 +421,7 @@ export class DocumentsController {
         mimeType: file.mimetype,
       });
 
-      // First check for similarity
+      // primero verificar similitud
       const checkRequest = new CheckDocumentSimilarityRequest(
         file.buffer,
         file.originalname,
@@ -438,14 +438,14 @@ export class DocumentsController {
       const similarityResult =
         await this.checkDocumentSimilarityUseCase.execute(checkRequest);
 
-      // If exact match, reject upload
+      // si hay coincidencia exacta, rechazar subida
       if (similarityResult.status === 'exact_match') {
         throw new BadRequestException(
           'Este archivo ya existe exactamente en el sistema',
         );
       }
 
-      // If similar candidates found, return confirmation request
+      // si se encontraron candidatos similares, devolver confirmación
       if (
         similarityResult.status === 'candidates' &&
         similarityResult.similarCandidates &&
@@ -470,7 +470,7 @@ export class DocumentsController {
             ),
         );
 
-        // Store file temporarily (you might want to implement a temporary storage)
+        // almacenar archivo temporalmente (implementar almacenamiento temporal si se desea)
         const fileHash = createHash('sha256').update(file.buffer).digest('hex');
 
         return new UploadWithConfirmationResponseDto(
@@ -486,7 +486,7 @@ export class DocumentsController {
         );
       }
 
-      // No conflicts, proceed with upload
+      // sin conflictos, proceder con la subida
       const document = await this.uploadDocumentUseCase.execute(file, userId);
 
       this.logger.log('Document uploaded successfully', {
@@ -556,9 +556,9 @@ export class DocumentsController {
         return { message: 'Upload cancelado por el usuario' };
       }
 
-      // Here you would need to retrieve the temporarily stored file
-      // For now, we'll return a message indicating the limitation
-      // In a full implementation, you'd store the file temporarily and retrieve it here
+      // aquí debería recuperarse el archivo almacenado temporalmente
+      // por ahora, devolvemos un mensaje indicando la limitación
+      // en una implementación completa, se almacenaría y recuperaría el archivo aquí
 
       throw new BadRequestException(
         'La confirmación de subida requiere almacenamiento temporal del archivo. Use el endpoint upload-with-check para verificar similitud.',
@@ -616,6 +616,7 @@ export class DocumentsController {
   )
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: { skipValidation?: string; forceUpload?: string },
     @Req() req: AuthenticatedRequest,
   ): Promise<UploadDocumentResponseDto> {
     try {
@@ -632,6 +633,8 @@ export class DocumentsController {
         hasUser: !!req.user,
         userId: req.user?.id,
         headers: req.headers,
+        skipValidation: body?.skipValidation,
+        forceUpload: body?.forceUpload,
       });
 
       if (!file) {
@@ -641,6 +644,76 @@ export class DocumentsController {
       const userId = req.user?.id;
       if (!userId) {
         throw new BadRequestException('Usuario no autenticado');
+      }
+
+      // validación de similitud automática (a menos que se omita)
+      const shouldSkipValidation =
+        body?.skipValidation === 'true' || body?.forceUpload === 'true';
+
+      if (!shouldSkipValidation) {
+        this.logger.log('Running similarity check before upload', {
+          fileName: file.originalname,
+          fileSize: file.size,
+        });
+
+        const similarityRequest = new CheckDocumentSimilarityRequest(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          userId,
+          {
+            similarityThreshold: 0.95,
+            maxCandidates: 5,
+            skipEmbeddings: false,
+            useSampling: true,
+          },
+        );
+
+        const similarityResult =
+          await this.checkDocumentSimilarityUseCase.execute(similarityRequest);
+
+        // si hay duplicados exactos o de contenido, rechazar subida
+        if (
+          similarityResult.status === 'exact_match' ||
+          similarityResult.status === 'text_hash_match'
+        ) {
+          this.logger.warn('Upload blocked due to exact duplicate found', {
+            fileName: file.originalname,
+            status: similarityResult.status,
+            existingDocumentId: similarityResult.existingDocument?.id,
+          });
+
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.CONFLICT,
+              message:
+                similarityResult.status === 'exact_match'
+                  ? 'Este archivo ya existe en el sistema'
+                  : 'Ya existe un documento con el mismo contenido',
+              error: 'Document Duplicate',
+              details: {
+                status: similarityResult.status,
+                existingDocument: similarityResult.existingDocument,
+              },
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        // si hay candidatos similares, informar pero permitir subida
+        if (
+          similarityResult.status === 'candidates' &&
+          similarityResult.similarCandidates &&
+          similarityResult.similarCandidates.length > 0
+        ) {
+          this.logger.warn('Similar documents found but allowing upload', {
+            fileName: file.originalname,
+            candidatesCount: similarityResult.similarCandidates.length,
+          });
+
+          // opcional: podrías rechazar aquí según la lógica de negocio
+          // por ahora, solo registramos y continuamos
+        }
       }
 
       this.logger.setContext({ userId });
@@ -676,7 +749,7 @@ export class DocumentsController {
         throw error;
       }
 
-      // Error inesperado
+      // error inesperado
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
@@ -935,8 +1008,8 @@ export class DocumentsController {
   @Get(':documentId/chunks')
   async getDocumentChunks(
     @Param('documentId') documentId: string,
-    // @Query('limit') limit?: number,
-    // @Query('offset') offset?: number,
+    // @query('limit') limit?: number,
+    // @query('offset') offset?: number,
   ) {
     try {
       if (!documentId) {
@@ -945,7 +1018,7 @@ export class DocumentsController {
 
       this.logger.logChunkOperation('retrieve', documentId);
 
-      // Usar el servicio de chunking para obtener chunks con estadísticas
+      // usar el servicio de chunking para obtener chunks con estadísticas
       const result =
         await this.processDocumentChunksUseCase[
           'chunkingService'
@@ -966,9 +1039,9 @@ export class DocumentsController {
             id: chunk.id,
             content:
               chunk.content.substring(0, 200) +
-              (chunk.content.length > 200 ? '...' : ''), // Preview
+              (chunk.content.length > 200 ? '...' : ''), // vista previa
             chunkIndex: chunk.chunkIndex,
-            type: chunk.type, // Usar 'type' no 'chunkType'
+            type: chunk.type, // usar 'type' no 'chunkType'
             contentLength: chunk.content.length,
             metadata: chunk.metadata,
             createdAt: chunk.createdAt,
