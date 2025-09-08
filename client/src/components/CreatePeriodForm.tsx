@@ -13,14 +13,13 @@ dayjs.locale("es");
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween);
 
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 const { Option } = Select;
 const MIN_BUSINESS_DAYS = 25;
 
-const allowYearTileIfSameYear = (
-  current: Dayjs,
-  minDate: Dayjs,
-  maxDate: Dayjs
-) => {
+const allowYearTileIfSameYear = (current: Dayjs, minDate: Dayjs) => {
   const y = minDate.year();
   const dec31 = dayjs(`${y}-12-31`);
   return current.isSame(dec31, "day");
@@ -159,7 +158,7 @@ export function CreatePeriodForm({
     if (
       out &&
       current.year() === minDate.year() &&
-      allowYearTileIfSameYear(current, minDate, maxDate)
+      allowYearTileIfSameYear(current, minDate)
     ) {
       out = false;
     }
@@ -191,7 +190,7 @@ export function CreatePeriodForm({
     if (
       out &&
       current.year() === minDate.year() &&
-      allowYearTileIfSameYear(current, minDate, maxDate)
+      allowYearTileIfSameYear(current, minDate)
     ) {
       out = false;
     }
@@ -203,8 +202,7 @@ export function CreatePeriodForm({
     value: Dayjs | null
   ) => {
     if (value) {
-      const date = value.toDate();
-      const isoDate = date.toISOString().split("T")[0];
+      const isoDate = value.format("YYYY-MM-DD");
       formik.setFieldValue(field, isoDate);
 
       if (field === "dateBegin") {
@@ -217,7 +215,7 @@ export function CreatePeriodForm({
           if (day !== 0 && day !== 6) days++;
         }
 
-        formik.setFieldValue("dateEnd", temp.toISOString().split("T")[0]);
+        formik.setFieldValue("dateEnd", temp.format("YYYY-MM-DD"));
       }
 
       const selectedSemester = Object.keys(ranges).find((sem) => {
@@ -230,6 +228,9 @@ export function CreatePeriodForm({
       }
     } else {
       formik.setFieldValue(field, "");
+      if (field === "dateBegin") {
+        formik.setFieldValue("dateEnd", "");
+      }
     }
   };
 
@@ -298,7 +299,7 @@ export function CreatePeriodForm({
               placeholder="Seleccionar fecha de inicio"
               value={
                 formik.values.dateBegin
-                  ? dayjs(formik.values.dateBegin)
+                  ? dayjs(formik.values.dateBegin, "YYYY-MM-DD")
                   : undefined
               }
               defaultPickerValue={
@@ -326,7 +327,9 @@ export function CreatePeriodForm({
               format="DD-MM-YYYY"
               placeholder="Seleccionar fecha de fin"
               value={
-                formik.values.dateEnd ? dayjs(formik.values.dateEnd) : undefined
+                formik.values.dateEnd
+                  ? dayjs(formik.values.dateEnd, "YYYY-MM-DD")
+                  : undefined
               }
               defaultPickerValue={
                 formik.values.semester
