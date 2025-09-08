@@ -24,8 +24,8 @@ const periodValidationSchema = yup.object({
     .string()
     .required("El período es obligatorio")
     .matches(
-      /^(PRIMERO|SEGUNDO)\s\d{4}$/,
-      "El formato debe ser: PRIMERO 2025 o SEGUNDO 2024"
+      /^(PRIMERO|SEGUNDO|INVIERNO|VERANO)\s\d{4}$/,
+      "El formato debe ser: PRIMERO 2025, SEGUNDO 2025, INVIERNO 2025 o VERANO 2025"
     ),
   dateBegin: yup.string().required("La fecha de inicio es obligatoria"),
   dateEnd: yup.string().required("La fecha de fin es obligatoria"),
@@ -108,42 +108,76 @@ export function CreatePeriodForm({
 
   const today = dayjs();
   const currentYear = today.year();
-  const isFirstHalf = today.month() < 6;
 
-  const availableSemesters = isFirstHalf
-    ? [
-        {
-          name: `PRIMERO ${currentYear}`,
-          start: `${currentYear}-01-25`,
-          end: `${currentYear}-06-30`,
-        },
-        {
-          name: `SEGUNDO ${currentYear}`,
-          start: `${currentYear}-07-25`,
-          end: `${currentYear}-12-31`,
-        },
-      ]
-    : [
-        {
-          name: `SEGUNDO ${currentYear}`,
-          start: `${currentYear}-07-25`,
-          end: `${currentYear}-12-31`,
-        },
-        {
-          name: `PRIMERO ${currentYear + 1}`,
-          start: `${currentYear + 1}-01-25`,
-          end: `${currentYear + 1}-06-30`,
-        },
-      ];
+  const allPeriods = [
+    {
+      name: `PRIMERO ${currentYear}`,
+      start: `${currentYear}-01-25`,
+      end: `${currentYear}-06-30`,
+      type: "NORMAL",
+    },
+    {
+      name: `INVIERNO ${currentYear}`,
+      start: `${currentYear}-07-01`,
+      end: `${currentYear}-07-24`,
+      type: "SPECIAL",
+    },
+    {
+      name: `SEGUNDO ${currentYear}`,
+      start: `${currentYear}-07-25`,
+      end: `${currentYear}-12-31`,
+      type: "NORMAL",
+    },
+    {
+      name: `VERANO ${currentYear}`,
+      start: `${currentYear + 1}-01-01`,
+      end: `${currentYear + 1}-01-24`,
+      type: "SPECIAL",
+    },
+    {
+      name: `PRIMERO ${currentYear + 1}`,
+      start: `${currentYear + 1}-01-25`,
+      end: `${currentYear + 1}-06-30`,
+      type: "NORMAL",
+    },
+    {
+      name: `INVIERNO ${currentYear + 1}`,
+      start: `${currentYear + 1}-07-01`,
+      end: `${currentYear + 1}-07-24`,
+      type: "SPECIAL",
+    },
+    {
+      name: `SEGUNDO ${currentYear + 1}`,
+      start: `${currentYear + 1}-07-25`,
+      end: `${currentYear + 1}-12-31`,
+      type: "NORMAL",
+    },
+    {
+      name: `VERANO ${currentYear + 1}`,
+      start: `${currentYear + 2}-01-01`,
+      end: `${currentYear + 2}-01-24`,
+      type: "SPECIAL",
+    },
+  ];
 
-  // Convertimos a un objeto para facilitar el manejo de rangos
+  let availableSemesters = allPeriods.filter((p) =>
+    dayjs(p.end).isAfter(today)
+  );
+
+  availableSemesters = availableSemesters.sort((a, b) =>
+    dayjs(a.start).diff(dayjs(b.start))
+  );
+
+  availableSemesters = availableSemesters.slice(0, 4);
+
   const ranges = availableSemesters.reduce((acc, sem) => {
     acc[sem.name] = {
       start: dayjs(sem.start),
       end: dayjs(sem.end),
+      type: sem.type,
     };
     return acc;
-  }, {} as Record<string, { start: Dayjs; end: Dayjs }>);
+  }, {} as Record<string, { start: Dayjs; end: Dayjs; type: string }>);
 
   const disabledDateBegin = (current: Dayjs) => {
     const { semester, dateEnd } = formik.values;
