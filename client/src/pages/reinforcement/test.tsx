@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTemplate from "../../components/PageTemplate";
-import { TestModal } from "../../components/tests/TestModal";
+import TestModal from "../../components/tests/TestModal"; 
 import { useStudentTest } from "../../hooks/useStudentTest";
-import TestQuestion from "../../components/tests/TestQuestion";
-import TrueOrFalseQuestion from "../../components/tests/TrueOrFalseQuestion";
-import { TestTimer } from "../../components/tests/Timer";
+
+import TestRunner from "../../components/tests/TestRunner"; 
 
 
 export default function Test() {
@@ -13,24 +12,18 @@ export default function Test() {
   const { isTestModalOpen, closeTestModal, startExam, questionCount } = useStudentTest();
   const [isExamStarted, setIsExamStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(1);
-  const [questionType, setQuestionType] = useState("multiple");
 
-  const randomizeType = () => {
-    const types = ["multiple", "truefalse"];
-    setQuestionType(types[Math.floor(Math.random() * types.length)]);
-  };
 
   const handleStartExam = (count: number) => {
     startExam(count);
     setIsExamStarted(true);
     setCurrentQuestion(1);
-    randomizeType();
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestion < (questionCount || 0)) {
-      setCurrentQuestion(prev => prev + 1);
-      randomizeType();
+    const total = questionCount || 0;
+    if (currentQuestion < total) {
+      setCurrentQuestion((prev) => prev + 1);
     } else {
       navigate("/reinforcement");
     }
@@ -51,7 +44,7 @@ export default function Test() {
       breadcrumbs={[
         { label: "Inicio", href: "/" },
         { label: "Refuerzo", href: "/reinforcement" },
-        { label: "Exámenes" }
+        { label: "Exámenes" },
       ]}
     >
       {!isExamStarted && (
@@ -62,16 +55,12 @@ export default function Test() {
         />
       )}
 
-      {isExamStarted && questionCount > 0 && (
-        <TestTimer questionCount={questionCount} onTimeUp={handleTimeUp} />
-      )}
 
-      {isExamStarted && questionType === "multiple" && (
-        <TestQuestion onNext={handleNextQuestion} />
-      )}
+      {isExamStarted && (
+        <div style={{ width: "100%", minHeight: 300 }}>
+          <TestRunner onAnswered={handleNextQuestion} />
+        </div>
 
-      {isExamStarted && questionType === "truefalse" && (
-        <TrueOrFalseQuestion onNext={handleNextQuestion} />
       )}
     </PageTemplate>
   );

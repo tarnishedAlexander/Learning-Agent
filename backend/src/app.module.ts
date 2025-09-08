@@ -11,6 +11,12 @@ import { AiConfigService } from './core/ai/ai.config';
 import { InterviewModule } from './modules/interviewChat/interview.module';
 import { ReinforcementModule } from './modules/reinforcement/reinforcement.module';
 
+
+import { DeepseekModule } from './modules/deepseek/deepseek.module';
+import { ExamsChatModule } from './modules/exams-chat/exams-chat.module';
+
+
+
 @Module({
   imports: [
     RbacModule,
@@ -21,6 +27,11 @@ import { ReinforcementModule } from './modules/reinforcement/reinforcement.modul
     DocumentsModule,
     InterviewModule,
     ReinforcementModule,
+
+    DeepseekModule,
+    ExamsChatModule,
+
+
   ],
   controllers: [AppController],
   providers: [AiConfigService, AppService],
