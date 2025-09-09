@@ -46,12 +46,12 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
     {
       key: "/courses",
       icon: <SolutionOutlined />,
-      label: <Link to="/professor/courses">Materias</Link>,
+      label: <Link to="/courses">Materias</Link>,
     },
     {
       key: "/exams/create",
       icon: <FileAddOutlined />,
-      label: <Link to="/professor/exams/create">Crear Examen</Link>,
+      label: <Link to="/exams/create">Crear Examen</Link>,
     },
   ];
 
@@ -59,7 +59,7 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
     {
       key: "/classes",
       icon: <BookOutlined />,
-      label: <Link to="/studentclasses">Clases</Link>,
+      label: <Link to="/classes">Clases</Link>,
     },
   ];
 
