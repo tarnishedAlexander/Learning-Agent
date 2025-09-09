@@ -23,6 +23,13 @@ export interface DocumentRepositoryPort {
   findByFileHash(fileHash: string): Promise<Document | undefined>;
 
   /**
+   * Busca un documento por su hash de texto normalizado
+   * @param textHash Hash SHA-256 del texto normalizado
+   * @returns Documento encontrado o undefined
+   */
+  findByTextHash(textHash: string): Promise<Document | undefined>;
+
+  /**
    * Busca un documento por clave S3
    * @param s3Key Clave del archivo en S3
    * @returns Documento encontrado o undefined

@@ -143,6 +143,7 @@ model Document {
   size         Int
   contentType  String
   fileHash         String                    @unique // Hash SHA-256 del archivo
+  textHash         String?                   @unique // Hash SHA-256 del texto normalizado
   extractedText    String?                   @db.Text // Texto extraído
   status           DocumentStatus            @default(UPLOADED)
   
@@ -171,6 +172,7 @@ model Document {
   @@index([status])
   @@index([uploadedBy])
   @@index([fileHash])
+  @@index([textHash])
   @@index([contentType])
   @@index([courseId])
 }

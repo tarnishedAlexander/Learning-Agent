@@ -22,12 +22,10 @@ import { Console } from 'console';
 @Injectable()
 export class S3StorageAdapter implements DocumentStoragePort {
   private readonly s3Client: S3Client;
-  private readonly s3PublicClient: S3Client;
   private readonly bucketName: string;
   private readonly endpoint: string;
 
   constructor() {
-    // Cliente interno para operaciones del servidor (upload, delete, etc.)
     this.s3Client = new S3Client({
       region: minioConfig.region,
       endpoint: minioConfig.endpoint,
@@ -38,45 +36,8 @@ export class S3StorageAdapter implements DocumentStoragePort {
       forcePathStyle: true, // Necesario para MinIO
     });
 
-    // Cliente público para generar URLs firmadas accesibles desde el navegador
-    const publicEndpoint = minioConfig.publicEndpoint || minioConfig.endpoint;
-    this.s3PublicClient = new S3Client({
-      region: minioConfig.region,
-      endpoint: publicEndpoint,
-      credentials: {
-        accessKeyId: minioConfig.accessKeyId,
-        secretAccessKey: minioConfig.secretAccessKey,
-      },
-      forcePathStyle: true, // Necesario para MinIO
-    });
-
     this.bucketName = minioConfig.bucketName;
     this.endpoint = minioConfig.endpoint;
-  }
-
-  // Helper to rewrite URL host to public endpoint if configured
-  private toPublicUrl(url: string): string {
-    try {
-      if (!minioConfig.publicEndpoint) return url;
-      const u = new URL(url);
-      const pub = new URL(minioConfig.publicEndpoint);
-      u.protocol = pub.protocol;
-      u.host = pub.host;
-      // keep path and query as is
-      return u.toString();
-    } catch {
-      return url;
-    }
-  }
-
-  // Helper to safely extract an error message from unknown
-  private getErrorMessage(err: unknown): string {
-    if (err instanceof Error) return err.message;
-    try {
-      return JSON.stringify(err);
-    } catch {
-      return String(err);
-    }
   }
 
   /**
@@ -96,7 +57,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
         mimeType: req.mimeType,
         size: req.size,
       });
-
+      
       // Generar nombre único para el archivo
       const fileName = this.generateFileName(req.originalName);
 
@@ -114,8 +75,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
       });
       // Subir archivo a MinIO
       await this.s3Client.send(putObjectCommand);
-      const rawUrl = `${this.endpoint}/${this.bucketName}/${fileName}`;
-      const url = this.toPublicUrl(rawUrl);
+      const url = `${this.endpoint}/${this.bucketName}/${fileName}`;
       console.log(`Documento subido exitosamente a ${url}`);
       // Crear entidad Document (versión simple para compatibilidad)
       const document = new Document(
@@ -132,8 +92,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       return document;
     } catch (error) {
-      const msg = this.getErrorMessage(error);
-      throw new Error(`Error uploading document to MinIO: ${msg}`);
+      throw new Error(`Error uploading document to MinIO: ${error.message || error}`);
     }
   }
 
@@ -149,15 +108,14 @@ export class S3StorageAdapter implements DocumentStoragePort {
         Key: fileName,
       });
 
-      // Generar URL firmada válida por 1 hora usando el cliente público
-      const signedUrl = await getSignedUrl(this.s3PublicClient, getObjectCommand, {
+      // Generar URL firmada válida por 1 hora
+      const signedUrl = await getSignedUrl(this.s3Client, getObjectCommand, {
         expiresIn: 3600,
       });
 
       return signedUrl;
     } catch (error) {
-      const msg = this.getErrorMessage(error);
-      throw new Error(`Error generating download URL: ${msg}`);
+      throw new Error(`Error generating download URL: ${error.message || error}`);
     }
   }
 
@@ -385,7 +343,7 @@ export class S3StorageAdapter implements DocumentStoragePort {
 
       // Convertir stream a buffer
       const chunks: Buffer[] = [];
-      const stream = response.Body as unknown as NodeJS.ReadableStream;
+      const stream = response.Body as any;
 
       return new Promise((resolve, reject) => {
         stream.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -393,8 +351,56 @@ export class S3StorageAdapter implements DocumentStoragePort {
         stream.on('end', () => resolve(Buffer.concat(chunks)));
       });
     } catch (error) {
-      const msg = this.getErrorMessage(error);
-      throw new Error(`Error downloading file from MinIO: ${msg}`);
+      throw new Error(`Error downloading file from MinIO: ${error.message}`);
+    }
+  }
+
+  /**
+   * verifica si un archivo existe en el storage
+   * @param s3Key clave s3 del archivo
+   * @returns true si el archivo existe
+   */
+  async exists(s3Key: string): Promise<boolean> {
+    try {
+      const headCommand = new HeadObjectCommand({
+        Bucket: this.bucketName,
+        Key: s3Key,
+      });
+
+      await this.s3Client.send(headCommand);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * mueve un archivo de una ubicación a otra en el storage
+   * @param sourceKey clave s3 de origen
+   * @param destinationKey clave s3 de destino
+   */
+  async moveFile(sourceKey: string, destinationKey: string): Promise<void> {
+    try {
+      // copiar archivo a la nueva ubicación
+      const copyCommand = new CopyObjectCommand({
+        Bucket: this.bucketName,
+        CopySource: `${this.bucketName}/${sourceKey}`,
+        Key: destinationKey,
+      });
+
+      await this.s3Client.send(copyCommand);
+
+      // eliminar archivo original
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: sourceKey,
+      });
+
+      await this.s3Client.send(deleteCommand);
+    } catch (error) {
+      throw new Error(
+        `error moviendo archivo de ${sourceKey} a ${destinationKey}: ${error.message}`,
+      );
     }
   }
 }
