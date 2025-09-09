@@ -4,7 +4,6 @@ import {
   Delete,
   Post,
   Param,
-  // Query,
   HttpException,
   HttpStatus,
   UseInterceptors,
@@ -13,7 +12,6 @@ import {
   Body,
   Req,
 } from '@nestjs/common';
-import { Request } from 'express';
 import type { AuthenticatedRequest } from '../http/middleware/auth.middleware';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -23,6 +21,9 @@ import { DeleteDocumentUseCase } from '../../application/commands/delete-documen
 import { UploadDocumentUseCase } from '../../application/commands/upload-document.usecase';
 import { ProcessDocumentTextUseCase } from '../../application/commands/process-document-text.usecase';
 import { ProcessDocumentChunksUseCase } from '../../application/commands/process-document-chunks.usecase';
+import { CheckDocumentSimilarityUseCase } from '../../application/use-cases/check-document-similarity.usecase';
+import { CheckDeletedDocumentUseCase } from '../../application/use-cases/check-deleted-document.usecase';
+import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -31,8 +32,12 @@ import {
   DeleteDocumentResponseDto,
   DeleteDocumentErrorDto,
 } from './dtos/delete-document.dto';
-import type { UploadDocumentResponseDto } from '../http/dtos/upload-document.dto';
-import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
+import { CheckDocumentSimilarityRequest } from '../../domain/value-objects/document-similarity-check.vo';
+import { CheckDeletedDocumentRequest } from '../../domain/value-objects/deleted-document-check.vo';
+import {
+  UnifiedUploadResponseDto,
+  UnifiedUploadRequestDto,
+} from './dtos/unified-upload.dto';
 
 @Controller('api/documents')
 export class DocumentsController {
@@ -43,6 +48,8 @@ export class DocumentsController {
     private readonly downloadDocumentUseCase: DownloadDocumentUseCase,
     private readonly processDocumentTextUseCase: ProcessDocumentTextUseCase,
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
+    private readonly checkDocumentSimilarityUseCase: CheckDocumentSimilarityUseCase,
+    private readonly checkDeletedDocumentUseCase: CheckDeletedDocumentUseCase,
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -231,24 +238,10 @@ export class DocumentsController {
   )
   async uploadDocument(
     @UploadedFile() file: Express.Multer.File,
+    @Body() options: UnifiedUploadRequestDto,
     @Req() req: AuthenticatedRequest,
-  ): Promise<UploadDocumentResponseDto> {
+  ): Promise<UnifiedUploadResponseDto> {
     try {
-      console.log(' Upload request received:', {
-        hasFile: !!file,
-        fileInfo: file
-          ? {
-              originalname: file.originalname,
-              size: file.size,
-              mimetype: file.mimetype,
-              fieldname: file.fieldname,
-            }
-          : null,
-        hasUser: !!req.user,
-        userId: req.user?.id,
-        headers: req.headers,
-      });
-
       if (!file) {
         throw new BadRequestException('No se ha proporcionado ningún archivo');
       }
@@ -263,26 +256,397 @@ export class DocumentsController {
         fileName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
+        options: options,
       });
 
-      const document = await this.uploadDocumentUseCase.execute(file, userId);
+      // Convertir strings a booleans si vienen de form-data
+      const skipSimilarityCheck =
+        options.skipSimilarityCheck === true ||
+        options.skipSimilarityCheck === 'true';
+      const forceUpload =
+        options.forceUpload === true || options.forceUpload === 'true';
 
-      this.logger.log('Document uploaded successfully', {
-        documentId: document.id,
-        fileName: document.fileName,
-        originalName: document.originalName,
-        size: document.size,
+      // PASO 1: Verificar documentos eliminados reutilizables
+      this.logger.log(
+        'PASO 1 - Verificando documentos eliminados reutilizables...',
+        {
+          fileName: file.originalname,
+          fileSize: file.size,
+          userId: userId,
+          autoRestoreEnabled: true,
+        },
+      );
+
+      const deletedCheckRequest = new CheckDeletedDocumentRequest(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        userId,
+        {
+          skipTextExtraction: false,
+          autoRestore: true, // Siempre activar auto-restauración por defecto
+        },
+      );
+
+      const deletedResult =
+        await this.checkDeletedDocumentUseCase.execute(deletedCheckRequest);
+
+      // Log específico del resultado de la verificación de eliminados
+      this.logger.log(
+        `PASO 1 - Resultado verificación eliminados: ${deletedResult.status}`,
+        {
+          status: deletedResult.status,
+          deletedDocumentFound: !!deletedResult.deletedDocument,
+          deletedDocumentId: deletedResult.deletedDocument?.id,
+          restorationAttempted: !!deletedResult.restoredDocument,
+          fileName: file.originalname,
+        },
+      );
+
+      if (
+        deletedResult.status === 'exact_match' ||
+        deletedResult.status === 'text_match' ||
+        deletedResult.status === 'restored'
+      ) {
+        const matchType =
+          deletedResult.status === 'exact_match'
+            ? 'HASH BINARIO'
+            : deletedResult.status === 'text_match'
+              ? 'HASH DE TEXTO'
+              : 'RESTAURACIÓN';
+
+        this.logger.log(
+          `PASO 1 - ENCONTRADO documento eliminado reutilizable (${matchType}): ${deletedResult.deletedDocument?.id}`,
+          {
+            matchType: deletedResult.status,
+            deletedDocumentId: deletedResult.deletedDocument?.id,
+            deletedDocumentName: deletedResult.deletedDocument?.originalName,
+            deletedAt: deletedResult.deletedDocument?.updatedAt,
+            autoRestoreEnabled: true,
+          },
+        );
+
+        if (deletedResult.restoredDocument) {
+          this.logger.log(
+            `PASO 1 - ÉXITO: Documento restaurado automáticamente: ${deletedResult.restoredDocument.id}`,
+            {
+              restoredDocumentId: deletedResult.restoredDocument.id,
+              originalName: deletedResult.restoredDocument.originalName,
+              fileName: deletedResult.restoredDocument.fileName,
+              wasDeletedAt: deletedResult.deletedDocument?.updatedAt,
+              restoredAt: deletedResult.restoredDocument.updatedAt,
+              matchType: deletedResult.status,
+            },
+          );
+          return new UnifiedUploadResponseDto(
+            'restored',
+            `Documento restaurado automáticamente. El archivo "${file.originalname}" ya existía en el sistema y fue restaurado.`,
+            {
+              id: deletedResult.restoredDocument.id,
+              fileName: deletedResult.restoredDocument.fileName,
+              originalName: deletedResult.restoredDocument.originalName,
+              mimeType: deletedResult.restoredDocument.mimeType,
+              size: deletedResult.restoredDocument.size,
+              downloadUrl: deletedResult.restoredDocument.url,
+              uploadedAt: deletedResult.restoredDocument.updatedAt,
+            },
+            undefined,
+            undefined,
+            true,
+            deletedResult.deletedDocument?.updatedAt,
+          );
+        } else {
+          this.logger.warn(
+            `PASO 1 - PROBLEMA: Documento eliminado encontrado pero no pudo ser restaurado`,
+            {
+              deletedDocumentId: deletedResult.deletedDocument?.id,
+              status: deletedResult.status,
+              fileName: file.originalname,
+            },
+          );
+        }
+      } else {
+        this.logger.log(
+          `PASO 1 - No se encontraron documentos eliminados reutilizables (${deletedResult.status})`,
+          {
+            status: deletedResult.status,
+            fileName: file.originalname,
+            proceedingToStep2: true,
+          },
+        );
+      }
+
+      // PASO 2: Verificar duplicados en documentos activos y generar embeddings reutilizables
+      let preGeneratedChunks: any[] = [];
+      let preGeneratedEmbeddings: number[][] = [];
+      let extractedText: string = '';
+
+      if (!skipSimilarityCheck && !forceUpload) {
+        this.logger.log(
+          'PASO 2 - Verificando similitud con documentos activos...',
+          {
+            fileName: file.originalname,
+            userId: userId,
+            skipSimilarityCheck: false,
+            forceUpload: false,
+            similarityThreshold: options.similarityThreshold || 0.7,
+            maxCandidates: options.maxSimilarCandidates || 5,
+          },
+        );
+
+        const similarityRequest = new CheckDocumentSimilarityRequest(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          userId,
+          {
+            similarityThreshold: options.similarityThreshold || 0.7,
+            maxCandidates: options.maxSimilarCandidates || 5,
+            skipEmbeddings: false,
+            useSampling: true,
+            returnGeneratedData: true, // NUEVO: solicitar que devuelva chunks y embeddings generados
+          },
+        );
+
+        const similarityResult =
+          await this.checkDocumentSimilarityUseCase.execute(similarityRequest);
+
+        // Log específico del resultado de la verificación de similitud
+        this.logger.log(
+          `PASO 2 - Resultado verificación similitud: ${similarityResult.status}`,
+          {
+            status: similarityResult.status,
+            existingDocumentFound: !!similarityResult.existingDocument,
+            existingDocumentId: similarityResult.existingDocument?.id,
+            candidatesFound: similarityResult.similarCandidates?.length || 0,
+            fileName: file.originalname,
+            generatedDataAvailable: !!similarityResult.generatedData,
+          },
+        );
+
+        // Extraer datos pre-generados para reutilizar (si están disponibles)
+        if (similarityResult.generatedData) {
+          preGeneratedChunks = similarityResult.generatedData.chunks || [];
+          preGeneratedEmbeddings =
+            similarityResult.generatedData.embeddings || [];
+          extractedText = similarityResult.generatedData.extractedText || '';
+          this.logger.log(
+            `PASO 2 - OPTIMIZACIÓN: Reutilizando ${preGeneratedChunks.length} chunks y ${preGeneratedEmbeddings.length} embeddings pre-generados`,
+            {
+              chunksCount: preGeneratedChunks.length,
+              embeddingsCount: preGeneratedEmbeddings.length,
+              extractedTextLength: extractedText.length,
+              fileName: file.originalname,
+              optimizationEnabled: true,
+            },
+          );
+        } else {
+          this.logger.warn(`PASO 2 - Sin datos pre-generados para reutilizar`, {
+            fileName: file.originalname,
+            status: similarityResult.status,
+            optimizationMissed: true,
+          });
+        }
+
+        // Rechazar duplicados exactos con detalle específico del tipo
+        if (similarityResult.status === 'exact_match') {
+          this.logger.warn(
+            'PASO 2 - RECHAZADO: Documento duplicado por HASH BINARIO',
+            {
+              fileName: file.originalname,
+              status: similarityResult.status,
+              existingDocumentId: similarityResult.existingDocument?.id,
+              existingDocumentName:
+                similarityResult.existingDocument?.originalName,
+              uploadedBy: similarityResult.existingDocument?.uploadedBy,
+              uploadedAt: similarityResult.existingDocument?.uploadedAt,
+              duplicateType: 'BINARY_HASH',
+            },
+          );
+
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.CONFLICT,
+              message: `Este archivo ya existe exactamente en el sistema (hash binario idéntico).`,
+              error: 'Duplicate Document - Binary Hash',
+              details: {
+                existingDocumentId: similarityResult.existingDocument!.id,
+                matchType: 'binary_hash',
+                originalName: similarityResult.existingDocument!.originalName,
+                uploadedAt: similarityResult.existingDocument!.uploadedAt,
+                uploadedBy: similarityResult.existingDocument!.uploadedBy,
+              },
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        if (similarityResult.status === 'text_hash_match') {
+          this.logger.warn(
+            'PASO 2 - RECHAZADO: Documento duplicado por HASH DE TEXTO',
+            {
+              fileName: file.originalname,
+              status: similarityResult.status,
+              existingDocumentId: similarityResult.existingDocument?.id,
+              existingDocumentName:
+                similarityResult.existingDocument?.originalName,
+              uploadedBy: similarityResult.existingDocument?.uploadedBy,
+              uploadedAt: similarityResult.existingDocument?.uploadedAt,
+              duplicateType: 'TEXT_HASH',
+            },
+          );
+
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.CONFLICT,
+              message: `Este archivo tiene contenido idéntico a un documento existente (hash de texto).`,
+              error: 'Duplicate Document - Text Hash',
+              details: {
+                existingDocumentId: similarityResult.existingDocument!.id,
+                matchType: 'text_hash',
+                originalName: similarityResult.existingDocument!.originalName,
+                uploadedAt: similarityResult.existingDocument!.uploadedAt,
+                uploadedBy: similarityResult.existingDocument!.uploadedBy,
+              },
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        // Rechazar documentos similares con detalle específico
+        if (
+          similarityResult.status === 'candidates' &&
+          similarityResult.similarCandidates &&
+          similarityResult.similarCandidates.length > 0
+        ) {
+          this.logger.warn(
+            'PASO 2 - RECHAZADO: Documentos similares encontrados',
+            {
+              fileName: file.originalname,
+              candidatesCount: similarityResult.similarCandidates.length,
+              candidateDetails: similarityResult.similarCandidates.map((c) => ({
+                id: c.id,
+                originalName: c.originalName,
+                similarityScore: c.similarityScore,
+                avgSimilarity: c.avgSimilarity,
+                coverage: c.coverage,
+                matchedChunks: c.matchedChunks,
+                totalChunks: c.totalChunks,
+              })),
+              rejectionReason: 'SIMILAR_DOCUMENTS_FOUND',
+              duplicateType: 'SIMILARITY_CANDIDATES',
+            },
+          );
+
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.CONFLICT,
+              message: `Se encontraron ${similarityResult.similarCandidates.length} documento(s) similar(es). No se permite la subida para evitar duplicados.`,
+              error: 'Similar Documents Found',
+              details: {
+                matchType: 'similarity_candidates',
+                candidatesCount: similarityResult.similarCandidates.length,
+                similarDocuments: similarityResult.similarCandidates.map(
+                  (candidate) => ({
+                    id: candidate.id,
+                    originalName: candidate.originalName,
+                    documentTitle: candidate.documentTitle || null,
+                    documentAuthor: candidate.documentAuthor || null,
+                    uploadedAt: candidate.uploadedAt,
+                    uploadedBy: candidate.uploadedBy,
+                    similarityScore: candidate.similarityScore,
+                    details: {
+                      avgSimilarity: candidate.avgSimilarity,
+                      coverage: candidate.coverage,
+                      matchedChunks: candidate.matchedChunks,
+                      totalChunks: candidate.totalChunks,
+                    },
+                  }),
+                ),
+              },
+            },
+            HttpStatus.CONFLICT,
+          );
+        } else {
+          this.logger.log(
+            `PASO 2 - No se encontraron candidatos similares (${similarityResult.status})`,
+            {
+              status: similarityResult.status,
+              fileName: file.originalname,
+              proceedingToStep3: true,
+              optimizationEnabled: preGeneratedChunks.length > 0,
+            },
+          );
+        }
+      } else {
+        this.logger.log(
+          'PASO 2 - OMITIDO: Verificación de similitud deshabilitada',
+          {
+            skipSimilarityCheck: skipSimilarityCheck,
+            forceUpload: forceUpload,
+            fileName: file.originalname,
+            proceedingToStep3: true,
+          },
+        );
+      }
+
+      // PASO 3: Subida normal REUTILIZANDO datos pre-generados (sin conflictos)
+      this.logger.log(
+        'PASO 3 - Procediendo con subida normal del documento...',
+        {
+          fileName: file.originalname,
+          userId: userId,
+          optimizationEnabled: preGeneratedChunks.length > 0,
+          chunksToReuse: preGeneratedChunks.length,
+          embeddingsToReuse: preGeneratedEmbeddings.length,
+          extractedTextLength: extractedText.length,
+        },
+      );
+
+      const document = await this.uploadDocumentUseCase.execute(file, userId, {
+        preGeneratedChunks,
+        preGeneratedEmbeddings,
+        extractedText,
+        reuseGeneratedData: preGeneratedChunks.length > 0,
       });
 
-      return {
-        id: document.id,
+      this.logger.log('PASO 3 - ÉXITO: Documento subido exitosamente', {
+        uploadedDocumentId: document.id,
         fileName: document.fileName,
         originalName: document.originalName,
         mimeType: document.mimeType,
         size: document.size,
-        downloadUrl: document.url,
         uploadedAt: document.uploadedAt,
-      };
+        optimizationUsed: preGeneratedChunks.length > 0,
+        chunksReused: preGeneratedChunks.length,
+        embeddingsReused: preGeneratedEmbeddings.length,
+        extractedTextReused: extractedText.length > 0,
+        uploadFlow: 'normal_upload',
+      });
+
+      this.logger.log('Documento subido exitosamente', {
+        documentId: document.id,
+        fileName: document.fileName,
+        originalName: document.originalName,
+        size: document.size,
+        uploadFlow: 'normal_upload_final_success',
+        optimizationUsed: preGeneratedChunks.length > 0,
+        totalProcessingSteps: 3,
+      });
+
+      return new UnifiedUploadResponseDto(
+        'uploaded',
+        'Documento subido exitosamente',
+        {
+          id: document.id,
+          fileName: document.fileName,
+          originalName: document.originalName,
+          mimeType: document.mimeType,
+          size: document.size,
+          downloadUrl: document.url,
+          uploadedAt: document.uploadedAt,
+        },
+      );
     } catch (error) {
       if (
         error instanceof BadRequestException ||
@@ -291,24 +655,23 @@ export class DocumentsController {
         throw error;
       }
 
-      // Error inesperado
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error(
-        'Unexpected error in uploadDocument',
+        'Unexpected error in unified uploadDocument',
         error instanceof Error ? error : errorMessage,
         {
           fileName: file?.originalname,
           fileSize: file?.size,
-          errorType: 'UPLOAD_ERROR',
+          errorType: 'UNIFIED_UPLOAD_ERROR',
         },
       );
 
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Error interno del servidor al subir archivo',
+          message: 'Error interno del servidor al procesar el archivo',
           error: 'Internal Server Error',
           details: errorMessage,
         },
@@ -548,11 +911,7 @@ export class DocumentsController {
    * Obtiene los chunks de un documento
    */
   @Get(':documentId/chunks')
-  async getDocumentChunks(
-    @Param('documentId') documentId: string,
-    // @Query('limit') limit?: number,
-    // @Query('offset') offset?: number,
-  ) {
+  async getDocumentChunks(@Param('documentId') documentId: string) {
     try {
       if (!documentId) {
         throw new BadRequestException('ID de documento requerido');
@@ -560,7 +919,7 @@ export class DocumentsController {
 
       this.logger.logChunkOperation('retrieve', documentId);
 
-      // Usar el servicio de chunking para obtener chunks con estadísticas
+      // usar el servicio de chunking para obtener chunks con estadísticas
       const result =
         await this.processDocumentChunksUseCase[
           'chunkingService'
@@ -581,9 +940,9 @@ export class DocumentsController {
             id: chunk.id,
             content:
               chunk.content.substring(0, 200) +
-              (chunk.content.length > 200 ? '...' : ''), // Preview
+              (chunk.content.length > 200 ? '...' : ''),
             chunkIndex: chunk.chunkIndex,
-            type: chunk.type, // Usar 'type' no 'chunkType'
+            type: chunk.type,
             contentLength: chunk.content.length,
             metadata: chunk.metadata,
             createdAt: chunk.createdAt,
