@@ -78,8 +78,6 @@ export default function CourseExamsPanel({ courseId }: Props) {
       .finally(() => setLoading(false));
   }, [courseId]);
 
-  // Handlers moved to ExamTable via global store; local versions removed
-
   const Header = (
     <div className="flex items-center justify-between mb-2">
       <Title level={4} style={{ margin: 0 }}>Exámenes de esta materia</Title>
