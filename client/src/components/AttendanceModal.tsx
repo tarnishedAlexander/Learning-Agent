@@ -1,4 +1,5 @@
 import { Modal, Table, Checkbox } from "antd";
+import dayjs from "dayjs";
 import type { ColumnsType } from "antd/es/table";
 import type { StudentInfo } from "../interfaces/studentInterface";
 
@@ -45,7 +46,7 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
 
   return (
     <Modal
-      title="Tomar asistencia"
+      title={`Tomar asistencia - ${dayjs().format("DD/MM/YYYY")}`}
       open={open}
       onCancel={onClose}
       footer={null}

@@ -34,7 +34,7 @@ import UploadButton from "../../components/shared/UploadButton";
 import { processFile } from "../../utils/enrollGroupByFile";
 import type { StudentInfo } from "../../interfaces/studentInterface";
 import CourseExamsPanel from "../courses/CourseExamsPanel";
-import AttendanceModal from "../../components/attendanceModal";
+import AttendanceModal from "../../components/AttendanceModal";
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
