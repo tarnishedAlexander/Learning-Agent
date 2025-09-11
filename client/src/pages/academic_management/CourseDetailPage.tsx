@@ -11,7 +11,6 @@ import {
   BookOutlined,
   BarChartOutlined,
   UserAddOutlined,
-  TeamOutlined,
   CheckSquareOutlined,
 } from "@ant-design/icons";
 import useClasses from "../../hooks/useClasses";
@@ -35,6 +34,7 @@ import UploadButton from "../../components/shared/UploadButton";
 import { processFile } from "../../utils/enrollGroupByFile";
 import type { StudentInfo } from "../../interfaces/studentInterface";
 import CourseExamsPanel from "../courses/CourseExamsPanel";
+import AttendanceModal from "../../components/attendanceModal";
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -79,6 +79,8 @@ export function CourseDetailPage() {
   const [fileName, setFileName] = useState<string>("archivo.xlsx");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
 
   const fetchPeriod = async () => {
     if (!id) return;
@@ -303,6 +305,11 @@ export function CourseDetailPage() {
 
   const studentsColumns = [
     {
+      title: "Código",
+      dataIndex: "code",
+      key: "code",
+    },
+    {
       title: "Nombres",
       dataIndex: "name",
       key: "name",
@@ -312,11 +319,7 @@ export function CourseDetailPage() {
       dataIndex: "lastname",
       key: "lastname",
     },
-    {
-      title: "Código",
-      dataIndex: "code",
-      key: "code",
-    },
+
     {
       title: "Asistencia",
       dataIndex: "asistencia",
@@ -589,10 +592,7 @@ export function CourseDetailPage() {
                         </Button>
                         <UploadButton
                           buttonConfig={{
-                            type: "primary",
                             size: "large",
-                            icon: <TeamOutlined />,
-                            children: "Subir lista de estudiantes",
                           }}
                           onUpload={async (file, onProgress) => {
                             const students = await processFile(
@@ -646,8 +646,7 @@ export function CourseDetailPage() {
                         <Button
                           type="primary"
                           size="large"
-                          //onClick={() => setSingleStudentFormOpen(true)}
-                          //TODO: Abrir modal de asistencia
+                          onClick={() => setAttendanceModalOpen(true)}
                           icon={<CheckSquareOutlined />}
                         >
                           Tomar asistencia
@@ -844,6 +843,12 @@ export function CourseDetailPage() {
           loading={sending}
           onCancel={() => setPreviewModalOpen(false)}
           onConfirm={handleGroupEnrollment}
+        />
+
+        <AttendanceModal
+          open={attendanceModalOpen}
+          onClose={() => setAttendanceModalOpen(false)}
+          //TODO: pasar la lista de estudiantes inscritos
         />
       </div>
     </PageTemplate>
