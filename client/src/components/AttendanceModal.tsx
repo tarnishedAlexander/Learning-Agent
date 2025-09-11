@@ -144,6 +144,7 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
         dataSource={students}
         rowKey={(record) => record.code}
         pagination={false}
+        scroll={{ x: 'max-content' }}
       />
 
       {/* Modal de confirmación - Inspirado en el Componente safetyModal */}
