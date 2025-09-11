@@ -587,18 +587,67 @@ export function CourseDetailPage() {
                         >
                           Añadir Estudiante
                         </Button>
+                        <UploadButton
+                          buttonConfig={{
+                            type: "primary",
+                            size: "large",
+                            icon: <TeamOutlined />,
+                            children: "Subir lista de estudiantes",
+                          }}
+                          onUpload={async (file, onProgress) => {
+                            const students = await processFile(
+                              file,
+                              onProgress
+                            );
+                            return students;
+                          }}
+                          fileConfig={{
+                            accept: ".csv,.xlsx,.xls",
+                            maxSize: 1 * 1024 * 1024,
+                            validationMessage:
+                              "Solo se permiten archivos .xlsx o .csv de hasta 1MB",
+                          }}
+                          processingConfig={{
+                            steps: [
+                              {
+                                key: "upload",
+                                title: "Subir archivo",
+                                description: "Subiendo archivo",
+                              },
+                              {
+                                key: "parse",
+                                title: "Parsear datos",
+                                description: "Procesando información",
+                              },
+                            ],
+                            processingText: "Procesando tabla...",
+                            successText: "Tabla procesada correctamente",
+                          }}
+                          onUploadSuccess={(students) => {
+                            if (Array.isArray(students)) {
+                              setParsedStudents(students);
+                              setFileName("archivo.xlsx");
+                              const seen = new Set<string>();
+                              const dupSet = new Set<string>();
+                              for (const s of students) {
+                                const k = String(s.codigo || "")
+                                  .trim()
+                                  .toLowerCase();
+                                if (!k) continue;
+                                if (seen.has(k)) dupSet.add(String(s.codigo));
+                                else seen.add(k);
+                              }
+                              setDuplicates(Array.from(dupSet));
+                              setPreviewModalOpen(true);
+                            }
+                          }}
+                        />
+
                         <Button
                           type="primary"
                           size="large"
-                          onClick={() => setSingleStudentFormOpen(true)}
-                          icon={<TeamOutlined />}
-                        >
-                          Añadir Estudiantes por documento
-                        </Button>
-                        <Button
-                          type="primary"
-                          size="large"
-                          onClick={() => setSingleStudentFormOpen(true)}
+                          //onClick={() => setSingleStudentFormOpen(true)}
+                          //TODO: Abrir modal de asistencia
                           icon={<CheckSquareOutlined />}
                         >
                           Tomar asistencia
