@@ -42,8 +42,9 @@ export default function Test() {
           : "Próximamente encontrarás cuestionarios y recursos para practicar"
       }
       breadcrumbs={[
-        { label: "Inicio", href: "/" },
-        { label: "Refuerzo", href: "/reinforcement" },
+        { label: "Home", href: "/" },
+        { label: "Clases", href: "/student/classes" },
+        { label: "Refuerzo", href: "/student/classes/:id/reinforcement" },
         { label: "Exámenes" },
       ]}
     >

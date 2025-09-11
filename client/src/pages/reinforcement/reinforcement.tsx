@@ -45,7 +45,11 @@ export function Reinforcement() {
       title="Refuerzo"
       subtitle="Selecciona una categoría para practicar"
       actions={headerActions}
-      breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Refuerzo" }]}
+      breadcrumbs={[
+        { label: "Home", href: "/" }, 
+        { label: "Clases", href: "/student/classes" }, 
+        { label: "Refuerzo" }
+      ]}
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-3">

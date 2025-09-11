@@ -45,7 +45,9 @@ const InterviewChat: React.FC = () => {
     <>
       <PageTemplate
         breadcrumbs={[
-          { label: 'Reforzamiento', href: '/reinforcement' },
+          { label: 'Home', href: '/' },
+          { label: 'Clases', href: '/student/classes' },
+          { label: 'Reforzamiento', href: '/student/classes/:id/reinforcement' },
           { label: 'Entrevista' }
         ]}
         title="Entrevista"
