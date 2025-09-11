@@ -3,7 +3,7 @@ import { CLASSES_REPO, COURSE_REPO } from "../../tokens";
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
-import { ForbiddenError, NotFoundError } from "src/shared/handler/errors";
+import { ForbiddenError, NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class UpdateClassUseCase {

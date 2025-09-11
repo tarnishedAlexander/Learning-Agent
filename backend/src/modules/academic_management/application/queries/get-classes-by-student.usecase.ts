@@ -4,7 +4,7 @@ import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.rep
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetClassesByStudentUseCase {

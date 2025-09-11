@@ -4,7 +4,7 @@ import type { ClassesRepositoryPort } from "../../domain/ports/classes.repositor
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { CourseRepositoryPort } from "../../domain/ports/courses.repository.ports";
 import { Classes } from "../../domain/entities/classes.entity";
-import { ConflictError, ForbiddenError, NotFoundError } from "src/shared/handler/errors";
+import { ConflictError, ForbiddenError, NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class SoftDeleteClassUseCase {
@@ -37,7 +37,7 @@ export class SoftDeleteClassUseCase {
         const pendingEnrollments = enrollments.filter((e)=>e.isActive)
         if (pendingEnrollments.length > 0) {
             this.logger.error(`Class ${objClass.id}-${objClass.name} has pending enrollments`)
-            throw new ConflictError(`Esta clase aun tiene inscripciones pendientes`)
+            throw new ConflictError(`No se pudo eliminar este período. Elimine a los estudiantes inscritos e intente de nuevo.`)
         }
 
         return this.classRepo.softDelete(input.classId)

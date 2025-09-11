@@ -4,7 +4,7 @@ import type { ClassesRepositoryPort } from '../../domain/ports/classes.repositor
 import type { CourseRepositoryPort } from '../../domain/ports/courses.repository.ports';
 import type { ProfessorRepositoryPort } from '../../domain/ports/teacher.repository.ports';
 import { Classes } from '../../domain/entities/classes.entity'
-import { ForbiddenError, NotFoundError } from 'src/shared/handler/errors';
+import { ForbiddenError, NotFoundError } from '../../../../shared/handler/errors';
 
 @Injectable()
 export class CreateClassUseCase {

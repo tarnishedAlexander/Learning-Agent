@@ -2,10 +2,10 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ENROLLMENT_REPO, STUDENT_REPO, USER_REPO, CLASSES_REPO } from "../../tokens";
 import type { EnrollmentRepositoryPort } from "../../domain/ports/enrollment.repository.ports";
 import type { StudentRepositoryPort } from "../../domain/ports/student.repository.ports";
-import type { UserRepositoryPort } from "../../domain/ports/user.repository.ports";
+import type { UserRepositoryPort } from 'src/modules/identity/domain/ports/user.repository.port';
 import type { ClassesRepositoryPort } from "../../domain/ports/classes.repository.ports";
 import { UserInfoDTO } from "../../infrastructure/http/dtos/response.user-info.dto";
-import { NotFoundError } from "src/shared/handler/errors";
+import { NotFoundError } from "../../../../shared/handler/errors";
 
 @Injectable()
 export class GetStudentsByClassUseCase {
@@ -31,6 +31,7 @@ export class GetStudentsByClassUseCase {
     async findStudents(enrollmentIDs: any[]): Promise<UserInfoDTO[]> {
         const students: UserInfoDTO[] = [];
         for (const enrollment of enrollmentIDs) {
+            if (!enrollment.isActive) continue;
             const student = await this.studentRepo.findByUserId(enrollment.studentId);
             if (!student) continue;
 

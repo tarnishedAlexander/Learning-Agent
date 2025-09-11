@@ -1,8 +1,8 @@
-import { Button, Empty, Space, Input } from "antd";
+import { Button, Empty, Space, Input, message } from "antd";
 import PageTemplate from "../../components/PageTemplate";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useCourses from "../../hooks/useCourses";
-import type { Course } from "../../interfaces/courseInterface";
+import type { Course, CreateCourseDTO } from "../../interfaces/courseInterface";
 import { useNavigate } from "react-router-dom";
 import { CreateCourseForm } from "./CreateCourseForm";
 import { PlusOutlined, SolutionOutlined } from "@ant-design/icons";
@@ -21,9 +21,21 @@ export function TeacherCoursePage() {
 
   useEffect(() => {
     fetchUser();
-    if (!user) return
-    fetchCoursesByTeacher(user.id)
   }, [fetchUser]);
+
+  const fetchCourses = useCallback(async () => {
+    if (!user) return
+
+    const res = await fetchCoursesByTeacher(user.id)
+    if (res.state == "error") {
+      message.error(res.message);
+      return
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetchCourses()
+  }, [user, fetchCourses])
 
   useEffect(() => {
     const lower = searchTerm.trim().toLowerCase();
@@ -53,9 +65,9 @@ export function TeacherCoursePage() {
     navigate(`/courses/${id}/periods`);
   };
 
-  const goToExams = (id: string, e: React.MouseEvent) => {
+  const goToExams = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/exams/${id}`);
+    navigate(`/exams/`);
   };
 
   const goToMaterials = (id: string, e: React.MouseEvent) => {
@@ -63,8 +75,17 @@ export function TeacherCoursePage() {
     navigate(`/materials/${id}`);
   };
 
-  const handleAddCourse = (values: any) => {
-    createCourse(values.name);
+  const handleAddCourse = async (values: CreateCourseDTO) => {
+    if (!values) {
+      message.error("No se pueden enviar datos vacíos")
+      return
+    }
+    const res = await createCourse(values.name);
+    if (res.state == "error") {
+      message.error(res.message)
+      return
+    }
+    message.success(res.message)
   };
 
   return (
@@ -76,11 +97,12 @@ export function TeacherCoursePage() {
           breadcrumbs={[{ label: "Home", href: "/" }, { label: "Materias" }]}
         >
           <div
-            className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
             style={{
-              maxWidth: 1200,
-              margin: "0 auto",
-              padding: "24px 24px",
+              maxWidth: '100%',
+              width: '100%',
+              margin: '0 auto',
+              padding: '24px 16px',
+              boxSizing: 'border-box',
             }}
           >
             <CreateCourseForm
@@ -91,7 +113,9 @@ export function TeacherCoursePage() {
             <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 justifyContent: "space-between",
+                gap: 12,
                 marginBottom: 24,
               }}
             >
@@ -101,7 +125,7 @@ export function TeacherCoursePage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   allowClear
-                  style={{ width: 240 }}
+                  style={{ minWidth: 120, maxWidth: 300, width: '100%' }}
                 />
               </Space>
               {user?.roles.includes("docente") && (
@@ -113,35 +137,37 @@ export function TeacherCoursePage() {
             </div>
 
             {filteredCourses.length > 0 ? (
-              <>{filteredCourses.map((course) => (
-                <CustomCard
-                  status="default"
-                  style={{ marginBottom: "16px" }}
-                  onClick={() => goToCourse(course.id)}
-                  key={course.id}
-                >
-                  <CustomCard.Header
-                    icon={<SolutionOutlined />}
-                    title={course.name}
-                  />
-                  <CustomCard.Description>
-                    {`Vea a detalle los periodos que ha dictado en ${course.name}`}
-                  </CustomCard.Description>
-                  <CustomCard.Actions>
-                    <Button
-                      type="primary"
-                      onClick={(e) => goToExams(course.id, e)}
-                    >
-                      Exámenes
-                    </Button>
-                    <Button
-                      onClick={(e) => goToMaterials(course.id, e)}
-                    >
-                      Materiales
-                    </Button>
-                  </CustomCard.Actions>
-                </CustomCard>
-              ))}</>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+                {filteredCourses.map((course) => (
+                  <CustomCard
+                    status="default"
+                    style={{ marginBottom: "16px" }}
+                    onClick={() => goToCourse(course.id)}
+                    key={course.id}
+                  >
+                    <CustomCard.Header
+                      icon={<SolutionOutlined />}
+                      title={course.name}
+                    />
+                    <CustomCard.Description>
+                      {`Vea a detalle los periodos que ha dictado en ${course.name}`}
+                    </CustomCard.Description>
+                    <CustomCard.Actions>
+                      <Button
+                        type="primary"
+                        onClick={(e) => goToExams(e)}
+                      >
+                        Exámenes
+                      </Button>
+                      <Button
+                        onClick={(e) => goToMaterials(course.id, e)}
+                      >
+                        Materiales
+                      </Button>
+                    </CustomCard.Actions>
+                  </CustomCard>
+                ))}
+              </div>
             ) : (
               <Empty description="No hay materías todavía." />
             )}

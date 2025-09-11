@@ -354,4 +354,53 @@ export class S3StorageAdapter implements DocumentStoragePort {
       throw new Error(`Error downloading file from MinIO: ${error.message}`);
     }
   }
+
+  /**
+   * verifica si un archivo existe en el storage
+   * @param s3Key clave s3 del archivo
+   * @returns true si el archivo existe
+   */
+  async exists(s3Key: string): Promise<boolean> {
+    try {
+      const headCommand = new HeadObjectCommand({
+        Bucket: this.bucketName,
+        Key: s3Key,
+      });
+
+      await this.s3Client.send(headCommand);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * mueve un archivo de una ubicación a otra en el storage
+   * @param sourceKey clave s3 de origen
+   * @param destinationKey clave s3 de destino
+   */
+  async moveFile(sourceKey: string, destinationKey: string): Promise<void> {
+    try {
+      // copiar archivo a la nueva ubicación
+      const copyCommand = new CopyObjectCommand({
+        Bucket: this.bucketName,
+        CopySource: `${this.bucketName}/${sourceKey}`,
+        Key: destinationKey,
+      });
+
+      await this.s3Client.send(copyCommand);
+
+      // eliminar archivo original
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: sourceKey,
+      });
+
+      await this.s3Client.send(deleteCommand);
+    } catch (error) {
+      throw new Error(
+        `error moviendo archivo de ${sourceKey} a ${destinationKey}: ${error.message}`,
+      );
+    }
+  }
 }
