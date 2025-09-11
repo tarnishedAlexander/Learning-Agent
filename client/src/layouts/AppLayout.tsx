@@ -57,9 +57,9 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
 
   const studentOnly: NavItem[] = [
     {
-      key: "/classes",
+      key: "/student/classes",
       icon: <BookOutlined />,
-      label: <Link to="/classes">Clases</Link>,
+      label: <Link to="student/classes">Clases</Link>,
     },
   ];
 

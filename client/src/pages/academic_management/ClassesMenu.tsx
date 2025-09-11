@@ -52,7 +52,7 @@ export function ClassMenu() {
   }, [searchTerm, classes]);
 
   const goToReinforcement = (id: string) => {
-    navigate(`/reinforcement/${id}`)
+    navigate(`${id}/reinforcement`);
   }
 
   return (

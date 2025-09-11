@@ -7,8 +7,10 @@ import { ChatModal } from "../../components/reinforcement/ChatModal";
 import { useChatLogic } from "../../hooks/useChatLogic";
 import { ChatFloatButton } from "../../components/reinforcement/ChatFloatButton";
 import PageTemplate from "../../components/PageTemplate";
+import { useNavigate } from "react-router-dom";
 
 export function Reinforcement() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isChatOpen, handleChatClick, setIsChatOpen } = useChatLogic();
 
@@ -31,7 +33,7 @@ export function Reinforcement() {
       </Button>
       <Button
         icon={<FileTextOutlined />}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => navigate('documents')}
         size="middle"
         className="!bg-[#1A2A80] !text-white !border-none h-9 rounded-lg font-medium px-4 shadow-md transition-all duration-200 ease-in-out hover:!bg-[#3B38A0] hover:shadow-xl hover:-translate-y-1"
       >

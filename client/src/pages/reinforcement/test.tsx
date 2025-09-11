@@ -43,7 +43,7 @@ export default function Test() {
       }
       breadcrumbs={[
         { label: "Inicio", href: "/" },
-        { label: "Refuerzo", href: "/reinforcement" },
+        { label: "Refuerzo", href: "../reinforcement" },
         { label: "Exámenes" },
       ]}
     >
