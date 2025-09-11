@@ -6,7 +6,7 @@ import type { StudentInfo } from "../interfaces/studentInterface";
 interface AttendanceModalProps {
   open: boolean;
   onClose: () => void;
-  students?: StudentInfo[];
+  students: StudentInfo[];
 }
 
 const AttendanceModal: React.FC<AttendanceModalProps> = ({

@@ -4,7 +4,7 @@ import { useUserStore } from "../store/userStore";
 import { studentService } from "../services/student.service";
 
 const useStudents = () => {
-    const [students, setStudents] = useState<StudentInfo>();
+    const [students, setStudents] = useState<StudentInfo[]>([]);
     const user = useUserStore((s) => s.user);
     const fetchUser = useUserStore((s) => s.fetchUser);
 
@@ -32,7 +32,7 @@ const useStudents = () => {
                 if (firstLastname > secondLastname) return 1;
                 return 0;
             })
-            
+
             setStudents(students);
         }
         return {

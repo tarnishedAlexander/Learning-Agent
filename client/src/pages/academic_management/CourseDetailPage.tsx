@@ -848,7 +848,7 @@ export function CourseDetailPage() {
         <AttendanceModal
           open={attendanceModalOpen}
           onClose={() => setAttendanceModalOpen(false)}
-          //TODO: pasar la lista de estudiantes inscritos
+          students={students ? students : []}
         />
       </div>
     </PageTemplate>
