@@ -1,4 +1,4 @@
-import { Modal, Table, Checkbox } from "antd";
+import { Modal, Table, Checkbox, Button } from "antd";
 import dayjs from "dayjs";
 import type { ColumnsType } from "antd/es/table";
 import type { StudentInfo } from "../interfaces/studentInterface";
@@ -44,13 +44,22 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     },
   ];
 
+  const handleCancel = () => {
+    onClose();
+  }
+
   return (
     <Modal
       title={`Tomar asistencia - ${dayjs().format("DD/MM/YYYY")}`}
       open={open}
       onCancel={onClose}
-      footer={null}
-      width={800}
+      footer={[
+        <Button key="cancel" danger onClick={handleCancel}>
+          Cancelar
+        </Button>
+      ]}
+      width={window.innerWidth < 600 ? '90%' : '70%'}
+      style={{ maxWidth: '90vw' }}
     >
       <Table
         columns={columns}
