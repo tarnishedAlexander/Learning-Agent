@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { Card, message, Row, Col, Grid, theme as antTheme } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
+import { useParams, useLocation } from "react-router-dom";
 import PageTemplate from "../../components/PageTemplate";
 import ChunkedUploadButton from "../../components/shared/ChunkedUploadButton";
 import { DocumentTable } from "../../components/documents/DocumentTable";
@@ -22,6 +23,13 @@ const UploadDocumentPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
   
+  // Navigation hooks
+  const { id } = useParams();
+  const location = useLocation();
+  
+  // Check if we're in the student reinforcement context
+  const isInReinforcementContext = location.pathname.includes('/student/classes/') && location.pathname.includes('/reinforcement/documents');
+  
   // Theme
   const theme = useThemeStore((state: { theme: string }) => state.theme);
   const isDark = theme === "dark";
@@ -42,6 +50,19 @@ const UploadDocumentPage: React.FC = () => {
   const contentMaxWidth = (previewSidebarVisible || dataSidebarVisible) && !isSmallScreen 
     ? '50%'
     : '100%';
+
+  // Create dynamic breadcrumbs based on context
+  const getBreadcrumbs = () => {
+    if (isInReinforcementContext && id) {
+      return [
+        { label: "Inicio", href: "/" },
+        { label: "Clases", href: "/student/classes" },
+        { label: "Refuerzo", href: `/student/classes/${id}/reinforcement` },
+        { label: "Documentos" }
+      ];
+    }
+    return [{ label: "Inicio", href: "/" }, { label: "Documentos" }];
+  };
 
   const pageTitle = isSmallScreen ? "Documentos" : "Documentos Académicos";
   const containerPadding = isSmallScreen ? "16px" : "24px";
@@ -142,7 +163,7 @@ const UploadDocumentPage: React.FC = () => {
       <PageTemplate
         title={pageTitle}
         subtitle="Sistema de carga y administración de material educativo en formato PDF"
-        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Documentos" }]}>
+        breadcrumbs={getBreadcrumbs()}>
         <div style={{
           padding: containerPadding,
           width: "100%",

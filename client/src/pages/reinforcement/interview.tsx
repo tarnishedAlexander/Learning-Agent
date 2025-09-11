@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Modal } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import PageTemplate from '../../components/PageTemplate';
 import useInterviewFlow from '../../hooks/usInterviewFlow';
@@ -12,6 +12,7 @@ import { useThemeStore } from '../../store/themeStore';
 
 const InterviewChat: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { theme } = useThemeStore();
   const {
     currentType,
@@ -45,7 +46,9 @@ const InterviewChat: React.FC = () => {
     <>
       <PageTemplate
         breadcrumbs={[
-          { label: 'Reforzamiento', href: '../reinforcement' },
+          { label: 'Inicio', href: '/' },
+          { label: 'Clases', href: '/student/classes' },
+          { label: 'Reforzamiento', href: `/student/classes/${id}/reinforcement` },
           { label: 'Entrevista' }
         ]}
         title="Entrevista"

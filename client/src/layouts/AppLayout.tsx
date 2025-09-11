@@ -28,11 +28,6 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
   const common: NavItem[] = [
     { key: "/", icon: <HomeOutlined />, label: <Link to="/">Home</Link> },
     {
-      key: "/document",
-      icon: <CloudUploadOutlined />,
-      label: <Link to="/document">Documentos</Link>,
-    },
-    {
       key: "/settings",
       icon: <SettingOutlined />,
       label: <Link to="/settings">Settings</Link>,
