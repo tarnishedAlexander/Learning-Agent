@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PageTemplate from "../../components/PageTemplate";
 import TestModal from "../../components/tests/TestModal"; 
 import { useStudentTest } from "../../hooks/useStudentTest";
@@ -9,6 +9,7 @@ import TestRunner from "../../components/tests/TestRunner";
 
 export default function Test() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { isTestModalOpen, closeTestModal, startExam, questionCount } = useStudentTest();
   const [isExamStarted, setIsExamStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(1);
@@ -43,7 +44,8 @@ export default function Test() {
       }
       breadcrumbs={[
         { label: "Inicio", href: "/" },
-        { label: "Refuerzo", href: "/reinforcement" },
+        { label: "Clases", href: "/student/classes" },
+        { label: "Refuerzo", href: `/student/classes/${id}/reinforcement` },
         { label: "Exámenes" },
       ]}
     >

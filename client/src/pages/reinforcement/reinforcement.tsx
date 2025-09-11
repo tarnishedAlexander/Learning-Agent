@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Modal, Space, Button } from "antd";
-import { BookOutlined, FileTextOutlined } from "@ant-design/icons";
+import { BookOutlined } from "@ant-design/icons";
 import { ProgressCard } from "../../components/reinforcement/ProgressCard";
 import { CourseCards } from "../../components/reinforcement/CourseCards";
 import { ChatModal } from "../../components/reinforcement/ChatModal";
@@ -29,14 +29,6 @@ export function Reinforcement() {
       >
         Sílabo
       </Button>
-      <Button
-        icon={<FileTextOutlined />}
-        onClick={() => setIsModalOpen(true)}
-        size="middle"
-        className="!bg-[#1A2A80] !text-white !border-none h-9 rounded-lg font-medium px-4 shadow-md transition-all duration-200 ease-in-out hover:!bg-[#3B38A0] hover:shadow-xl hover:-translate-y-1"
-      >
-        Documentos
-      </Button>
     </Space>
   );
 
@@ -45,7 +37,11 @@ export function Reinforcement() {
       title="Refuerzo"
       subtitle="Selecciona una categoría para practicar"
       actions={headerActions}
-      breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Refuerzo" }]}
+      breadcrumbs={[
+        { label: "Inicio", href: "/" }, 
+        { label: "Clases", href: "/student/classes" }, 
+        { label: "Refuerzo" }
+      ]}
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-3">
