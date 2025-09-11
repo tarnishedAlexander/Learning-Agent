@@ -211,7 +211,7 @@ export function StudentsByClass() {
           <Button
             type="primary"
             icon={<FolderOutlined />}
-            onClick={() => navigate(`/curso/${id}/documents`)}
+            onClick={() => navigate(`documents`)}
             style={{ margin: 4, width: 150 }}
           >
             Documentos

@@ -392,7 +392,7 @@ export function CourseDetailPage() {
           <Button
             type="primary"
             icon={<FolderOutlined />}
-            onClick={() => navigate(`/curso/${id}/documents`)}
+            onClick={() => navigate(`documents`)}
           >
             Documentos
           </Button>
@@ -609,7 +609,7 @@ export function CourseDetailPage() {
                 <Empty description="Funcionalidad de materiales en desarrollo">
                   <Button
                     type="primary"
-                    onClick={() => navigate(`/curso/${id}/documents`)}
+                    onClick={() => navigate(`documents`)}
                     style={{ marginTop: "16px" }}
                   >
                     Ir a Documentos

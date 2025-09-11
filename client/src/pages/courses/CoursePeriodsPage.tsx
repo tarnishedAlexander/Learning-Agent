@@ -83,7 +83,7 @@ export function CoursePeriodsPage() {
   };
 
   const goToPeriod = (periodId: string) => {
-    navigate(`/courses/${courseId}/periods/${periodId}`);
+    navigate(`${periodId}`);
   };
 
   const handleModalCancel = () => {
@@ -121,7 +121,7 @@ export function CoursePeriodsPage() {
       >
         <div style={{ textAlign: "center", padding: "50px" }}>
           <Empty description="Curso no encontrado" />
-          <Button type="primary" onClick={() => navigate("/courses")}>
+          <Button type="primary" onClick={() => navigate(-1)}>
             Volver a Materias
           </Button>
         </div>

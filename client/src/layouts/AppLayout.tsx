@@ -44,14 +44,14 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
 
   const professorOnly: NavItem[] = [
     {
-      key: "/courses",
+      key: "/professor/courses",
       icon: <SolutionOutlined />,
-      label: <Link to="/courses">Materias</Link>,
+      label: <Link to="/professor/courses">Materias</Link>,
     },
     {
-      key: "/exams/create",
+      key: "/professor/exams/create",
       icon: <FileAddOutlined />,
-      label: <Link to="/exams/create">Crear Examen</Link>,
+      label: <Link to="/professor/exams/create">Crear Examen</Link>,
     },
   ];
 
