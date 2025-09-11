@@ -38,7 +38,7 @@ export function Reinforcement() {
       subtitle="Selecciona una categoría para practicar"
       actions={headerActions}
       breadcrumbs={[
-        { label: "Inicio", href: "/" }, 
+        { label: "Home", href: "/" }, 
         { label: "Clases", href: "/student/classes" }, 
         { label: "Refuerzo" }
       ]}

@@ -346,7 +346,11 @@ export function CourseDetailPage() {
       <PageTemplate
         title="Cargando..."
         subtitle="Cargando información del curso"
-        breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Materias", href: "/professor/courses" },
+          { label: "Cargando..." }
+        ]}
       >
         <div style={{ padding: "2rem", textAlign: "center" }}>
           <Text>Cargando datos del curso...</Text>
@@ -362,13 +366,14 @@ export function CourseDetailPage() {
         subtitle="El curso solicitado no existe"
         breadcrumbs={[
           { label: "Home", href: "/" },
-          { label: "Clases", href: "/classes" },
+          { label: "Materias", href: "/professor/courses" },
+          { label: "Curso no encontrado" },
         ]}
       >
         <div style={{ padding: "2rem", textAlign: "center" }}>
           <Empty description="Curso no encontrado" />
-          <Button type="primary" onClick={() => navigate("/classes")}>
-            Volver a Clases
+          <Button type="primary" onClick={() => navigate("/professor/courses")}>
+            Volver a Materias
           </Button>
         </div>
       </PageTemplate>
@@ -383,8 +388,8 @@ export function CourseDetailPage() {
       subtitle={dayjs().format("DD [de] MMMM [de] YYYY")}
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Materias", href: "/courses" },
-        { label: actualCourse?.name || "Materia", href: `/courses/${courseId}/periods` },
+        { label: "Materias", href: "/professor/courses" },
+        { label: actualCourse?.name || "Materia", href: `/professor/courses/${courseId}/periods` },
         { label: actualClass.name },
       ]}
       actions={
@@ -392,7 +397,7 @@ export function CourseDetailPage() {
           <Button
             type="primary"
             icon={<FolderOutlined />}
-            onClick={() => navigate(`/curso/${id}/documents`)}
+            onClick={() => navigate(`documents`)}
           >
             Documentos
           </Button>
@@ -609,7 +614,7 @@ export function CourseDetailPage() {
                 <Empty description="Funcionalidad de materiales en desarrollo">
                   <Button
                     type="primary"
-                    onClick={() => navigate(`/curso/${id}/documents`)}
+                    onClick={() => navigate(`documents`)}
                     style={{ marginTop: "16px" }}
                   >
                     Ir a Documentos

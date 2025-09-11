@@ -34,13 +34,16 @@ export const AppRoutes = () => {
             <Route path="settings" element={<SettingsPage />} />
 
             {/* Professor */}
-            <Route element={<RoleRoute allowed={["docente"]} />}> 
-              <Route path="/courses" element={<TeacherCoursePage />} />
-              <Route path="/courses/:courseId/periods" element={<CoursePeriodsPage />} />
-              <Route path="/exams/create" element={<ExamsCreatePage />} />
-              <Route path="/exams" element={<ExamManagementPage />} />
-              <Route path="/classes/:id/students" element={<StudentsByClass />} />
-              <Route path="/courses/:courseId/periods/:id" element={<CourseDetailPage />} />
+            <Route path="/professor" element={<RoleRoute allowed={["docente"]} />}> 
+              <Route path="courses" element={<TeacherCoursePage />} />
+              <Route path="courses/:courseId/documents" element={<UploadDocumentPage />} />
+              <Route path="courses/:courseId/exams" element={<ExamManagementPage />} />
+              <Route path="courses/:courseId/periods" element={<CoursePeriodsPage />} />
+              <Route path="courses/:courseId/periods/:id" element={<CourseDetailPage />} />
+              <Route path="courses/:courseId/periods/:id/documents" element={<UploadDocumentPage />} />
+              <Route path="courses/:courseId/students" element={<StudentsByClass />} />
+              <Route path="courses/:courseId/students/documents" element={<UploadDocumentPage />} />
+              <Route path="exams/create" element={<ExamsCreatePage />} />
             </Route>
 
             {/* Students */}
@@ -51,12 +54,11 @@ export const AppRoutes = () => {
               <Route path="classes/:id/reinforcement/interview" element= {<Interview />} />
               <Route path="classes/:id/reinforcement/documents" element= {<UploadDocumentPage  />}  />
             </Route>
-
-            <Route path="/document" element={<UploadDocumentPage />} />
+ 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
       </Routes>
     </BrowserRouter>
   );
-};
+}; 
