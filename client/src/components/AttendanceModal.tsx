@@ -1,8 +1,10 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Modal, Table, Checkbox, Button } from "antd";
-import dayjs from "dayjs";
+import { CalendarOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+
 import type { StudentInfo } from "../interfaces/studentInterface";
-import { useCallback, useEffect, useState } from "react";
 
 interface AttendanceModalProps {
   open: boolean;
@@ -16,6 +18,12 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
   students = [],
 }) => {
   const [studentMap, setStudentMap] = useState<Map<string, boolean>>(new Map())
+
+  //TODO - reemplazar any con la interfaz que se está creando en la US003
+  const [attendanceData, setAttendanceData] = useState<any[]>();
+  const [absentData, setAbsentData] = useState<any[]>();
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   const prepareData = useCallback(() => {
     const dataMap: Map<string, boolean> = new Map();
@@ -37,6 +45,14 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     });
     setStudentMap(newMap);
   };
+
+  const studentInfoMap = useMemo(() => {
+    const map = new Map<string, StudentInfo>();
+    students.forEach(student => {
+      map.set(student.userId, student);
+    });
+    return map;
+  }, [students]);
 
   const columns: ColumnsType<StudentInfo> = [
     {
@@ -76,8 +92,13 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
         studentId,
         isPresent,
       }));
-    //TODO preparar la segunda pantalla del modal y luego el envío de datos al backend
-    console.log("Datos a enviar:", attendanceRows)
+
+    setAttendanceData(attendanceRows);
+
+    const absences = attendanceRows.filter((a) => !a.isPresent)
+    setAbsentData(absences)
+
+    setShowConfirmModal(true)
   }
 
   const handleCancel = () => {
@@ -85,11 +106,28 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     onClose();
   }
 
+  const handleConfirmation = () => {
+    //TODO enviar los datos al backend - US003
+    console.log(attendanceData)
+  }
+
+  const handleConfirmationCancel = () => {
+    setShowConfirmModal(false)
+  }
+
   return (
     <Modal
-      title={`Tomar asistencia - ${dayjs().format("DD/MM/YYYY")}`}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: '16px', marginBottom: '16px' }}>
+          <CalendarOutlined
+            style={{ marginRight: '8px', fontSize: '20px' }}
+          />
+          {`Tomar asistencia - ${dayjs().format("DD/MM/YYYY")}`}
+        </div>
+      }
       open={open}
       onCancel={handleCancel}
+      maskClosable={false}
       footer={[
         <Button key="cancel" danger onClick={handleCancel}>
           Cancelar
@@ -107,6 +145,77 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
         rowKey={(record) => record.code}
         pagination={false}
       />
+
+      {/* Modal de confirmación - Inspirado en el Componente safetyModal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <CheckCircleOutlined
+              style={{ marginRight: '8px', fontSize: '20px', color: '#52c41a' }}
+            />
+            Confirmar asistencia
+          </div>
+        }
+        open={showConfirmModal}
+        onCancel={handleConfirmationCancel}
+        footer={[
+          <Button key="cancel" danger onClick={handleConfirmationCancel}>
+            Cancelar
+          </Button>,
+          <Button type="primary" onClick={handleConfirmation}>
+            Guardar asistencia
+          </Button>
+        ]}
+        width={'35%'}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            fontSize: '48px',
+            marginBottom: '16px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <CalendarOutlined style={{ fontSize: '48px' }} />
+          </div>
+
+          <p style={{
+            marginBottom: '16px',
+            fontSize: '16px',
+            lineHeight: '1.5'
+          }}>
+            Confirme la información antes de guardarla:
+          </p>
+
+          <div style={{
+            backgroundColor: '#fff2e8',
+            border: '1px solid #ffcc7a',
+            borderRadius: '8px',
+            padding: '16px',
+            marginTop: '16px',
+            textAlign: 'left'
+          }}>
+            {absentData && absentData?.length > 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                <div style={{ color: '#d46b08' }}>
+                  Los siguientes estudiantes se encuentran Ausentes:
+                  {absentData.map((a) => (
+                    <div key={a.studentId}>
+                      - {studentInfoMap.get(a.studentId)?.name} {studentInfoMap.get(a.studentId)?.lastname}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                <div style={{ color: '#d46b08' }}>
+                  Todos los estudiantes asistieron
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
     </Modal>
   );
 };
