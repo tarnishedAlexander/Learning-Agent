@@ -61,7 +61,7 @@ export function ClassMenu() {
         <PageTemplate
           title="Clases"
           subtitle="Consulta a detalle información acerca de las clases en las que te encuentras inscrito"
-          breadcrumbs={[{ label: "Home", href: "/" }, { label: "Clases" }]}
+          breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Clases" }]}
         >
           <div
             className="w-full lg:max-w-6xl lg:mx-auto space-y-4 sm:space-y-6"
