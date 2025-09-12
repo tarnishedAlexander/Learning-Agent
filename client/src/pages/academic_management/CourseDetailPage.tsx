@@ -472,13 +472,7 @@ export function CourseDetailPage() {
               key="general"
             >
               <div style={{ padding: "32px" }}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "24px",
-                  }}
-                >
+                <div className="grid grid-cols-1 min-[1000px]:grid-cols-2 gap-6">
                   <div>
                     <Text strong style={{ fontSize: "14px" }}>
                       Nombre del curso:
