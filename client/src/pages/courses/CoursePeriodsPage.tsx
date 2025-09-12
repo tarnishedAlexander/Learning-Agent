@@ -143,9 +143,11 @@ export function CoursePeriodsPage() {
         >
           <div
             style={{
-              maxWidth: 1200,
-              margin: "0 auto",
-              padding: "24px",
+              maxWidth: '100%',
+              width: '100%',
+              margin: '0 auto',
+              padding: '24px 16px',
+              boxSizing: 'border-box',
             }}
           >
             {/* Header con búsqueda y botón crear */}
@@ -166,8 +168,10 @@ export function CoursePeriodsPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   allowClear
                   style={{
-                    width: 240,
-                    borderRadius: 8
+                    minWidth: 120,
+                    maxWidth: 300,
+                    width: '100%',
+                    borderRadius: 8,
                   }}
                   className="placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
