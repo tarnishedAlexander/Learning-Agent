@@ -161,7 +161,7 @@ export function CoursePeriodsPage() {
             >
               <div>
                 <Input
-                  placeholder="Buscar período..."
+                  placeholder="Buscar período"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   allowClear
@@ -169,6 +169,7 @@ export function CoursePeriodsPage() {
                     width: 240,
                     borderRadius: 8
                   }}
+                  className="placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
               {user?.roles.includes("docente") && (
