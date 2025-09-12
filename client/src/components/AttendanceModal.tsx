@@ -59,20 +59,28 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
       title: "Código",
       dataIndex: "code",
       key: "code",
+      width: 100,
+      ellipsis: true,
     },
     {
       title: "Nombres",
       dataIndex: "name",
       key: "name",
+      width: 160,
+      ellipsis: true,
     },
     {
       title: "Apellidos",
       dataIndex: "lastname",
       key: "lastname",
+      width: 180,
+      ellipsis: true,
     },
     {
       title: "Asistencia",
       key: "attendance",
+      width: 120,
+      align: 'center',
       render: (_, record) => (
         <Checkbox
           checked={studentMap.get(record.userId) || false}
@@ -115,6 +123,8 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
     setShowConfirmModal(false)
   }
 
+  const tableScrollY = Math.max(260, Math.floor(window.innerHeight * 0.45));
+
   return (
     <Modal
       title={
@@ -128,6 +138,7 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
       open={open}
       onCancel={handleCancel}
       maskClosable={false}
+      centered
       footer={[
         <Button key="cancel" danger onClick={handleCancel}>
           Cancelar
@@ -138,13 +149,19 @@ const AttendanceModal: React.FC<AttendanceModalProps> = ({
       ]}
       width={window.innerWidth < 600 ? '90%' : '70%'}
       style={{ maxWidth: '90vw' }}
+      styles={{
+        body: {
+          maxHeight: 'calc(100vh - 220px)',
+          overflowY: 'auto',
+        },
+      }}
     >
       <Table
         columns={columns}
         dataSource={students}
         rowKey={(record) => record.code}
         pagination={false}
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: 'max-content', y: tableScrollY }}
       />
 
       {/* Modal de confirmación - Inspirado en el Componente safetyModal */}
