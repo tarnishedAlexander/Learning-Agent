@@ -17,7 +17,8 @@ export default function GlobalScrollbar() {
 
   html,body{
     background: ${token.colorBgBase};
-    scrollbar-gutter: stable both-edges;
+    /* Avoid reserving extra space on sides so sidebars don't look wider */
+    scrollbar-gutter: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--scroll-thumb) var(--scroll-track-global);
   }
