@@ -45,7 +45,7 @@ export default function GlobalScrollbar() {
 
   .pantalla-scroll{
     overflow: auto;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--scroll-thumb) var(--scroll-track-local);
   }
