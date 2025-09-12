@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import type { StudentInfo } from "../interfaces/studentInterface"
 import { useUserStore } from "../store/userStore";
 import { studentService } from "../services/student.service";
@@ -18,7 +18,16 @@ const useStudents = () => {
     }, [user]);
 
     //Endpoints GET
-    const fetchStudentsByClass = async (classId: string) => {
+    const loadingRef = useRef<string | null>(null);
+
+    const fetchStudentsByClass = useCallback(async (classId: string) => {
+        if (!classId) return { state: "error", message: "classId inválido" } as const;
+
+        if (loadingRef.current === classId) {
+            return { state: "success", message: "Petición en curso" } as const;
+        }
+        loadingRef.current = classId;
+
         const res = await studentService.getStudentsByClassId(classId);
         const success = res?.code == 200
         if (success) {
@@ -35,11 +44,12 @@ const useStudents = () => {
 
             setStudents(students);
         }
+        loadingRef.current = null;
         return {
             state: success ? "success" : "error",
             message: success ? "Estudiantes recuperados" : res?.error
         }
-    }
+    }, [])
 
     return {
         students,

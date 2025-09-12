@@ -117,7 +117,7 @@ export function CourseDetailPage() {
     if (res.state === "error") {
       message.error(res.message);
     }
-  }, [id]);
+  }, [id, fetchStudentsByClass]);
 
   useEffect(() => {
     const preparePeriods = async () => {
