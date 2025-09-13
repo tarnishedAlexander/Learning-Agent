@@ -9,7 +9,6 @@ import ForgotPasswordPage from "../pages/ForgotPassword";
 import ExamsCreatePage from "../pages/exams/ExamCreatePage";
 import ExamManagementPage from "../pages/exams/ExamManagementPage";
 import UploadDocumentPage from "../pages/documents/UploadDocumentPage";
-import UploadDocumentPage from "../pages/documents/UploadDocumentPage";
 import { CourseDetailPage } from "../pages/academic_management/CourseDetailPage";
 import PublicRoute from "./PublicRoute";
 import PrivateRoute from "./PrivateRoute";
@@ -45,14 +44,15 @@ export const AppRoutes = () => {
             </Route>
 
             {/* Students */}
-            <Route element={<RoleRoute allowed={["estudiante"]} />}> 
-              <Route path="/classes" element={<ClassMenu />} />
-              <Route path="/reinforcement" element={<Reinforcement />} />
-              <Route path="/test" element={<Test/>} />
-              <Route path="/interview" element={<Interview />} />
+              <Route path="/student" element= {<RoleRoute allowed={["estudiante"]} />}> 
+              <Route path="classes" element= {<ClassMenu />} />
+              <Route path="classes/:id/reinforcement" element= {<Reinforcement />} />
+              <Route path="classes/:id/reinforcement/test" element= {<Test />} />
+              <Route path="classes/:id/reinforcement/interview" element= {<Interview />} />
+              <Route path="classes/:id/reinforcement/documents" element= {<UploadDocumentPage  />}  />
             </Route>
 
-            <Route path="/upload-pdf" element={<UploadPdfPage />} />
+            <Route path="/document" element={<UploadDocumentPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
