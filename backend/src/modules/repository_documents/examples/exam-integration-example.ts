@@ -5,7 +5,7 @@
  * with the exam generation module to provide context-aware question generation.
  */
 
-import { IntelligentRoutingService } from '../application/services/intelligent-routing.service';
+import { IntelligentRoutingService } from '../domain/services/intelligent-routing.service';
 
 // Mock implementations for demonstration
 class MockCommunityRepository {

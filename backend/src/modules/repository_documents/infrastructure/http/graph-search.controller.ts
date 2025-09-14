@@ -19,12 +19,12 @@ import {
   QueryByCommunityUseCase,
   QueryByCommunityCommand,
   CommunityQueryResult,
-} from '../use-cases/query-by-community.use-case';
+} from '../../application/use-cases/query-by-community.use-case';
 import {
   ExtractGraphDataUseCase,
   ExtractGraphDataCommand,
   GraphExtractionResult,
-} from '../use-cases/extract-graph-data.use-case';
+} from '../../application/use-cases/extract-graph-data.use-case';
 import type { CommunityRepository } from '../../domain/repositories/community.repository';
 import type { EntityRepository } from '../../domain/repositories/entity.repository';
 import type { RelationshipRepository } from '../../domain/repositories/relationship.repository';
@@ -32,69 +32,11 @@ import type { GraphQueryRepository } from '../../domain/repositories/graph-query
 import type { EntityType } from '../../domain/entities/entity.entity';
 import type { RelationshipType } from '../../domain/entities/relationship.entity';
 import type { Entity as DomainEntity } from '../../domain/entities/entity.entity';
-
-// DTOs
-export class GraphSearchRequestDto {
-  query: string;
-  communityIds?: string[];
-  maxResults?: number;
-  includeRelatedConcepts?: boolean;
-  maxHops?: number;
-  confidenceThreshold?: number;
-  entityTypes?: string[];
-  relationshipTypes?: string[];
-  includeSubgraph?: boolean;
-}
-
-export class ExtractGraphDataRequestDto {
-  documentId: string;
-  extractedText: string;
-  chunks: DocumentChunkDto[];
-  options?: GraphExtractionOptionsDto;
-}
-
-export class DocumentChunkDto {
-  id: string;
-  content: string;
-  chunkIndex: number;
-  startPosition: number;
-  endPosition: number;
-  pageNumber?: number;
-}
-
-export class GraphExtractionOptionsDto {
-  entityExtractionOptions?: {
-    enabledTypes?: string[];
-    confidenceThreshold?: number;
-    maxEntitiesPerChunk?: number;
-    domainSpecific?: string;
-  };
-  relationshipExtractionOptions?: {
-    enabledTypes?: string[];
-    confidenceThreshold?: number;
-    maxDistance?: number;
-    useSyntacticPatterns?: boolean;
-  };
-  communityDetectionOptions?: {
-    algorithm?: 'leiden' | 'louvain' | 'label_propagation';
-    minCommunitySize?: number;
-    maxCommunitySize?: number;
-  };
-  skipCommunityDetection?: boolean;
-}
-
-export class CommunityStatsDto {
-  totalCommunities: number;
-  totalEntities: number;
-  totalRelationships: number;
-  averageEntitiesPerCommunity: number;
-  averageRelationshipsPerCommunity: number;
-  topCommunitiesBySize: Array<{
-    id: string;
-    name: string;
-    size: number;
-  }>;
-}
+import {
+  GraphSearchRequestDto,
+  ExtractGraphDataRequestDto,
+  CommunityStatsDto,
+} from './dtos/graph-search.dto';
 
 @ApiTags('Graph Search')
 @Controller('graph-search')

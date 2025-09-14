@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { CommunityRepository } from '../../domain/repositories/community.repository';
-import type { EntityRepository } from '../../domain/repositories/entity.repository';
+import type { CommunityRepository } from '../repositories/community.repository';
+import type { EntityRepository } from '../repositories/entity.repository';
 import type {
   GraphQueryRepository,
   CommunityMatch,
   TopicSubgraph,
-} from '../../domain/repositories/graph-query.repository';
-import { Community } from '../../domain/entities/community.entity';
-import { Entity } from '../../domain/entities/entity.entity';
+} from '../repositories/graph-query.repository';
+import { Community } from '../entities/community.entity';
+import { Entity } from '../entities/entity.entity';
 
 export interface QueryRoutingRequest {
   query: string;
@@ -62,7 +62,7 @@ export class IntelligentRoutingService {
     const startTime = Date.now();
 
     try {
-      // Step 1: Preprocess and analyze the query
+      // Preprocess and analyze the query
       const processedQuery = await this.preprocessQuery(
         request.query,
         request.context,
@@ -72,28 +72,28 @@ export class IntelligentRoutingService {
         request.context,
       );
 
-      // Step 2: Find relevant communities
+      // Find relevant communities
       const relevantCommunities = await this.findRelevantCommunities(
         processedQuery,
         request.options,
         request.context,
       );
 
-      // Step 3: Select the best community
+      // Select the best community
       const recommendedCommunity = await this.selectBestCommunity(
         relevantCommunities,
         queryAnalysis,
         request.context,
       );
 
-      // Step 4: Extract key entities from the recommended community
+      // Extract key entities from the recommended community
       const keyEntities = await this.extractKeyEntities(
         processedQuery,
         recommendedCommunity,
         request.options?.includeRelatedConcepts,
       );
 
-      // Step 5: Build topic subgraph if needed
+      // Build topic subgraph if needed
       let topicSubgraph: TopicSubgraph | undefined;
       if (recommendedCommunity && queryAnalysis.complexity !== 'simple') {
         topicSubgraph = await this.buildTopicSubgraph(
@@ -103,7 +103,7 @@ export class IntelligentRoutingService {
         );
       }
 
-      // Step 6: Calculate routing confidence and generate explanations
+      // Calculate routing confidence and generate explanations
       const routingConfidence = this.calculateRoutingConfidence(
         relevantCommunities,
         recommendedCommunity,

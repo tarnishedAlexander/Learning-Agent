@@ -24,7 +24,7 @@ import { DocumentChunkRepositoryPort } from './domain/ports/document-chunk-repos
 import { DocumentsController } from './infrastructure/http/documents.controller';
 import { EmbeddingsController } from './infrastructure/http/embeddings.controller';
 import { ContractDocumentsController } from './infrastructure/http/contract-documents.controller';
-import { GraphSearchController } from './application/controllers/graph-search.controller';
+import { GraphSearchController } from './infrastructure/http/graph-search.controller';
 
 // Infrastructure adapters
 import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
