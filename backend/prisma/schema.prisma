@@ -160,6 +160,9 @@ model Document {
   categories       DocumentCategoryMapping[]
   processingJobs   ProcessingJob[]
   
+  // GraphRAG Relations
+  communities      DocumentCommunity[]
+  
   // Información adicional extraída
   pageCount        Int?                      // Número de páginas (PDFs)
   documentTitle    String?                   // Título extraído del documento
@@ -198,6 +201,9 @@ model DocumentChunk {
   
   // Metadata adicional del chunk
   metadata        Json?                      // Información contextual adicional
+  
+  // GraphRAG Relations
+  entityMentions  DocumentEntityMention[]
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -278,6 +284,9 @@ enum ProcessingType {
   EMBEDDING_GENERATION // Generar embeddings vectoriales
   FULL_PROCESSING      // Procesamiento completo (todos los pasos)
   REPROCESSING         // Reprocesar documento existente
+  GRAPH_EXTRACTION     // Extract entities and relationships
+  COMMUNITY_DETECTION  // Detect and assign communities
+  COMMUNITY_SUMMARIZATION // Generate community summaries
 }
 
 enum ProcessingStatus {
@@ -352,7 +361,7 @@ model SavedExam {
   examId    String?           @unique
   exam      Exam?             @relation(fields: [examId], references: [id], onDelete: Cascade)
 
-  // FK “lógicas” (sin relación Prisma)
+  // FK "lógicas" (sin relación Prisma)
   courseId  String
   teacherId String
 
@@ -435,4 +444,173 @@ model Enrollment {
   updatedAt     DateTime          @updatedAt
 
   @@id([studentId, classId])
+}
+
+/**
+ * ===========================
+ * GraphRAG Models
+ * ===========================
+ */
+
+model Community {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Database Systems", "Data Structures"
+  description String?  @db.Text
+  level       Int      @default(0) // Hierarchical level (0 = root)
+  parentId    String?  // For hierarchical communities
+  parent      Community? @relation("CommunityHierarchy", fields: [parentId], references: [id])
+  children    Community[] @relation("CommunityHierarchy")
+  
+  // Community metadata
+  documentCount    Int      @default(0)
+  entityCount      Int      @default(0)
+  relationshipCount Int     @default(0)
+  
+  // Global community summary/index
+  globalSummary    String?  @db.Text // High-level description of community
+  keyTopics        Json?    // Array of key topics/concepts
+  
+  // Relations
+  documents        DocumentCommunity[]
+  entities         Entity[]
+  relationships    Relationship[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([name])
+  @@index([level])
+  @@index([parentId])
+}
+
+model Entity {
+  id           String   @id @default(uuid())
+  name         String   // Entity name (e.g., "Database", "SQL", "Normalization")
+  type         EntityType // PERSON, CONCEPT, TECHNOLOGY, etc.
+  description  String?  @db.Text
+  
+  // Community association
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  // Entity metadata
+  frequency    Int      @default(1) // How often it appears
+  importance   Float    @default(0.0) // Calculated importance score
+  aliases      Json?    // Alternative names/synonyms
+  
+  // Relations
+  sourceRelationships      Relationship[] @relation("SourceEntity")
+  targetRelationships      Relationship[] @relation("TargetEntity")
+  documentEntityMentions   DocumentEntityMention[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([name, communityId])
+  @@index([communityId])
+  @@index([type])
+  @@index([importance])
+}
+
+model Relationship {
+  id           String   @id @default(uuid())
+  sourceId     String
+  targetId     String
+  type         RelationshipType // IS_A, PART_OF, USES, IMPLEMENTS, etc.
+  description  String?  @db.Text
+  strength     Float    @default(1.0) // Relationship strength/confidence
+  
+  // Community association
+  communityId  String
+  community    Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  source       Entity   @relation("SourceEntity", fields: [sourceId], references: [id], onDelete: Cascade)
+  target       Entity   @relation("TargetEntity", fields: [targetId], references: [id], onDelete: Cascade)
+  
+  // Evidence/source information
+  documentSources Json? // Array of document IDs where this relationship was found
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([sourceId, targetId, type, communityId])
+  @@index([communityId])
+  @@index([type])
+  @@index([strength])
+}
+
+// Junction table for documents and communities (many-to-many)
+model DocumentCommunity {
+  documentId   String
+  communityId  String
+  relevance    Float    @default(1.0) // How relevant the document is to this community
+  
+  document     Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  community    Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  
+  @@id([documentId, communityId])
+  @@index([relevance])
+}
+
+// Track entity mentions in specific document chunks
+model DocumentEntityMention {
+  id           String        @id @default(uuid())
+  entityId     String
+  chunkId      String
+  
+  entity       Entity        @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  chunk        DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  
+  // Mention details
+  startPosition Int          // Position in chunk where entity is mentioned
+  endPosition   Int
+  confidence    Float        @default(1.0)
+  context       String?      @db.Text // Surrounding context
+  
+  createdAt     DateTime     @default(now())
+  
+  @@unique([entityId, chunkId, startPosition])
+  @@index([entityId])
+  @@index([chunkId])
+}
+
+/**
+ * ===========================
+ * GraphRAG Enums
+ * ===========================
+ */
+
+enum EntityType {
+  PERSON
+  CONCEPT
+  TECHNOLOGY
+  METHODOLOGY
+  TOOL
+  ALGORITHM
+  DATA_STRUCTURE
+  PROGRAMMING_LANGUAGE
+  FRAMEWORK
+  ORGANIZATION
+  LOCATION
+  OTHER
+}
+
+enum RelationshipType {
+  IS_A           // Inheritance/classification
+  PART_OF        // Composition
+  USES           // Usage relationship
+  IMPLEMENTS     // Implementation
+  EXTENDS        // Extension
+  DEPENDS_ON     // Dependency
+  SIMILAR_TO     // Similarity
+  OPPOSITE_OF    // Opposition
+  CAUSES         // Causation
+  ENABLES        // Enablement
+  REQUIRES       // Requirement
+  CONTAINS       // Containment
+  RELATED_TO     // General relation
+  OTHER
 }

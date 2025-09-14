@@ -24,7 +24,7 @@ import { DocumentChunkRepositoryPort } from './domain/ports/document-chunk-repos
 import { DocumentsController } from './infrastructure/http/documents.controller';
 import { EmbeddingsController } from './infrastructure/http/embeddings.controller';
 import { ContractDocumentsController } from './infrastructure/http/contract-documents.controller';
-
+import { GraphSearchController } from './application/controllers/graph-search.controller';
 
 // Infrastructure adapters
 import { S3StorageAdapter } from './infrastructure/storage/S3-storage.adapter';
@@ -55,6 +55,7 @@ import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/gener
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
 import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
 import { CheckDeletedDocumentUseCase } from './application/use-cases/check-deleted-document.usecase';
+import { QueryByCommunityUseCase } from './application/use-cases/query-by-community.use-case';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
@@ -65,6 +66,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     DocumentsController,
     EmbeddingsController,
     ContractDocumentsController,
+    GraphSearchController,
   ],
   providers: [
     // servicios de configuración
@@ -288,6 +290,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         DOCUMENT_STORAGE_PORT,
       ],
     },
+    QueryByCommunityUseCase,
 
     // Contract use cases
     {
@@ -347,8 +350,6 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
 })
 export class DocumentsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-
     consumer
       .apply(LoggingMiddleware)
       .forRoutes(
