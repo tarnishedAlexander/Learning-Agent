@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Card, message, Row, Col, Grid, theme as antTheme } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { useParams, useLocation } from "react-router-dom";
@@ -41,10 +41,6 @@ const UploadDocumentPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const screens = useBreakpoint();
   
-  // Navigation hooks
-  const { id } = useParams();
-  const location = useLocation();
-  
   // Check if we're in the student reinforcement context
   const isInReinforcementContext = location.pathname.includes('/student/classes/') && location.pathname.includes('/reinforcement/documents');
   
@@ -73,64 +69,17 @@ const UploadDocumentPage: React.FC = () => {
   const getBreadcrumbs = () => {
     if (isInReinforcementContext && id) {
       return [
-        { label: "Inicio", href: "/" },
-        { label: "Clases", href: "/student/classes" },
-        { label: "Refuerzo", href: `/student/classes/${id}/reinforcement` },
-        { label: "Documentos" }
+        { label: "Home", href: "/" },
+        { label: "Classes", href: "/student/classes" },
+        { label: "Reinforcement", href: `/student/classes/${id}/reinforcement` },
+        { label: "Documents" }
       ];
     }
-    return [{ label: "Inicio", href: "/" }, { label: "Documentos" }];
+    return [{ label: "Home", href: "/" }, { label: "Documents" }];
   };
 
-  const pageTitle = isSmallScreen ? "Documentos" : "Documentos Académicos";
+  const pageTitle = isSmallScreen ? "Documents" : "Academic Documents";
   const containerPadding = isSmallScreen ? "16px" : "24px";
-
-  // Lógica para breadcrumbs dinámicos
-  const breadcrumbs = useMemo(() => {
-    const baseBreadcrumbs: { label: string; href?: string }[] = [{ label: "Home", href: "/" }];
-    
-    if (location.pathname.includes("/professor/")) {
-      // Rutas de profesor
-      baseBreadcrumbs.push({ label: "Materias", href: "/professor/courses" });
-      
-      if (courseId) {
-        // Estamos en el contexto de un curso específico
-        if (id) {
-          // Documentos de un período específico
-          baseBreadcrumbs.push(
-            { label: actualCourse?.name || "Curso", href: `/professor/courses/${courseId}/periods` },
-            { label: actualClass?.name || "Período", href: `/professor/courses/${courseId}/periods/${id}` },
-            { label: "Documentos" }
-          );
-        } else {
-          // Documentos del curso en general
-          baseBreadcrumbs.push(
-            { label: actualCourse?.name || "Curso", href: `/professor/courses/${courseId}/periods` },
-            { label: "Documentos" }
-          );
-        }
-      } else {
-        // Documentos generales de profesor
-        baseBreadcrumbs.push({ label: "Documentos" });
-      }
-    } else if (location.pathname.includes("/student/")) {
-      // Rutas de estudiante
-      baseBreadcrumbs.push({ label: "Clases", href: "/student/classes" });
-      if (id) {
-        baseBreadcrumbs.push(
-          { label: "Clase", href: `/student/classes/${id}` },
-          { label: "Documentos" }
-        );
-      } else {
-        baseBreadcrumbs.push({ label: "Documentos" });
-      }
-    } else {
-      // Ruta general de documentos
-      baseBreadcrumbs.push({ label: "Documentos" });
-    }
-    
-    return baseBreadcrumbs;
-  }, [location.pathname, courseId, id, actualCourse?.name, actualClass?.name]);
 
   const fileConfig = {
     accept: ".pdf",

@@ -26,7 +26,7 @@ export default function Test() {
     if (currentQuestion < total) {
       setCurrentQuestion((prev) => prev + 1);
     } else {
-      navigate("/reinforcement");
+      navigate(`/student/classes/${id}/reinforcement`);
     }
   };
 
@@ -36,17 +36,17 @@ export default function Test() {
 
   return (
     <PageTemplate
-      title="Exámenes"
+      title="Exams"
       subtitle={
         isExamStarted && questionCount
-          ? `Pregunta ${currentQuestion} de ${questionCount}`
-          : "Próximamente encontrarás cuestionarios y recursos para practicar"
+          ? `Question ${currentQuestion} of ${questionCount}`
+          : "Soon you will find quizzes and resources to practice"
       }
       breadcrumbs={[
         { label: "Home", href: "/" },
-        { label: "Clases", href: "/student/classes" },
-        { label: "Refuerzo", href: "/student/classes/:id/reinforcement" },
-        { label: "Exámenes" },
+        { label: "Classes", href: "/student/classes" },
+        { label: "Reinforcement", href: `/student/classes/${id}/reinforcement` },
+        { label: "Exams" },
       ]}
     >
       {!isExamStarted && (
