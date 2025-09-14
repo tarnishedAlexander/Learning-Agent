@@ -62,17 +62,17 @@ export function TeacherCoursePage() {
   }, [searchTerm, courses]);
 
   const goToCourse = (id: string) => {
-    navigate(`/courses/${id}/periods`);
+    navigate(`${id}/periods`);
   };
 
-  const goToExams = (e: React.MouseEvent) => {
+  const goToExams = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/exams/`);
+    navigate(`${id}/exams`);
   };
 
   const goToMaterials = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/materials/${id}`);
+    navigate(`${id}/documents`);
   };
 
   const handleAddCourse = async (values: CreateCourseDTO) => {
@@ -155,7 +155,7 @@ export function TeacherCoursePage() {
                     <CustomCard.Actions>
                       <Button
                         type="primary"
-                        onClick={(e) => goToExams(e)}
+                        onClick={(e) => goToExams(course.id, e)}
                       >
                         Exámenes
                       </Button>

@@ -83,7 +83,7 @@ export function CoursePeriodsPage() {
   };
 
   const goToPeriod = (periodId: string) => {
-    navigate(`/courses/${courseId}/periods/${periodId}`);
+    navigate(`${periodId}`);
   };
 
   const handleModalCancel = () => {
@@ -97,7 +97,7 @@ export function CoursePeriodsPage() {
         subtitle="Cargando información..."
         breadcrumbs={[
           { label: "Home", href: "/" },
-          { label: "Materias", href: "/courses" },
+          { label: "Materias", href: "/professor/courses" },
           { label: "Cargando..." }
         ]}
       >
@@ -115,13 +115,13 @@ export function CoursePeriodsPage() {
         subtitle="No se pudo cargar la información del curso"
         breadcrumbs={[
           { label: "Home", href: "/" },
-          { label: "Materias", href: "/courses" },
+          { label: "Materias", href: "/professor/courses" },
           { label: "Error" }
         ]}
       >
         <div style={{ textAlign: "center", padding: "50px" }}>
           <Empty description="Curso no encontrado" />
-          <Button type="primary" onClick={() => navigate("/courses")}>
+          <Button type="primary" onClick={() => navigate(-1)}>
             Volver a Materias
           </Button>
         </div>
@@ -137,7 +137,7 @@ export function CoursePeriodsPage() {
           subtitle="Períodos en los que se dictó esta materia"
           breadcrumbs={[
             { label: "Home", href: "/" },
-            { label: "Materias", href: "/courses" },
+            { label: "Materias", href: "/professor/courses" },
             { label: actualCourse.name }
           ]}
         >
