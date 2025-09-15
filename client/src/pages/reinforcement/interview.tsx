@@ -25,7 +25,7 @@ const InterviewChat: React.FC = () => {
 
   const handleConfirm = () => {
     if (confirmFinish()) {
-      navigate('/reinforcement');
+      navigate(`/student/classes/${id}/reinforcement`);
     }
   };
 
@@ -47,11 +47,11 @@ const InterviewChat: React.FC = () => {
       <PageTemplate
         breadcrumbs={[
           { label: 'Home', href: '/' },
-          { label: 'Clases', href: '/student/classes' },
-          { label: 'Reforzamiento', href: '/student/classes/:id/reinforcement' },
-          { label: 'Entrevista' }
+          { label: 'Classes', href: '/student/classes' },
+          { label: 'Reinforcement', href: `/student/classes/${id}/reinforcement` },
+          { label: 'Interview' }
         ]}
-        title="Entrevista"
+        title="Interview"
         actions={
           <Button
             icon={<CloseOutlined />}

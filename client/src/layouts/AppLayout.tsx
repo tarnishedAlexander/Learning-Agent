@@ -8,7 +8,6 @@ import {
   MoonOutlined,
   BookOutlined,
   FileAddOutlined,
-  CloudUploadOutlined,
   SolutionOutlined,
   MenuFoldOutlined,
   MenuOutlined,
@@ -54,7 +53,7 @@ function buildNavItems(roles: string[] | undefined): NavItem[] {
     {
       key: "/student/classes",
       icon: <BookOutlined />,
-      label: <Link to="student/classes">Clases</Link>,
+      label: <Link to="/student/classes">Classes</Link>,
     },
   ];
 
