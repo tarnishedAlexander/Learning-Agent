@@ -58,8 +58,11 @@ export class DeleteDocumentUseCase {
       await this.storageAdapter.softDeleteDocument(document.fileName);
       this.logger.log(`Soft delete en storage completado`);
 
-      this.logger.log(`Eliminando registro en base de datos...`);
-      await this.documentRepository.delete(documentId);
+      this.logger.log(`Estado DELETE en base de datos`);
+      await this.documentRepository.updateStatus(
+        documentId,
+        DocumentStatus.DELETED,
+      );
 
       this.logger.log(
         `Eliminación completada exitosamente: ${document.originalName}`,
