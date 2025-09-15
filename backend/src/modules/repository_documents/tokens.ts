@@ -18,3 +18,16 @@ export const VECTOR_SEARCH_PORT = Symbol('VectorSearchPort');
 export const DELETED_DOCUMENT_REPOSITORY_PORT = Symbol(
   'DeletedDocumentRepositoryPort',
 );
+
+// GraphRAG repositories tokens
+export const COMMUNITY_REPOSITORY_PORT = Symbol('CommunityRepository');
+export const ENTITY_REPOSITORY_PORT = Symbol('EntityRepository');
+export const RELATIONSHIP_REPOSITORY_PORT = Symbol('RelationshipRepository');
+export const GRAPH_QUERY_REPOSITORY_PORT = Symbol('GraphQueryRepository');
+
+// Graph extraction services tokens
+export const ENTITY_EXTRACTION_SERVICE = Symbol('EntityExtractionService');
+export const RELATIONSHIP_EXTRACTION_SERVICE = Symbol(
+  'RelationshipExtractionService',
+);
+export const COMMUNITY_DETECTION_SERVICE = Symbol('CommunityDetectionService');

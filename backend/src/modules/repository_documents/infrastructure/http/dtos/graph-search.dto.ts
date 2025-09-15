@@ -47,6 +47,32 @@ export class GraphSearchRequestDto {
   includeSubgraph?: boolean;
 }
 
+export class GraphExtractionOptionsDto {
+  @IsOptional()
+  entityExtractionOptions?: {
+    enabledTypes?: string[];
+    confidenceThreshold?: number;
+    maxEntitiesPerChunk?: number;
+    domainSpecific?: string;
+  };
+  @IsOptional()
+  relationshipExtractionOptions?: {
+    enabledTypes?: string[];
+    confidenceThreshold?: number;
+    maxDistance?: number;
+    useSyntacticPatterns?: boolean;
+  };
+  @IsOptional()
+  communityDetectionOptions?: {
+    algorithm?: 'leiden' | 'louvain' | 'label_propagation';
+    minCommunitySize?: number;
+    maxCommunitySize?: number;
+  };
+  @IsOptional()
+  @IsBoolean()
+  skipCommunityDetection?: boolean;
+}
+
 export class ExtractGraphDataRequestDto {
   @IsString()
   documentId: string;
@@ -84,32 +110,6 @@ export class DocumentChunkDto {
   @IsOptional()
   @IsInt()
   pageNumber?: number;
-}
-
-export class GraphExtractionOptionsDto {
-  @IsOptional()
-  entityExtractionOptions?: {
-    enabledTypes?: string[];
-    confidenceThreshold?: number;
-    maxEntitiesPerChunk?: number;
-    domainSpecific?: string;
-  };
-  @IsOptional()
-  relationshipExtractionOptions?: {
-    enabledTypes?: string[];
-    confidenceThreshold?: number;
-    maxDistance?: number;
-    useSyntacticPatterns?: boolean;
-  };
-  @IsOptional()
-  communityDetectionOptions?: {
-    algorithm?: 'leiden' | 'louvain' | 'label_propagation';
-    minCommunitySize?: number;
-    maxCommunitySize?: number;
-  };
-  @IsOptional()
-  @IsBoolean()
-  skipCommunityDetection?: boolean;
 }
 
 export class CommunityStatsDto {

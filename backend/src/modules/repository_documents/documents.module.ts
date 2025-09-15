@@ -66,7 +66,6 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     DocumentsController,
     EmbeddingsController,
     ContractDocumentsController,
-    GraphSearchController,
   ],
   providers: [
     // servicios de configuración
@@ -290,7 +289,65 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         DOCUMENT_STORAGE_PORT,
       ],
     },
-    QueryByCommunityUseCase,
+    {
+      provide: QueryByCommunityUseCase,
+      useFactory: () => {
+        // Minimal stub implementations to allow app bootstrap; replace with real adapters
+        const communityRepository = {
+          findById: async (id: string) => null,
+          findAll: async () => [],
+          search: async (q: string) => [],
+          findByKeyTopics: async (topics: string[]) => [],
+          save: async (c: any) => c,
+        } as any;
+
+        const entityRepository = {
+          findByCommunityId: async (communityId: string) => [],
+          findById: async (id: string) => null,
+        } as any;
+
+        const relationshipRepository = {
+          findByEntityId: async (entityId: string) => [],
+        } as any;
+
+        const graphQueryRepository = {
+          findRelevantCommunities: async (query: string, limit?: number) => [],
+          findRelevantEntities: async (
+            query: string,
+            communityIds?: string[],
+            limit?: number,
+          ) => [],
+          findRelatedConcepts: async (
+            entityIds: string[],
+            maxHops: number,
+            communityIds?: string[],
+          ) => ({
+            entities: [],
+            relationships: [],
+            centralEntity: '',
+            maxHops,
+          }),
+          getTopicSubgraph: async (
+            topic: string,
+            communityIds?: string[],
+            maxEntities?: number,
+          ) => ({
+            topic,
+            entities: [],
+            relationships: [],
+            communities: [],
+            relevanceScores: {},
+          }),
+        } as any;
+
+        return new QueryByCommunityUseCase(
+          communityRepository,
+          entityRepository,
+          relationshipRepository,
+          graphQueryRepository,
+        );
+      },
+    },
 
     // Contract use cases
     {
