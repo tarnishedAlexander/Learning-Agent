@@ -186,7 +186,7 @@ export const documentService = {
         formData,
         { 
           headers,
-          timeout: 30000 // 30 segundos de timeout
+          timeout: 600000 // 10 minutos de timeout para uploads de archivos grandes
         }
       );
 

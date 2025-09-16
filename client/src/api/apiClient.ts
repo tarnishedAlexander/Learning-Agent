@@ -9,11 +9,29 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 60000, // 1 minuto para peticiones generales
+});
+
+// Cliente específico para uploads con timeout extendido
+export const uploadApiClient = axios.create({
+  baseURL: API_URL || "http://localhost:3000/",
+  timeout: 600000, // 10 minutos para uploads
 });
 
 apiClient.interceptors.request.use((config) => {
   const token = readAuth().accessToken;
   if (token && !config.url?.includes("auth/login")) {
+    if (config.headers) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return config;
+})
+
+// Aplicar interceptors al cliente de upload también
+uploadApiClient.interceptors.request.use((config) => {
+  const token = readAuth().accessToken;
+  if (token) {
     if (config.headers) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

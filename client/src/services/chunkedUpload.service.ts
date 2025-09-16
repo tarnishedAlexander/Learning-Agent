@@ -117,7 +117,8 @@ class ChunkedUploadService {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          cancelToken: cancelTokenSource.token
+          cancelToken: cancelTokenSource.token,
+          timeout: 600000 // 10 minutos para inicialización de uploads
         }
       );
 
