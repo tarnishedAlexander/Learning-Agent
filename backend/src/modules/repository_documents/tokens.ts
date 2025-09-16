@@ -16,5 +16,9 @@ export const VECTOR_SEARCH_PORT = Symbol('VectorSearchPort');
 
 // Token para documentos eliminados
 export const DELETED_DOCUMENT_REPOSITORY_PORT = Symbol(
-  'DeletedDocumentRepositoryPort',
+  'DELETED_DOCUMENT_REPOSITORY_PORT',
+);
+
+export const DOCUMENT_INDEX_GENERATOR_PORT = Symbol(
+  'DOCUMENT_INDEX_GENERATOR_PORT',
 );

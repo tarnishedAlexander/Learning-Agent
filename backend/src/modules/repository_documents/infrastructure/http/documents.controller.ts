@@ -24,6 +24,7 @@ import { ProcessDocumentChunksUseCase } from '../../application/commands/process
 import { CheckDocumentSimilarityUseCase } from '../../application/use-cases/check-document-similarity.usecase';
 import { CheckDeletedDocumentUseCase } from '../../application/use-cases/check-deleted-document.usecase';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
+import { GenerateDocumentIndexUseCase } from '../../application/use-cases/generate-document-index.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -38,6 +39,10 @@ import {
   UnifiedUploadResponseDto,
   UnifiedUploadRequestDto,
 } from './dtos/unified-upload.dto';
+import type {
+  GenerateDocumentIndexRequestDto,
+  GenerateDocumentIndexResponseDto,
+} from './dtos/generate-document-index.dto';
 
 @Controller('api/documents')
 export class DocumentsController {
@@ -50,6 +55,7 @@ export class DocumentsController {
     private readonly processDocumentChunksUseCase: ProcessDocumentChunksUseCase,
     private readonly checkDocumentSimilarityUseCase: CheckDocumentSimilarityUseCase,
     private readonly checkDeletedDocumentUseCase: CheckDeletedDocumentUseCase,
+    private readonly generateDocumentIndexUseCase: GenerateDocumentIndexUseCase,
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -244,12 +250,14 @@ export class DocumentsController {
     try {
       console.log(' Upload request received:', {
         hasFile: !!file,
-        fileInfo: file ? {
-          originalname: file.originalname,
-          size: file.size,
-          mimetype: file.mimetype,
-          fieldname: file.fieldname,
-        } : null,
+        fileInfo: file
+          ? {
+              originalname: file.originalname,
+              size: file.size,
+              mimetype: file.mimetype,
+              fieldname: file.fieldname,
+            }
+          : null,
         hasUser: !!req.user,
         userId: req.user?.id,
         headers: req.headers,
@@ -424,7 +432,7 @@ export class DocumentsController {
             maxCandidates: options.maxSimilarCandidates || 5,
             skipEmbeddings: false,
             useSampling: true,
-            returnGeneratedData: true, // NUEVO: solicitar que devuelva chunks y embeddings generados
+            returnGeneratedData: true, // solicitar que devuelva chunks y embeddings generados
           },
         );
 
@@ -996,6 +1004,98 @@ export class DocumentsController {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al obtener chunks',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Genera un índice con ejercicios para un documento
+   */
+  @Post(':documentId/generate-index')
+  async generateDocumentIndex(
+    @Param('documentId') documentId: string,
+    @Body() body?: GenerateDocumentIndexRequestDto,
+  ): Promise<GenerateDocumentIndexResponseDto> {
+    try {
+      if (!documentId) {
+        throw new BadRequestException('ID de documento requerido');
+      }
+
+      this.logger.log(`Generando índice para documento: ${documentId}`);
+
+      const result = await this.generateDocumentIndexUseCase.execute({
+        documentId,
+        config: body,
+      });
+
+      this.logger.log(
+        `Índice generado exitosamente para documento: ${documentId}`,
+      );
+
+      return {
+        success: true,
+        data: {
+          id: result.id,
+          documentId: result.documentId,
+          title: result.title,
+          chapters: result.chapters.map((chapter) => ({
+            title: chapter.title,
+            description: chapter.description,
+            subtopics: chapter.subtopics.map((subtopic) => ({
+              title: subtopic.title,
+              description: subtopic.description,
+              exercises: subtopic.exercises.map((exercise) => ({
+                type: exercise.type,
+                title: exercise.title,
+                description: exercise.description,
+                difficulty: exercise.difficulty,
+                estimatedTime: exercise.estimatedTime,
+                keywords: exercise.keywords,
+              })),
+            })),
+            exercises: chapter.exercises.map((exercise) => ({
+              type: exercise.type,
+              title: exercise.title,
+              description: exercise.description,
+              difficulty: exercise.difficulty,
+              estimatedTime: exercise.estimatedTime,
+              keywords: exercise.keywords,
+            })),
+          })),
+          generatedAt: result.generatedAt.toISOString(),
+          status: result.status,
+        },
+        message: 'Índice generado exitosamente',
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in generateDocumentIndex',
+        error instanceof Error ? error : errorMessage,
+        {
+          documentId,
+          operation: 'index_generation',
+          errorType: 'INDEX_GENERATION_ERROR',
+        },
+      );
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al generar índice',
           error: 'Internal Server Error',
           details: errorMessage,
         },
