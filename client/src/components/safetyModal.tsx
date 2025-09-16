@@ -98,13 +98,20 @@ export const SafetyModal = ({
   cancelText = "Cancelar",
   danger = false,
 }: SafetyModalProps) => {
+  const isSmallScreen = window.innerWidth <= 768;
+  
   return (
     <Modal
       open={open}
       onCancel={onCancel}
       centered
+      width={isSmallScreen ? '90%' : 520}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button 
+          key="cancel" 
+          onClick={onCancel}
+          size={isSmallScreen ? 'middle' : 'large'}
+        >
           {cancelText}
         </Button>,
         <Button
@@ -112,14 +119,30 @@ export const SafetyModal = ({
           type={danger ? "primary" : "default"}
           danger={danger}
           onClick={onConfirm}
+          size={isSmallScreen ? 'middle' : 'large'}
           style={{ backgroundColor: "#bb1717ff" }}
         >
           {confirmText}
         </Button>,
       ]}
       title={title}
+      styles={{
+        header: {
+          padding: isSmallScreen ? '12px 16px' : '16px 24px'
+        },
+        body: {
+          padding: isSmallScreen ? '8px 16px 16px 16px' : '16px 24px'
+        }
+      }}
     >
-      <p style={{ fontSize: "16px" }}>{message}</p>
+      <p style={{ 
+        fontSize: isSmallScreen ? "14px" : "16px",
+        lineHeight: '1.5',
+        margin: '0',
+        padding: isSmallScreen ? '8px 0' : '0'
+      }}>
+        {message}
+      </p>
     </Modal>
   );
 };
@@ -180,6 +203,9 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
   // Estados internos
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
+
+  // Detectar vista móvil
+  const isSmallScreen = window.innerWidth <= 768;
 
   // Configuración por defecto del botón
   const {
@@ -278,8 +304,16 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', color: '#d32f2f' }}>
-            <ExclamationCircleOutlined style={{ marginRight: '8px', fontSize: '20px' }} />
-            <span style={{ fontWeight: '600' }}>Confirmar eliminación</span>
+            <ExclamationCircleOutlined style={{ 
+              marginRight: '8px', 
+              fontSize: isSmallScreen ? '16px' : '20px' 
+            }} />
+            <span style={{ 
+              fontWeight: '600',
+              fontSize: isSmallScreen ? '14px' : '16px'
+            }}>
+              Confirmar eliminación
+            </span>
           </div>
         }
         open={modalOpen}
@@ -289,10 +323,10 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
         cancelText={cancelText}
         confirmLoading={deleting}
         centered
-        width={480}
+        width={isSmallScreen ? '90%' : 480}
         okButtonProps={{
           danger: true,
-          size: 'large',
+          size: isSmallScreen ? 'middle' : 'large',
           style: {
             backgroundColor: '#d32f2f',
             borderColor: '#d32f2f',
@@ -300,33 +334,42 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
           }
         }}
         cancelButtonProps={{
-          size: 'large',
+          size: isSmallScreen ? 'middle' : 'large',
           style: {
             borderColor: '#7A85C1',
             color: '#3B38A0',
             fontWeight: '500'
           }
         }}
+        styles={{
+          header: {
+            padding: isSmallScreen ? '12px 16px' : '16px 24px'
+          },
+          body: {
+            padding: isSmallScreen ? '8px 16px 16px 16px' : '16px 24px 24px 24px'
+          }
+        }}
       >
         <div style={{ textAlign: 'center' }}>
           {/* Ícono principal de eliminación */}
           <div style={{
-            fontSize: '48px',
+            fontSize: isSmallScreen ? '36px' : '48px',
             color: '#ff7875',
-            marginBottom: '16px',
+            marginBottom: isSmallScreen ? '12px' : '16px',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-            <DeleteOutlined style={{ fontSize: '48px' }} />
+            <DeleteOutlined style={{ fontSize: isSmallScreen ? '36px' : '48px' }} />
           </div>
 
           {/* Mensaje de confirmación */}
           <p style={{
-            marginBottom: '16px',
-            fontSize: '16px',
+            marginBottom: isSmallScreen ? '12px' : '16px',
+            fontSize: isSmallScreen ? '14px' : '16px',
             color: '#262626',
-            lineHeight: '1.5'
+            lineHeight: '1.5',
+            padding: isSmallScreen ? '0 8px' : '0'
           }}>
             {modalMessage}
           </p>
@@ -336,24 +379,33 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
             backgroundColor: '#fff2e8',
             border: '1px solid #ffcc7a',
             borderRadius: '8px',
-            padding: '16px',
-            marginTop: '16px',
+            padding: isSmallScreen ? '12px' : '16px',
+            marginTop: isSmallScreen ? '12px' : '16px',
             textAlign: 'left'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-              <div style={{ color: '#d46b08', fontSize: '16px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              marginBottom: '4px',
+              flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
+            }}>
+              <div style={{ 
+                color: '#d46b08', 
+                fontSize: isSmallScreen ? '14px' : '16px' 
+              }}>
                 {resourceInfo.icon || <FileTextOutlined />}
               </div>
               <Text strong style={{ 
                 color: '#d46b08', 
-                fontSize: '14px',
-                marginLeft: '8px'
+                fontSize: isSmallScreen ? '12px' : '14px',
+                marginLeft: '8px',
+                wordBreak: 'break-word'
               }}>
                 {resourceInfo.name}
               </Text>
               {resourceInfo.type && (
                 <Text style={{ 
-                  fontSize: '12px',
+                  fontSize: isSmallScreen ? '10px' : '12px',
                   marginLeft: '8px',
                   color: '#fa8c16'
                 }}>
@@ -364,20 +416,29 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
 
             {/* Información adicional */}
             {resourceInfo.additionalInfo && (
-              <div style={{ marginTop: '8px', fontSize: '12px', color: '#d48806' }}>
+              <div style={{ 
+                marginTop: '8px', 
+                fontSize: isSmallScreen ? '10px' : '12px', 
+                color: '#d48806' 
+              }}>
                 {resourceInfo.additionalInfo}
               </div>
             )}
 
             {/* Mensaje de advertencia */}
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              marginTop: '8px',
+              flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
+            }}>
               <ExclamationCircleOutlined style={{ 
                 color: '#fa8c16', 
                 marginRight: '6px', 
-                fontSize: '12px' 
+                fontSize: isSmallScreen ? '10px' : '12px' 
               }} />
               <Text style={{ 
-                fontSize: '12px', 
+                fontSize: isSmallScreen ? '10px' : '12px', 
                 fontStyle: 'italic',
                 color: '#d48806'
               }}>

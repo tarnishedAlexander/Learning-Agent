@@ -666,14 +666,15 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
             backgroundColor: isDark ? token.colorBgContainer : '#f8f9ff',
             borderBottom: 'none',
             boxShadow: 'none',
-            filter: 'none'
+            filter: 'none',
+            padding: isSmallScreen ? '12px 16px' : '16px 24px'
           },
           body: {
-            padding: isSmallScreen ? '16px' : '24px'
+            padding: isSmallScreen ? '8px 16px 16px 16px' : '16px 24px 24px 24px'
           }
         }}
       >
-        <div style={{ padding: isSmallScreen ? '16px 0' : '24px 0' }}>
+        <div style={{ padding: isSmallScreen ? '8px 0' : '16px 0' }}>
           {currentPhase === 'idle' ? (
             <>
               <Dragger
@@ -686,8 +687,9 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                   border: `2px dashed ${isDark ? token.colorBorder : '#7A85C1'}`,
                   borderRadius: '8px',
                   backgroundColor: isDark ? token.colorBgElevated : '#F8F9FB',
-                  padding: isSmallScreen ? '20px 16px' : '40px 20px',
-                  cursor: 'pointer'
+                  padding: isSmallScreen ? '16px 12px' : '40px 20px',
+                  cursor: 'pointer',
+                  margin: isSmallScreen ? '0' : '0'
                 }}
               >
                 <p className="ant-upload-drag-icon">
@@ -700,7 +702,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                   color: isDark ? '#ffffff' : '#1A2A80', 
                   fontSize: isSmallScreen ? '14px' : '16px', 
                   fontWeight: '500',
-                  margin: isSmallScreen ? '12px 0 6px 0' : '16px 0 8px 0'
+                  margin: isSmallScreen ? '8px 0 4px 0' : '16px 0 8px 0'
                 }}>
                   {isSmallScreen ? 'Toca o arrastra aquí' : 'Haz clic o arrastra el archivo aquí'}
                 </p>
@@ -735,7 +737,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
           ) : currentPhase === 'success' ? (
             <div style={{ 
               textAlign: 'center', 
-              padding: isSmallScreen ? '30px 16px' : '40px 20px',
+              padding: isSmallScreen ? '20px 12px' : '40px 20px',
               backgroundColor: isDark ? token.colorBgElevated : '#f6ffed',
               borderRadius: '8px',
               border: `2px solid ${isDark ? token.colorSuccess : 'var(--ant-color-success)'}`
@@ -784,12 +786,13 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
           ) : (
             <div style={{ 
               textAlign: 'center', 
-              padding: isSmallScreen ? '30px 16px' : '40px 20px',
+              padding: isSmallScreen ? '20px 12px' : '40px 20px',
               backgroundColor: isDark ? token.colorBgElevated : '#F8F9FB',
               borderRadius: '8px',
               border: `2px solid ${currentPhase === 'error' ? 
                 (isDark ? token.colorError : '#ff4d4f') : 
-                (isDark ? token.colorBorder : '#7A85C1')}`
+                (isDark ? token.colorBorder : '#7A85C1')}`,
+              margin: isSmallScreen ? '0' : '0'
             }}>
               {currentPhase === 'error' ? (
                 <CloseCircleOutlined style={{ 
