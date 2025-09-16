@@ -66,14 +66,14 @@ export class GeminiIndexGeneratorAdapter implements DocumentIndexGeneratorPort {
 
       const prompt = this.buildPrompt(documentTitle, fullText, finalConfig);
 
-      console.log(`🤖 Generando índice para documento: ${documentTitle}`);
-      console.log(`📄 Procesando ${chunks.length} chunks`);
+      console.log(`Generando índice para documento: ${documentTitle}`);
+      console.log(`Procesando ${chunks.length} chunks`);
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
 
-      console.log(`✅ Respuesta recibida de Gemini`);
+      console.log(`Respuesta recibida de Gemini`);
 
       // Parsear la respuesta JSON
       const indexData = this.parseGeminiResponse(text);
@@ -89,12 +89,12 @@ export class GeminiIndexGeneratorAdapter implements DocumentIndexGeneratorPort {
       );
 
       console.log(
-        `📚 Índice generado con ${documentIndex.chapters.length} capítulos`,
+        `Índice generado con ${documentIndex.chapters.length} capítulos`,
       );
 
       return documentIndex;
     } catch (error) {
-      console.error('❌ Error generando índice con Gemini:', error);
+      console.error('Error generando índice con Gemini:', error);
       throw new Error(
         `Error generando índice: ${error instanceof Error ? error.message : 'Error desconocido'}`,
       );

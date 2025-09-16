@@ -43,8 +43,8 @@ export class GetDocumentContentUseCase {
       const response: GetDocumentContentResponse = {
         contenido: document.extractedText,
         metadata: {
-          paginas: document.pageCount || undefined,
-          resumen: undefined, // Por ahora no generamos resúmenes automáticos
+          paginas: document.pageCount || 0,
+          resumen: 'Resumen no disponible',
         },
       };
 
