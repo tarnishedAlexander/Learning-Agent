@@ -1,6 +1,6 @@
 import apiClient from "../api/apiClient";
 import axios from "axios";
-import { meAPI } from "./authService";
+import { useUserStore } from "../store/userStore";
 import type { 
   Document, 
   DocumentListResponse, 
@@ -40,12 +40,14 @@ const getAuthTokenAndVerifyUser = async (): Promise<{ token: string; user: UserI
       throw new Error('Token de acceso no encontrado. Por favor, inicia sesión nuevamente.');
     }
     
-    // Verificar que el token sea válido y obtener información del usuario
-    const user = await meAPI(token) as UserInfo;
+    const user = useUserStore.getState().user;
+    if (!user) {
+      throw new Error('Usuario no encontrado en el contexto. Por favor, inicia sesión nuevamente.');
+    }
     
-    return { token, user };
+    return { token, user: user as UserInfo };
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Error al obtener información del usuario')) {
+    if (error instanceof Error && error.message.includes('Usuario no encontrado en el contexto')) {
       throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
     }
     throw new Error('Error al verificar la autenticación. Por favor, inicia sesión nuevamente.');

@@ -9,6 +9,7 @@ import { PdfPreviewSidebar } from "../../components/documents/PdfPreviewSidebar"
 import { DocumentDataSidebar } from "../../components/documents/DocumentDataSidebar";
 import { useDocuments } from "../../hooks/useDocuments";
 import { useChunkedDocumentUpload } from "../../hooks/useChunkedDocumentUpload";
+import { useUser } from "../../context/UserContext";
 import { useUserStore } from "../../store/userStore";
 import { useThemeStore } from "../../store/themeStore";
 import type { Document } from "../../interfaces/documentInterface";
@@ -20,6 +21,7 @@ const { useBreakpoint } = Grid;
 const UploadDocumentPage: React.FC = () => {
   const { documents, loading, downloadDocument, deleteDocument, loadDocuments } = useDocuments();
   const { processDocumentComplete } = useChunkedDocumentUpload();
+  const { id: userId } = useUser(); // Obtener id del contexto del usuario
   const user = useUserStore((s) => s.user);
   const isStudent = Boolean(user?.roles?.includes?.("estudiante"));
   const { courseId, id } = useParams<{ courseId: string; id: string }>();
