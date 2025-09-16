@@ -3,6 +3,7 @@ import type { DocumentRepositoryPort } from '../../domain/ports/document-reposit
 import type { TextExtractionPort } from '../../domain/ports/text-extraction.port';
 import type { DocumentStoragePort } from '../../domain/ports/document-storage.port';
 import { DocumentStatus } from '../../domain/entities/document.entity';
+import { DocumentService } from '../../domain/services/document.service';
 
 @Injectable()
 export class ProcessDocumentTextUseCase {
@@ -31,7 +32,7 @@ export class ProcessDocumentTextUseCase {
       }
 
       // 2. Verificar que esté en estado UPLOADED
-      if (!document.isReadyForProcessing()) {
+      if (!DocumentService.isReadyForProcessing(document)) {
         this.logger.warn(
           `Documento ${documentId} no está listo para procesamiento. Estado: ${document.status}`,
         );

@@ -4,9 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { DocumentStoragePort } from '../../domain/ports/document-storage.port';
 import type { DocumentRepositoryPort } from '../../domain/ports/document-repository.port';
 import { Document, DocumentStatus } from '../../domain/entities/document.entity';
-import { DocumentChunk } from '../../domain/entities/document-chunk.entity';
 import { UploadDocumentRequest } from '../../domain/value-objects/upload-document.vo';
 import { DocumentChunkingService } from '../../domain/services/document-chunking.service';
+import { DocumentService } from '../../domain/services/document.service';
+import { DocumentChunkService } from '../../domain/services/document-chunk.service';
 
 /**
  * Options for reusing pre-generated data during upload
@@ -82,7 +83,7 @@ export class UploadDocumentUseCase {
 
       // Crear entidad de documento para base de datos
       console.log(' Creating document entity...');
-      const document = Document.create(
+      const document = DocumentService.create(
         documentId,
         storageResult.fileName, // storedName
         file.originalname, // originalName
@@ -114,7 +115,7 @@ export class UploadDocumentUseCase {
           // Convertir chunks pre-generados a entidades DocumentChunk
           const documentChunks = options.preGeneratedChunks.map(
             (chunk, index) =>
-              DocumentChunk.create(
+              DocumentChunkService.create(
                 uuidv4(), // Nuevo ID único para cada chunk
                 documentId, // ID del documento
                 chunk.content, // Contenido del chunk
@@ -152,9 +153,11 @@ export class UploadDocumentUseCase {
 
           // Actualizar el documento para marcar que tiene texto extraído
           if (options.extractedText) {
-            const updatedDocument = savedDocument
-              .withExtractedText(options.extractedText)
-              .withStatus(DocumentStatus.PROCESSED);
+            let updatedDocument = DocumentService.withExtractedText(
+              savedDocument,
+              options.extractedText
+            );
+            updatedDocument = DocumentService.withStatus(updatedDocument, DocumentStatus.PROCESSED);
 
             await this.documentRepository.save(updatedDocument);
 

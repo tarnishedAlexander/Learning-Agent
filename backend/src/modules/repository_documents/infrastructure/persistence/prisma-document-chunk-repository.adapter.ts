@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { DocumentChunk } from '../../domain/entities/document-chunk.entity';
+import { DocumentChunkService } from '../../domain/services/document-chunk.service';
 import type {
   DocumentChunkRepositoryPort,
   FindChunksResult,
@@ -456,7 +457,7 @@ export class PrismaDocumentChunkRepositoryAdapter
    * Mapea el resultado de Prisma a la entidad de dominio
    */
   private mapToEntity(prismaChunk: any): DocumentChunk {
-    return DocumentChunk.create(
+    return new DocumentChunk(
       prismaChunk.id,
       prismaChunk.documentId,
       prismaChunk.content,
@@ -464,6 +465,7 @@ export class PrismaDocumentChunkRepositoryAdapter
       prismaChunk.type,
       prismaChunk.metadata || {},
       prismaChunk.createdAt,
+      prismaChunk.updatedAt,
     );
   }
 
