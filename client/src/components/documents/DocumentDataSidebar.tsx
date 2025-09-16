@@ -54,7 +54,7 @@ interface DocumentDataSidebarProps {
 }
 
 export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ document, onClose, visible }) => {
-  const { getDocumentExtractedData, generateDocumentEmbeddings, extractedDataLoading, extractedDataError } = useDocuments();
+  const { getDocumentExtractedData, generateDocumentEmbeddings, getDocumentIndex, generateDocumentIndex, extractedDataLoading, extractedDataError } = useDocuments();
 
   const theme = useThemeStore((state: { theme: string }) => state.theme);
   const isDark = theme === 'dark';
@@ -80,6 +80,11 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [retryCount, setRetryCount] = useState<number>(0);
 
+  // index state
+  const [indexData, setIndexData] = useState<any>(null);
+  const [indexLoading, setIndexLoading] = useState<boolean>(false);
+  const [indexError, setIndexError] = useState<string | null>(null);
+
   const documentId = document?.id;
   const isLoading = documentId ? extractedDataLoading[documentId] || false : false;
   const error = documentId ? extractedDataError[documentId] || null : null;
@@ -97,16 +102,189 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
     }
   }, [document?.id, getDocumentExtractedData]);
 
+  // Index functions
+  const loadIndexData = useCallback(async () => {
+    if (!document?.id) {
+      console.log('No document ID, setting indexData to null');
+      setIndexData(null);
+      return;
+    }
+    
+    console.log('Loading index data for document:', document.id);
+    setIndexLoading(true);
+    setIndexError(null);
+    
+    try {
+      const data = await getDocumentIndex(document.id);
+      console.log('Index data loaded:', data);
+      
+      // Verificar si la respuesta es exitosa
+      if (!data.success) {
+        throw new Error(data.message || 'Error desconocido al cargar el índice');
+      }
+      
+      setIndexData(data);
+      
+    } catch (err: any) {
+      console.error('Error loading index data:', err);
+      
+      // Determinar el mensaje de error más específico
+      let errorMessage = 'Error al cargar el índice';
+      
+      if (err?.response?.status === 404) {
+        // Si es 404, probablemente no existe índice aún
+        console.log('Index not found, this is normal for documents without generated index');
+        setIndexData(null);
+        setIndexError(null);
+        return;
+      } else if (err?.response?.status === 400) {
+        errorMessage = 'Documento no válido';
+      } else if (err?.response?.status === 500) {
+        errorMessage = 'Error interno del servidor';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setIndexError(errorMessage);
+      
+    } finally {
+      setIndexLoading(false);
+    }
+  }, [document?.id, getDocumentIndex]);
+
+  const handleGenerateIndex = useCallback(async () => {
+    if (!document?.id) {
+      message.error('No se ha seleccionado un documento');
+      return;
+    }
+    
+    setIndexLoading(true);
+    setIndexError(null);
+    
+    // Mostrar mensaje de progreso
+    message.info('Generando índice del documento... Esto puede tomar unos minutos.');
+    
+    try {
+      // Crear un timeout para la operación
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout: La generación del índice está tomando demasiado tiempo')), 120000) // 2 minutos
+      );
+      
+      const generatePromise = generateDocumentIndex(document.id);
+      
+      // Ejecutar con timeout
+      const generateResult = await Promise.race([generatePromise, timeoutPromise]) as any;
+      console.log('Generate result:', generateResult);
+      
+      // Verificar si la generación fue exitosa
+      if (!generateResult?.success) {
+        throw new Error(generateResult?.message || 'Error desconocido al generar el índice');
+      }
+      
+      // Recargar datos del índice después de generar
+      await loadIndexData();
+      message.success('Índice generado exitosamente');
+      
+    } catch (err: any) {
+      console.error('Error generating index:', err);
+      
+      // Determinar el mensaje de error más específico
+      let errorMessage = 'Error al generar el índice';
+      
+      if (err?.message?.includes('Timeout')) {
+        errorMessage = 'La generación del índice está tomando demasiado tiempo. Inténtalo más tarde.';
+      } else if (err?.response?.status === 400) {
+        errorMessage = 'El documento no es válido para generar índice';
+      } else if (err?.response?.status === 404) {
+        errorMessage = 'Documento no encontrado';
+      } else if (err?.response?.status === 409) {
+        errorMessage = 'Ya hay una generación de índice en proceso';
+      } else if (err?.response?.status === 422) {
+        errorMessage = 'El documento no tiene suficiente contenido para generar un índice';
+      } else if (err?.response?.status === 500) {
+        errorMessage = 'Error interno del servidor al generar el índice';
+      } else if (err?.response?.status === 503) {
+        errorMessage = 'Servicio temporalmente no disponible';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setIndexError(errorMessage);
+      message.error(errorMessage);
+      
+    } finally {
+      setIndexLoading(false);
+    }
+  }, [document?.id, generateDocumentIndex, loadIndexData]);
+
+  // Función para procesar los chapters en elementos planos
+  const processFlatIndex = useCallback((chapters: any[]) => {
+    const flatItems: any[] = [];
+    
+    chapters.forEach((chapter, chapterIndex) => {
+      // Agregar el capítulo principal
+      flatItems.push({
+        id: `chapter-${chapterIndex}`,
+        title: chapter.title,
+        description: chapter.description,
+        level: 1,
+        type: 'chapter'
+      });
+      
+      // Agregar subtemas
+      if (chapter.subtopics && chapter.subtopics.length > 0) {
+        chapter.subtopics.forEach((subtopic: any, subtopicIndex: number) => {
+          flatItems.push({
+            id: `subtopic-${chapterIndex}-${subtopicIndex}`,
+            title: subtopic.title,
+            description: subtopic.description,
+            level: 2,
+            type: 'subtopic'
+          });
+        });
+      }
+      
+      // Agregar ejercicios
+      if (chapter.exercises && chapter.exercises.length > 0) {
+        chapter.exercises.forEach((exercise: any, exerciseIndex: number) => {
+          flatItems.push({
+            id: `exercise-${chapterIndex}-${exerciseIndex}`,
+            title: exercise.title,
+            description: exercise.description,
+            difficulty: exercise.difficulty,
+            estimatedTime: exercise.estimatedTime,
+            keywords: exercise.keywords,
+            level: 3,
+            type: exercise.type || 'exercise'
+          });
+        });
+      }
+    });
+    
+    return flatItems;
+  }, []);
+
   useEffect(() => {
     if (document?.id && visible) {
       loadExtractedData();
+      // Siempre cargar datos del índice cuando se cambie a esa pestaña
+      if (activeTab === 'index') {
+        console.log('Changing to index tab, loading index data...');
+        loadIndexData();
+      }
     } else {
       setExtractedData(null);
+      setIndexData(null);
       setSearchTerm('');
       setChunkTypeFilter('all');
       setCurrentPage(1);
+      setIndexError(null);
     }
-  }, [document?.id, visible, loadExtractedData]);
+  }, [document?.id, visible, activeTab, loadExtractedData, loadIndexData]);
 
   // copy to clipboard util
   const copyToClipboard = useCallback(async (text: string, label = 'Texto') => {
@@ -478,6 +656,196 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                           />
                         </Card>
                       )}
+                    </>
+                  )}
+                </Space>
+              </TabPane>
+
+              <TabPane tab="Índice" key="index">
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                  {indexLoading && (
+                    <Card>
+                      <Skeleton active paragraph={{ rows: 4 }} />
+                    </Card>
+                  )}
+
+                  {indexError && !indexLoading && (
+                    <Alert
+                      message="Error con el índice del documento"
+                      description={
+                        <div>
+                          <p>{indexError}</p>
+                          <div style={{ marginTop: 8 }}>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              • Verifica que el documento esté completamente procesado<br/>
+                              • Algunos tipos de documento pueden no ser compatibles<br/>
+                              • Si el problema persiste, contacta al administrador
+                            </Text>
+                          </div>
+                        </div>
+                      }
+                      type="error"
+                      showIcon
+                      action={
+                        <Space direction="vertical" size="small">
+                          <Button size="small" icon={<ReloadOutlined />} onClick={loadIndexData} loading={indexLoading}>
+                            Reintentar Carga
+                          </Button>
+                          <Button size="small" icon={<SyncOutlined />} onClick={handleGenerateIndex} loading={indexLoading}>
+                            Generar Índice
+                          </Button>
+                        </Space>
+                      }
+                    />
+                  )}
+
+
+
+                  {(!indexData?.data?.chapters || indexData?.data?.chapters?.length === 0) && !indexLoading && !indexError && (
+                    <Card>
+                      <Empty 
+                        description="No se ha generado el índice para este documento"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      />
+                      <div style={{ textAlign: 'center', marginTop: 16 }}>
+                        <Button 
+                          type="primary" 
+                          icon={<SyncOutlined />} 
+                          onClick={handleGenerateIndex}
+                          loading={indexLoading}
+                          size="large"
+                        >
+                          Generar Índice
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+
+                  {indexData?.data?.chapters && indexData?.data?.chapters?.length > 0 && !indexLoading && (
+                    <>
+                      <Card>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                          <Title level={5} style={{ margin: 0 }}>
+                            Estructura del Documento ({indexData.data.chapters.length} capítulos)
+                          </Title>
+                          <Button 
+                            icon={<SyncOutlined />} 
+                            onClick={handleGenerateIndex}
+                            loading={indexLoading}
+                            size="small"
+                          >
+                            Regenerar
+                          </Button>
+                        </div>
+                        
+                        <Row gutter={16}>
+                          <Col span={8}>
+                            <Statistic 
+                              title="Total de Capítulos" 
+                              value={indexData.data.chapters.length} 
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Statistic 
+                              title="Generado" 
+                              value={indexData.data.generatedAt ? new Date(indexData.data.generatedAt).toLocaleDateString() : 'N/A'} 
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Statistic 
+                              title="Estado" 
+                              value={indexData.data.status || 'GENERATED'}
+                            />
+                          </Col>
+                        </Row>
+                      </Card>
+
+                      <Card title={<Title level={5}>Índice de Contenidos</Title>}>
+                        <div style={{ maxHeight: isMobile ? 300 : 400, overflowY: 'auto', paddingRight: 8 }}>
+                          {processFlatIndex(indexData.data.chapters).map((item: any, index: number) => (
+                            <div 
+                              key={item.id || index}
+                              style={{
+                                paddingLeft: (item.level - 1) * 20,
+                                marginBottom: 8,
+                                borderBottom: '1px solid #f0f0f0',
+                                paddingBottom: 8,
+                                cursor: 'pointer',
+                                borderRadius: 4,
+                                padding: '8px 12px',
+                                backgroundColor: isDark ? token.colorBgElevated : '#fafafa',
+                                border: `1px solid ${isDark ? token.colorBorder : '#f0f0f0'}`,
+                              }}
+                              onClick={() => item.description && copyToClipboard(item.description, `Contenido de ${item.type}`)}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                <Tag color={
+                                  item.type === 'chapter' ? 'blue' : 
+                                  item.type === 'subtopic' ? 'green' : 
+                                  item.type === 'CONCEPTUAL' ? 'orange' :
+                                  item.type === 'ANALYSIS' ? 'purple' :
+                                  'default'
+                                }>
+                                  {item.type === 'chapter' ? 'Capítulo' : 
+                                   item.type === 'subtopic' ? 'Subtema' : 
+                                   item.type || 'Ejercicio'}
+                                </Tag>
+                                <Text strong style={{ fontSize: isMobile ? 13 : 14, flex: 1 }}>
+                                  {item.title}
+                                </Text>
+                                {item.difficulty && (
+                                  <Tag color={item.difficulty === 'INTERMEDIATE' ? 'orange' : 'default'} style={{ fontSize: isMobile ? 11 : 12 }}>
+                                    {item.difficulty}
+                                  </Tag>
+                                )}
+                                {item.estimatedTime && (
+                                  <Tag color="cyan" style={{ fontSize: isMobile ? 11 : 12 }}>
+                                    {item.estimatedTime}
+                                  </Tag>
+                                )}
+                                <Tooltip title="Copiar descripción">
+                                  <Button 
+                                    type="text" 
+                                    size="small" 
+                                    icon={<CopyOutlined />}
+                                  />
+                                </Tooltip>
+                              </div>
+                              
+                              {item.description && (
+                                <Paragraph 
+                                  style={{ 
+                                    marginTop: 8, 
+                                    marginBottom: 0,
+                                    fontSize: isMobile ? 12 : 13,
+                                    color: isDark ? token.colorTextSecondary : '#666',
+                                  }}
+                                  ellipsis={{ 
+                                    rows: 2, 
+                                    expandable: true, 
+                                    symbol: 'ver más' 
+                                  }}
+                                >
+                                  {item.description}
+                                </Paragraph>
+                              )}
+                              
+                              {item.keywords && item.keywords.length > 0 && (
+                                <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                  <Text style={{ fontSize: 12, color: isDark ? token.colorTextSecondary : '#999' }}>
+                                    Palabras clave:
+                                  </Text>
+                                  {item.keywords.map((keyword: string, kIndex: number) => (
+                                    <Tag key={kIndex} color="geekblue" style={{ fontSize: 11 }}>
+                                      {keyword}
+                                    </Tag>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
                     </>
                   )}
                 </Space>

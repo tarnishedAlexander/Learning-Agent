@@ -457,4 +457,65 @@ export const documentService = {
       throw new Error('Error en el procesamiento completo del documento');
     }
   },
+
+  /**
+   * Obtener índice de un documento
+   */
+  async getDocumentIndex(documentId: string): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+      index: Array<{
+        id: string;
+        title: string;
+        level: number;
+        page?: number;
+        content?: string;
+        chunkId?: string;
+        createdAt: string;
+      }>;
+      total: number;
+      metadata: {
+        documentId: string;
+        generatedAt: string;
+        structure: {
+          totalSections: number;
+          maxDepth: number;
+          averageSectionLength: number;
+        };
+      };
+    };
+  }> {
+    try {
+      const response = await apiClient.get(`/api/documents/${documentId}/index`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting document index:', error);
+      throw new Error('Error al obtener el índice del documento');
+    }
+  },
+
+  /**
+   * Generar índice para un documento
+   */
+  async generateDocumentIndex(documentId: string): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+      totalSections: number;
+      processingTimeMs: number;
+      structure: {
+        maxDepth: number;
+        averageSectionLength: number;
+      };
+    };
+  }> {
+    try {
+      const response = await apiClient.post(`/api/documents/${documentId}/generate-index`);
+      return response.data;
+    } catch (error) {
+      console.error('Error generating document index:', error);
+      throw new Error('Error al generar el índice del documento');
+    }
+  },
 };

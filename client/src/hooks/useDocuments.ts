@@ -274,6 +274,79 @@ export const useDocuments = () => {
     }
   }, []);
 
+  // Funciones para el índice de documentos
+  const getDocumentIndex = useCallback(async (documentId: string) => {
+    setExtractedDataLoading(prev => ({ ...prev, [documentId]: true }));
+    setExtractedDataError(prev => ({ ...prev, [documentId]: null }));
+
+    try {
+      const result = await documentService.getDocumentIndex(documentId);
+      
+      // Validar que la respuesta tenga la estructura esperada
+      if (!result || typeof result !== 'object') {
+        throw new Error('Respuesta inválida del servidor');
+      }
+      
+      return result;
+    } catch (error: any) {
+      let errorMessage = 'Error al obtener índice del documento';
+      
+      if (error?.response?.status === 404) {
+        errorMessage = 'Índice no encontrado para este documento';
+      } else if (error?.response?.status === 400) {
+        errorMessage = 'Documento no válido para generar índice';
+      } else if (error?.response?.status === 500) {
+        errorMessage = 'Error interno del servidor';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setExtractedDataError(prev => ({ ...prev, [documentId]: errorMessage }));
+      throw new Error(errorMessage);
+    } finally {
+      setExtractedDataLoading(prev => ({ ...prev, [documentId]: false }));
+    }
+  }, []);
+
+  const generateDocumentIndex = useCallback(async (documentId: string) => {
+    setExtractedDataLoading(prev => ({ ...prev, [documentId]: true }));
+    setExtractedDataError(prev => ({ ...prev, [documentId]: null }));
+
+    try {
+      const result = await documentService.generateDocumentIndex(documentId);
+      
+      // Validar que la respuesta sea exitosa
+      if (!result || !result.success) {
+        throw new Error(result?.message || 'Error al generar el índice');
+      }
+      
+      return result;
+    } catch (error: any) {
+      let errorMessage = 'Error al generar índice del documento';
+      
+      if (error?.response?.status === 400) {
+        errorMessage = 'El documento no es válido para generar índice';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'Documento no encontrado';
+      } else if (error?.response?.status === 409) {
+        errorMessage = 'Ya existe un proceso de generación en curso';
+      } else if (error?.response?.status === 422) {
+        errorMessage = 'El documento no tiene el contenido necesario para generar índice';
+      } else if (error?.response?.status === 500) {
+        errorMessage = 'Error interno del servidor al generar índice';
+      } else if (error?.response?.status === 503) {
+        errorMessage = 'Servicio de generación de índice temporalmente no disponible';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setExtractedDataError(prev => ({ ...prev, [documentId]: errorMessage }));
+      throw new Error(errorMessage);
+    } finally {
+      setExtractedDataLoading(prev => ({ ...prev, [documentId]: false }));
+    }
+  }, []);
+
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
@@ -300,6 +373,10 @@ export const useDocuments = () => {
     getDocumentExtractedData,
     generateDocumentEmbeddings,
     clearExtractedDataCache,
+    
+    // Funcionalidades para índices
+    getDocumentIndex,
+    generateDocumentIndex,
     
     // Estados para datos extraídos
     extractedDataCache,
