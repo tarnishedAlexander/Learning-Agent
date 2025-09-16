@@ -196,7 +196,20 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
           </Button>
         </Tooltip>
 
-        <Tooltip title="Exportar como archivo de texto">
+        <Tooltip 
+          title="Exportar texto"
+          placement={isMobile ? "topLeft" : "top"}
+          getPopupContainer={(trigger) => trigger?.parentElement || window.document.body}
+          overlayStyle={{ 
+            maxWidth: isMobile ? '100px' : '140px',
+            fontSize: isMobile ? '12px' : '14px',
+            whiteSpace: 'nowrap'
+          }}
+          overlayInnerStyle={{
+            textAlign: 'center',
+            padding: isMobile ? '4px 8px' : '6px 12px'
+          }}
+        >
           <Button
             type="default"
             icon={<DownloadOutlined />}
