@@ -13,6 +13,7 @@ import {
   EMBEDDING_GENERATOR_PORT,
   VECTOR_SEARCH_PORT,
   DELETED_DOCUMENT_REPOSITORY_PORT,
+  DOCUMENT_INDEX_GENERATOR_PORT,
 } from './tokens';
 
 // Domain ports
@@ -35,6 +36,7 @@ import { PrismaDocumentChunkRepositoryAdapter } from './infrastructure/persisten
 import { OpenAIEmbeddingAdapter } from './infrastructure/ai/openai-embedding.adapter';
 import { PgVectorSearchAdapter } from './infrastructure/search/pgvector-search.adapter';
 import { PrismaDeletedDocumentRepositoryAdapter } from './infrastructure/persistence/prisma-deleted-document-repository.adapter';
+import { GeminiIndexGeneratorAdapter } from './infrastructure/ai/gemini-index-generator.adapter';
 
 // Domain services
 import { DocumentChunkingService } from './domain/services/document-chunking.service';
@@ -55,6 +57,7 @@ import { GenerateDocumentEmbeddingsUseCase } from './application/use-cases/gener
 import { SearchDocumentsUseCase } from './application/use-cases/search-documents.use-case';
 import { CheckDocumentSimilarityUseCase } from './application/use-cases/check-document-similarity.usecase';
 import { CheckDeletedDocumentUseCase } from './application/use-cases/check-deleted-document.usecase';
+import { GenerateDocumentIndexUseCase } from './application/use-cases/generate-document-index.usecase';
 import { NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthMiddleware } from './infrastructure/http/middleware/auth.middleware';
 import { LoggingMiddleware } from './infrastructure/http/middleware/logging.middleware';
@@ -301,6 +304,33 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       ],
     },
 
+    // Index generation adapter
+    {
+      provide: DOCUMENT_INDEX_GENERATOR_PORT,
+      useClass: GeminiIndexGeneratorAdapter,
+    },
+
+    // Generate document index use case
+    {
+      provide: GenerateDocumentIndexUseCase,
+      useFactory: (
+        documentRepository: PrismaDocumentRepositoryAdapter,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
+        indexGenerator: GeminiIndexGeneratorAdapter,
+      ) => {
+        return new GenerateDocumentIndexUseCase(
+          documentRepository,
+          chunkRepository,
+          indexGenerator,
+        );
+      },
+      inject: [
+        DOCUMENT_REPOSITORY_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+        DOCUMENT_INDEX_GENERATOR_PORT,
+      ],
+    },
+
     // Contract use cases
     {
       provide: GetDocumentsBySubjectUseCase,
@@ -341,6 +371,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
     SearchDocumentsUseCase,
     CheckDocumentSimilarityUseCase,
     CheckDeletedDocumentUseCase,
+    GenerateDocumentIndexUseCase,
 
     // servicios de dominio
     DocumentChunkingService,
