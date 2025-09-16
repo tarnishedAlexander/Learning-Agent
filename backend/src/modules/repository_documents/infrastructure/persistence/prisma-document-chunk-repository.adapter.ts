@@ -204,6 +204,62 @@ export class PrismaDocumentChunkRepositoryAdapter
   }
 
   /**
+   * Marca todos los chunks de un documento como eliminados (soft delete)
+   */
+  async softDeleteByDocumentId(documentId: string): Promise<void> {
+    try {
+      const result = await this.prisma.documentChunk.updateMany({
+        where: { 
+          documentId,
+          status: 'ACTIVE'
+        },
+        data: {
+          status: 'DELETED',
+          updatedAt: new Date(),
+        },
+      });
+
+      this.logger.log(
+        `Marcados como eliminados ${result.count} chunks del documento ${documentId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error marcando chunks como eliminados del documento ${documentId}:`,
+        error,
+      );
+      throw new Error(`Error en soft delete de chunks: ${error}`);
+    }
+  }
+
+  /**
+   * Restaura todos los chunks eliminados de un documento
+   */
+  async restoreByDocumentId(documentId: string): Promise<void> {
+    try {
+      const result = await this.prisma.documentChunk.updateMany({
+        where: { 
+          documentId,
+          status: 'DELETED'
+        },
+        data: {
+          status: 'ACTIVE',
+          updatedAt: new Date(),
+        },
+      });
+
+      this.logger.log(
+        `Restaurados ${result.count} chunks del documento ${documentId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error restaurando chunks del documento ${documentId}:`,
+        error,
+      );
+      throw new Error(`Error restaurando chunks: ${error}`);
+    }
+  }
+
+  /**
    * Elimina un chunk específico
    */
   async deleteById(id: string): Promise<void> {

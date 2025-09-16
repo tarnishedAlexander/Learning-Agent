@@ -189,6 +189,9 @@ model DocumentChunk {
   pageNumber      Int?                       // Página de origen (si aplica)
   type            String    @default("text") // Tipo de chunk (text, heading, list, etc.)
   
+  // Status para soft delete
+  status          String    @default("ACTIVE") // ACTIVE, DELETED
+  
   // Metadata estadística
   wordCount       Int       @default(0)      // Número de palabras
   charCount       Int       @default(0)      // Número de caracteres
@@ -205,6 +208,7 @@ model DocumentChunk {
   @@unique([documentId, chunkIndex])
   @@index([documentId])
   @@index([type])
+  @@index([status])
   @@index([wordCount])
   // Índice HNSW para búsqueda vectorial eficiente
   // CREATE INDEX CONCURRENTLY document_chunks_embedding_hnsw_idx ON "DocumentChunk" USING hnsw (embedding vector_cosine_ops);
