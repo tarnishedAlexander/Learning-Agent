@@ -25,6 +25,7 @@ import { CheckDocumentSimilarityUseCase } from '../../application/use-cases/chec
 import { CheckDeletedDocumentUseCase } from '../../application/use-cases/check-deleted-document.usecase';
 import { DownloadDocumentUseCase } from '../../application/commands/download-document.usecase';
 import { GenerateDocumentIndexUseCase } from '../../application/use-cases/generate-document-index.usecase';
+import { GetDocumentIndexUseCase } from '../../application/use-cases/get-document-index.usecase';
 import {
   DocumentListResponseDto,
   DocumentListItemDto,
@@ -56,6 +57,7 @@ export class DocumentsController {
     private readonly checkDocumentSimilarityUseCase: CheckDocumentSimilarityUseCase,
     private readonly checkDeletedDocumentUseCase: CheckDeletedDocumentUseCase,
     private readonly generateDocumentIndexUseCase: GenerateDocumentIndexUseCase,
+    private readonly getDocumentIndexUseCase: GetDocumentIndexUseCase,
     private readonly logger: ContextualLoggerService,
   ) {}
 
@@ -1096,6 +1098,103 @@ export class DocumentsController {
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: 'Error interno del servidor al generar índice',
+          error: 'Internal Server Error',
+          details: errorMessage,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Obtiene el índice guardado de un documento
+   */
+  @Get(':documentId/index')
+  async getDocumentIndex(
+    @Param('documentId') documentId: string,
+  ): Promise<GenerateDocumentIndexResponseDto | { message: string }> {
+    try {
+      if (!documentId) {
+        throw new BadRequestException('ID de documento requerido');
+      }
+
+      this.logger.log(`Obteniendo índice para documento: ${documentId}`);
+
+      const result = await this.getDocumentIndexUseCase.execute({
+        documentId,
+      });
+
+      if (!result) {
+        this.logger.warn(`No se encontró índice para documento: ${documentId}`);
+        return {
+          message: 'No se encontró un índice generado para este documento',
+        };
+      }
+
+      this.logger.log(
+        `Índice obtenido exitosamente para documento: ${documentId}`,
+      );
+
+      return {
+        success: true,
+        data: {
+          id: result.id,
+          documentId: result.documentId,
+          title: result.title,
+          chapters: result.chapters.map((chapter) => ({
+            title: chapter.title,
+            description: chapter.description,
+            subtopics: chapter.subtopics.map((subtopic) => ({
+              title: subtopic.title,
+              description: subtopic.description,
+              exercises: subtopic.exercises.map((exercise) => ({
+                type: exercise.type,
+                title: exercise.title,
+                description: exercise.description,
+                difficulty: exercise.difficulty,
+                estimatedTime: exercise.estimatedTime,
+                keywords: exercise.keywords,
+              })),
+            })),
+            exercises: chapter.exercises.map((exercise) => ({
+              type: exercise.type,
+              title: exercise.title,
+              description: exercise.description,
+              difficulty: exercise.difficulty,
+              estimatedTime: exercise.estimatedTime,
+              keywords: exercise.keywords,
+            })),
+          })),
+          generatedAt: result.generatedAt.toISOString(),
+          status: result.status,
+        },
+        message: 'Índice obtenido exitosamente',
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof HttpException
+      ) {
+        throw error;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      this.logger.error(
+        'Unexpected error in getDocumentIndex',
+        error instanceof Error ? error : errorMessage,
+        {
+          documentId,
+          operation: 'get_index',
+          errorType: 'GET_INDEX_ERROR',
+        },
+      );
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Error interno del servidor al obtener índice',
           error: 'Internal Server Error',
           details: errorMessage,
         },
