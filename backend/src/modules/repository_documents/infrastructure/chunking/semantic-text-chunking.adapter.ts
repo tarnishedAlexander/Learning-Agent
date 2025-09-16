@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { DocumentChunk } from '../../domain/entities/document-chunk.entity';
+import { DocumentChunkService } from '../../domain/services/document-chunk.service';
 import type {
   ChunkingStrategyPort,
   ChunkingConfig,
@@ -326,7 +327,7 @@ export class SemanticTextChunkingAdapter implements ChunkingStrategyPort {
       return null;
     }
 
-    return DocumentChunk.create(
+    return DocumentChunkService.create(
       uuidv4(),
       documentId,
       content.trim(),
