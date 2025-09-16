@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Modal, Button, Typography } from "antd";
+import { Modal, Button, Typography, theme as antTheme } from "antd";
 import { DeleteOutlined, ExclamationCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import type { ButtonProps } from 'antd';
+import { useThemeStore } from '../store/themeStore';
 
 const { Text } = Typography;
 
@@ -100,6 +101,11 @@ export const SafetyModal = ({
 }: SafetyModalProps) => {
   const isSmallScreen = window.innerWidth <= 768;
   
+  // Tema
+  const theme = useThemeStore((state) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
+  
   return (
     <Modal
       open={open}
@@ -139,7 +145,8 @@ export const SafetyModal = ({
         fontSize: isSmallScreen ? "14px" : "16px",
         lineHeight: '1.5',
         margin: '0',
-        padding: isSmallScreen ? '8px 0' : '0'
+        padding: isSmallScreen ? '8px 0' : '0',
+        color: isDark ? token.colorText : '#262626'
       }}>
         {message}
       </p>
@@ -206,6 +213,11 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
 
   // Detectar vista móvil
   const isSmallScreen = window.innerWidth <= 768;
+  
+  // Tema
+  const theme = useThemeStore((state) => state.theme);
+  const isDark = theme === "dark";
+  const { token } = antTheme.useToken();
 
   // Configuración por defecto del botón
   const {
@@ -303,9 +315,14 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
       {/* Modal de confirmación */}
       <Modal
         title={
-          <div style={{ display: 'flex', alignItems: 'center', color: '#d32f2f' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            color: isDark ? token.colorError : '#d32f2f',
+            padding: `${token.paddingXS}px 0`
+          }}>
             <ExclamationCircleOutlined style={{ 
-              marginRight: '8px', 
+              marginRight: token.marginXS, 
               fontSize: isSmallScreen ? '16px' : '20px' 
             }} />
             <span style={{ 
@@ -324,29 +341,29 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
         confirmLoading={deleting}
         centered
         width={isSmallScreen ? '90%' : 480}
+        styles={{
+          header: {
+            padding: isSmallScreen ? '12px 16px' : '16px 24px'
+          },
+          body: {
+            padding: isSmallScreen ? '8px 16px 16px 16px' : `${token.paddingLG}px`
+          }
+        }}
         okButtonProps={{
           danger: true,
           size: isSmallScreen ? 'middle' : 'large',
           style: {
-            backgroundColor: '#d32f2f',
-            borderColor: '#d32f2f',
+            backgroundColor: isDark ? token.colorErrorActive : '#d32f2f',
+            borderColor: isDark ? token.colorErrorBorder : '#d32f2f',
             fontWeight: '500'
           }
         }}
         cancelButtonProps={{
           size: isSmallScreen ? 'middle' : 'large',
           style: {
-            borderColor: '#7A85C1',
-            color: '#3B38A0',
+            borderColor: isDark ? token.colorBorder : '#7A85C1',
+            color: isDark ? token.colorText : '#3B38A0',
             fontWeight: '500'
-          }
-        }}
-        styles={{
-          header: {
-            padding: isSmallScreen ? '12px 16px' : '16px 24px'
-          },
-          body: {
-            padding: isSmallScreen ? '8px 16px 16px 16px' : '16px 24px 24px 24px'
           }
         }}
       >
@@ -354,8 +371,8 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
           {/* Ícono principal de eliminación */}
           <div style={{
             fontSize: isSmallScreen ? '36px' : '48px',
-            color: '#ff7875',
-            marginBottom: isSmallScreen ? '12px' : '16px',
+            color: isDark ? token.colorError : '#ff7875',
+            marginBottom: isSmallScreen ? '12px' : token.marginLG,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'
@@ -365,9 +382,9 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
 
           {/* Mensaje de confirmación */}
           <p style={{
-            marginBottom: isSmallScreen ? '12px' : '16px',
+            marginBottom: isSmallScreen ? '12px' : token.marginLG,
             fontSize: isSmallScreen ? '14px' : '16px',
-            color: '#262626',
+            color: isDark ? token.colorText : '#262626',
             lineHeight: '1.5',
             padding: isSmallScreen ? '0 8px' : '0'
           }}>
@@ -376,29 +393,29 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
 
           {/* Información del recurso */}
           <div style={{
-            backgroundColor: '#fff2e8',
-            border: '1px solid #ffcc7a',
-            borderRadius: '8px',
-            padding: isSmallScreen ? '12px' : '16px',
-            marginTop: isSmallScreen ? '12px' : '16px',
+            backgroundColor: isDark ? token.colorWarningBg : '#fff2e8',
+            border: `1px solid ${isDark ? token.colorWarningBorder : '#ffcc7a'}`,
+            borderRadius: token.borderRadius,
+            padding: isSmallScreen ? '12px' : token.paddingLG,
+            marginTop: isSmallScreen ? '12px' : token.marginLG,
             textAlign: 'left'
           }}>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              marginBottom: '4px',
+              marginBottom: token.marginXS,
               flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
             }}>
               <div style={{ 
-                color: '#d46b08', 
+                color: isDark ? token.colorWarning : '#d46b08', 
                 fontSize: isSmallScreen ? '14px' : '16px' 
               }}>
                 {resourceInfo.icon || <FileTextOutlined />}
               </div>
               <Text strong style={{ 
-                color: '#d46b08', 
+                color: isDark ? token.colorWarning : '#d46b08', 
                 fontSize: isSmallScreen ? '12px' : '14px',
-                marginLeft: '8px',
+                marginLeft: token.marginXS,
                 wordBreak: 'break-word'
               }}>
                 {resourceInfo.name}
@@ -406,8 +423,8 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
               {resourceInfo.type && (
                 <Text style={{ 
                   fontSize: isSmallScreen ? '10px' : '12px',
-                  marginLeft: '8px',
-                  color: '#fa8c16'
+                  marginLeft: token.marginXS,
+                  color: isDark ? token.colorWarningText : '#fa8c16'
                 }}>
                   ({resourceInfo.type})
                 </Text>
@@ -417,9 +434,9 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
             {/* Información adicional */}
             {resourceInfo.additionalInfo && (
               <div style={{ 
-                marginTop: '8px', 
+                marginTop: token.marginXS, 
                 fontSize: isSmallScreen ? '10px' : '12px', 
-                color: '#d48806' 
+                color: isDark ? token.colorWarningText : '#d48806' 
               }}>
                 {resourceInfo.additionalInfo}
               </div>
@@ -429,18 +446,18 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              marginTop: '8px',
+              marginTop: token.marginXS,
               flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
             }}>
               <ExclamationCircleOutlined style={{ 
-                color: '#fa8c16', 
-                marginRight: '6px', 
+                color: isDark ? token.colorWarning : '#fa8c16', 
+                marginRight: token.marginXXS, 
                 fontSize: isSmallScreen ? '10px' : '12px' 
               }} />
               <Text style={{ 
                 fontSize: isSmallScreen ? '10px' : '12px', 
                 fontStyle: 'italic',
-                color: '#d48806'
+                color: isDark ? token.colorWarningText : '#d48806'
               }}>
                 Esta acción no se puede deshacer
               </Text>
