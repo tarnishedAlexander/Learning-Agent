@@ -4,7 +4,7 @@ import type { DocumentStoragePort } from '../../domain/ports/document-storage.po
 import { ContractDocumentListItem } from '../../domain/entities/contract-document-list-item';
 
 export interface GetDocumentsBySubjectRequest {
-  materiaId: string;
+  subjectId: string;
   tipo?: string;
   page?: number;
   limit?: number;
@@ -26,7 +26,7 @@ export class GetDocumentsBySubjectUseCase {
   async execute(
     request: GetDocumentsBySubjectRequest,
   ): Promise<GetDocumentsBySubjectResponse> {
-    const { materiaId, tipo, page = 1, limit = 10 } = request;
+    const { subjectId, tipo, page = 1, limit = 10 } = request;
 
     // Calcular offset para paginación
     const offset = (page - 1) * limit;
@@ -34,7 +34,7 @@ export class GetDocumentsBySubjectUseCase {
     try {
       // Obtener documentos de la base de datos filtrados por curso
       const dbDocuments = await this.documentRepository.findByCourseId(
-        materiaId,
+        subjectId,
         offset,
         limit,
         tipo,
@@ -42,7 +42,7 @@ export class GetDocumentsBySubjectUseCase {
 
       // Obtener el total de documentos para la materia
       const total = await this.documentRepository.countByCourseId(
-        materiaId,
+        subjectId,
         tipo,
       );
 
@@ -92,7 +92,7 @@ export class GetDocumentsBySubjectUseCase {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       throw new Error(
-        `Error al obtener documentos de la materia ${materiaId}: ${errorMessage}`,
+        `Error al obtener documentos de la materia ${subjectId}: ${errorMessage}`,
       );
     }
   }
