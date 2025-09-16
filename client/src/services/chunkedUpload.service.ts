@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { CancelTokenSource } from 'axios';
-import { meAPI } from './authService';
+import { useUserStore } from '../store/userStore';
 
 export interface ChunkedUploadProgress {
   stepKey: string;
@@ -68,7 +68,11 @@ class ChunkedUploadService {
         throw new Error('Token de acceso no encontrado. Por favor, inicia sesión nuevamente.');
       }
 
-      await meAPI(token);
+      const user = useUserStore.getState().user;
+      if (!user) {
+        throw new Error('Usuario no encontrado en el contexto. Por favor, inicia sesión nuevamente.');
+      }
+
       return token;
     } catch {
       throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
