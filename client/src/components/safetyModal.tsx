@@ -469,6 +469,7 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
   );
 };
 
+
 export default DeleteButton;
 
 // Exportar tipos para uso externo
