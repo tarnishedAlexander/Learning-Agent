@@ -317,6 +317,16 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
       lastProgressUpdate.current = Date.now();
       speedHistory.current = [];
 
+      // Mostrar advertencia para archivos grandes
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > 50) {
+        message.warning({
+          content: `Archivo grande detectado (${fileSizeMB.toFixed(1)} MB). El procesamiento puede tardar varios minutos. Por favor, no cierres esta ventana.`,
+          duration: 8,
+          style: { marginTop: '10vh' }
+        });
+      }
+
       const options: ChunkedUploadOptions = {
         chunkSize: fileConfig.chunkSize || 2 * 1024 * 1024,
         maxRetries: 3,
@@ -568,6 +578,20 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
             showIcon
             style={{ 
               marginTop: '16px',
+              fontSize: isSmallScreen ? '12px' : '14px'
+            }}
+          />
+        )}
+        
+        {/* Mensaje informativo específico para archivos grandes en procesamiento */}
+        {currentPhase === 'processing' && selectedFile && (selectedFile.size / (1024 * 1024)) > 50 && (
+          <Alert
+            message="Procesando archivo grande"
+            description={`Este archivo de ${((selectedFile.size) / (1024 * 1024)).toFixed(1)} MB está siendo procesado. El tiempo estimado puede ser de 5-10 minutos dependiendo del tamaño. Por favor, mantén esta ventana abierta.`}
+            type="warning"
+            showIcon
+            style={{ 
+              marginTop: '12px',
               fontSize: isSmallScreen ? '12px' : '14px'
             }}
           />
