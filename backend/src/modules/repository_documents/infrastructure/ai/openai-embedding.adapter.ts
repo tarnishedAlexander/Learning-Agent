@@ -427,7 +427,7 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
       } catch (error) {
-        console.error(`❌ Error en lote ${i + 1}:`, error);
+        console.error(`Error en lote ${i + 1}:`, error);
         failedCount += batch.length;
         errors.push(
           `Lote ${i + 1}: ${error instanceof Error ? error.message : String(error)}`,
@@ -510,7 +510,7 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
           await new Promise((resolve) => setTimeout(resolve, 200));
         }
       } catch (error) {
-        console.error(`❌ Error en lote ${i + 1}:`, error);
+        console.error(`Error en lote ${i + 1}:`, error);
         failedCount += batch.length;
         errors.push(
           `Lote ${i + 1}: ${error instanceof Error ? error.message : String(error)}`,
