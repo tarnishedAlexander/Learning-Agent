@@ -2,15 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { DocumentRepositoryPort } from '../../domain/ports/document-repository.port';
 import type { DocumentChunkRepositoryPort } from '../../domain/ports/document-chunk-repository.port';
 import type { DocumentIndexGeneratorPort } from '../../domain/ports/document-index-generator.port';
+import type { DocumentIndexRepositoryPort } from '../../domain/ports/document-index-repository.port';
 import { DocumentIndex } from '../../domain/entities/document-index.entity';
 
 export interface GenerateDocumentIndexCommand {
   documentId: string;
-  config?: {
-    language?: string;
-    detailLevel?: 'basic' | 'intermediate' | 'advanced';
-    exerciseTypes?: string[];
-  };
+  config?: any;
 }
 
 @Injectable()
@@ -21,6 +18,7 @@ export class GenerateDocumentIndexUseCase {
     private readonly documentRepository: DocumentRepositoryPort,
     private readonly chunkRepository: DocumentChunkRepositoryPort,
     private readonly indexGenerator: DocumentIndexGeneratorPort,
+    private readonly documentIndexRepository: DocumentIndexRepositoryPort,
   ) {}
 
   async execute(command: GenerateDocumentIndexCommand): Promise<DocumentIndex> {
@@ -39,9 +37,11 @@ export class GenerateDocumentIndexUseCase {
 
       this.logger.log(`Documento encontrado: ${document.originalName}`);
 
-      // 2. Obtener todos los chunks del documento
-      const chunksResult =
-        await this.chunkRepository.findByDocumentId(documentId);
+      // 2. Obtener todos los chunks del documento (sin límite)
+      const chunksResult = await this.chunkRepository.findByDocumentId(
+        documentId,
+        { limit: 10000 },
+      );
       if (
         !chunksResult ||
         !chunksResult.chunks ||
@@ -85,7 +85,12 @@ export class GenerateDocumentIndexUseCase {
 
       this.logger.log(`Total de ejercicios generados: ${totalExercises}`);
 
-      return documentIndex;
+      // 4. Persistir el índice en la base de datos
+      this.logger.log('Guardando índice en la base de datos...');
+      const savedIndex = await this.documentIndexRepository.save(documentIndex);
+      this.logger.log(`Índice guardado exitosamente con ID: ${savedIndex.id}`);
+
+      return savedIndex;
     } catch (error) {
       this.logger.error(
         `Error generando índice para documento ${documentId}:`,
