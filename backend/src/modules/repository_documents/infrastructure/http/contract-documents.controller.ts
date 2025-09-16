@@ -20,8 +20,8 @@ import {
 } from './dtos/contract-documents.dto';
 
 /**
- * Controlador para endpoints del contrato con el módulo de estudiantes
- * Base URL: /api/v1/documentos
+ * Controller for contract endpoints with the student module
+ * Base URL: /api/v1/documents
  */
 @Controller('api/v1/documents')
 @UseGuards(AuthGuard('jwt'))
@@ -60,8 +60,7 @@ export class ContractDocumentsController {
         page: query.page || 1,
         limit: query.limit || 10,
       });
-
-      // Mapear la respuesta del dominio a DTOs del contrato
+      // Map the domain response to contract DTOs
       const documentos = result.docs.map(
         (doc) =>
           new ContractDocumentItemDto(
@@ -99,7 +98,7 @@ export class ContractDocumentsController {
         },
       );
 
-      // Manejar diferentes tipos de errores
+      //Handle different types of errors
       if (errorMessage.includes('no encontrado')) {
         throw new HttpException(
           {
@@ -124,7 +123,7 @@ export class ContractDocumentsController {
         );
       }
 
-      // Error genérico
+      // Generic error
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -138,8 +137,8 @@ export class ContractDocumentsController {
   }
 
   /**
-   * GET /documentos/{docId}/contenido
-   * Obtiene el contenido extraído de un documento específico.
+   * GET /documentS/{docId}/content
+   * Obtain the extracted content of a specific document.
    */
   @Get(':docId/content')
   async getDocumentContent(
@@ -189,7 +188,7 @@ export class ContractDocumentsController {
         },
       );
 
-      // Manejar diferentes tipos de errores
+      // handle different types of errors
       if (errorMessage.includes('no encontrado')) {
         throw new HttpException(
           {
@@ -214,7 +213,7 @@ export class ContractDocumentsController {
         );
       }
 
-      // Error genérico
+      // Generic error
       throw new HttpException(
         {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -228,7 +227,7 @@ export class ContractDocumentsController {
   }
 
   /**
-   * Extrae el tipo de archivo del mimeType para cumplir con el contrato
+   * Extracts the file type from the mimeType to comply with the contract
    */
   private extractFileType(mimeType: string): string {
     if (mimeType.includes('pdf')) return 'pdf';

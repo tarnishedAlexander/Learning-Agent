@@ -28,11 +28,11 @@ export class GetDocumentsBySubjectUseCase {
   ): Promise<GetDocumentsBySubjectResponse> {
     const { subjectId, tipo, page = 1, limit = 10 } = request;
 
-    // Calcular offset para paginación
+    // Calculate offset for pagination
     const offset = (page - 1) * limit;
 
     try {
-      // Obtener documentos de la base de datos filtrados por curso
+      // Obtain documents from the database filtered by course
       const dbDocuments = await this.documentRepository.findByCourseId(
         subjectId,
         offset,
@@ -40,24 +40,24 @@ export class GetDocumentsBySubjectUseCase {
         tipo,
       );
 
-      // Obtener el total de documentos para la materia
+      // Obtain the total number of documents for the subject
       const total = await this.documentRepository.countByCourseId(
         subjectId,
         tipo,
       );
 
-      // Crear ContractDocumentListItem con datos correctos
+      // Create ContractDocumentListItem with correct data
       const documents: ContractDocumentListItem[] = [];
 
       for (const doc of dbDocuments) {
         try {
-          // Verificar que el archivo existe en el storage
+          // Check if the file exists in storage
           const exists = await this.documentStorage.documentExists(
             doc.fileName,
           );
           if (!exists) continue;
 
-          // Generar URL de descarga
+          // Generate download URL
           const downloadUrl = await this.documentStorage.generateDownloadUrl(
             doc.fileName,
           );
@@ -75,7 +75,7 @@ export class GetDocumentsBySubjectUseCase {
             ),
           );
         } catch (error) {
-          // Si hay error con un documento específico, lo omitimos pero continuamos
+          // If there is an error with a specific document, we skip it but continue
           console.warn(
             `Error processing document ${doc.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
           );
