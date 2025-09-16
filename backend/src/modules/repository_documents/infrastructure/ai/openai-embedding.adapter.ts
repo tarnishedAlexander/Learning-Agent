@@ -122,7 +122,7 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
         model: finalConfig.model,
       };
     } catch (error) {
-      console.error('❌ Error generando embedding:', error);
+      console.error('Error generando embedding:', error);
       throw this.handleOpenAIError(error, 'generateEmbedding');
     }
   }
@@ -140,8 +140,23 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
         throw new Error('Se requiere al menos un texto para procesar');
       }
 
+      // 2. Si hay demasiados textos, procesarlos en lotes
       if (texts.length > 2048) {
-        throw new Error('OpenAI soporta máximo 2048 inputs por lote');
+        console.log(
+          `Procesando ${texts.length} textos en lotes (máximo 2048 por lote)`,
+        );
+        return await this.processBatchesSequentially(texts, config);
+      }
+
+      // 3. Estimar tokens para evitar exceder el límite
+      const estimatedTokens = this.estimateTokens(texts);
+      const maxTokens = 250000; // Límite conservador para OpenAI
+
+      if (estimatedTokens > maxTokens) {
+        console.log(
+          `Tokens estimados (${estimatedTokens}) exceden límite (${maxTokens}). Procesando en lotes más pequeños.`,
+        );
+        return await this.processBatchesByTokenLimit(texts, maxTokens, config);
       }
 
       // Validar cada texto
@@ -155,10 +170,10 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
         }
       });
 
-      // 2. Preparar configuración
+      // 4. Preparar configuración
       const finalConfig = this.mergeConfig(config);
 
-      // 3. Llamar a OpenAI
+      // 5. Llamar a OpenAI
       const response = await this.client.embeddings.create({
         model: finalConfig.model,
         input: texts,
@@ -196,7 +211,7 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
         errors: [],
       };
     } catch (error) {
-      console.error('❌ Error generando embeddings en lote:', error);
+      console.error('Error generando embeddings en lote:', error);
       throw this.handleOpenAIError(error, 'generateBatchEmbeddings');
     }
   }
@@ -353,6 +368,165 @@ export class OpenAIEmbeddingAdapter implements EmbeddingGeneratorPort {
       return new Error(`Error en ${operation}: ${error.message}`);
     }
 
-    return new Error(`Error desconocido en ${operation}`);
+    return new Error(`Error desconocido en ${operation}: ${String(error)}`);
+  }
+
+  /**
+   * Estima el número de tokens para un array de textos
+   */
+  private estimateTokens(texts: string[]): number {
+    // Estimación aproximada: 1 token ≈ 4 caracteres para texto en español/inglés
+    const totalChars = texts.reduce((sum, text) => sum + text.length, 0);
+    return Math.ceil(totalChars / 4);
+  }
+
+  /**
+   * Procesa textos en lotes secuenciales respetando el límite de 2048 inputs
+   */
+  private async processBatchesSequentially(
+    texts: string[],
+    config?: Partial<EmbeddingConfig>,
+  ): Promise<BatchEmbeddingResult> {
+    const batchSize = 2048;
+    const batches: string[][] = [];
+
+    // Dividir en lotes
+    for (let i = 0; i < texts.length; i += batchSize) {
+      batches.push(texts.slice(i, i + batchSize));
+    }
+
+    console.log(
+      `Procesando ${batches.length} lotes de máximo ${batchSize} textos cada uno`,
+    );
+
+    const allEmbeddings: number[][] = [];
+    let totalTokensUsed = 0;
+    let successfulCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    // Procesar cada lote
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      console.log(
+        `Procesando lote ${i + 1}/${batches.length} (${batch.length} textos)`,
+      );
+
+      try {
+        // Llamada recursiva pero con lote más pequeño
+        const batchResult = await this.generateBatchEmbeddings(batch, config);
+
+        allEmbeddings.push(...batchResult.embeddings);
+        totalTokensUsed += batchResult.totalTokensUsed;
+        successfulCount += batchResult.successfulCount;
+        failedCount += batchResult.failedCount;
+        errors.push(...batchResult.errors);
+
+        // Pequeña pausa entre lotes para evitar rate limiting
+        if (i < batches.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      } catch (error) {
+        console.error(`❌ Error en lote ${i + 1}:`, error);
+        failedCount += batch.length;
+        errors.push(
+          `Lote ${i + 1}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    return {
+      embeddings: allEmbeddings,
+      totalEmbeddings: allEmbeddings.length,
+      dimensions: allEmbeddings[0]?.length || 0,
+      totalTokensUsed,
+      model: this.mergeConfig(config).model,
+      successfulCount,
+      failedCount,
+      errors,
+    };
+  }
+
+  /**
+   * Procesa textos en lotes respetando el límite de tokens
+   */
+  private async processBatchesByTokenLimit(
+    texts: string[],
+    maxTokens: number,
+    config?: Partial<EmbeddingConfig>,
+  ): Promise<BatchEmbeddingResult> {
+    const batches: string[][] = [];
+    let currentBatch: string[] = [];
+    let currentTokens = 0;
+
+    // Dividir en lotes por límite de tokens
+    for (const text of texts) {
+      const textTokens = this.estimateTokens([text]);
+
+      if (currentTokens + textTokens > maxTokens && currentBatch.length > 0) {
+        batches.push([...currentBatch]);
+        currentBatch = [text];
+        currentTokens = textTokens;
+      } else {
+        currentBatch.push(text);
+        currentTokens += textTokens;
+      }
+    }
+
+    if (currentBatch.length > 0) {
+      batches.push(currentBatch);
+    }
+
+    console.log(
+      `Procesando ${batches.length} lotes por límite de tokens (máximo ${maxTokens} tokens por lote)`,
+    );
+
+    const allEmbeddings: number[][] = [];
+    let totalTokensUsed = 0;
+    let successfulCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    // Procesar cada lote
+    for (let i = 0; i < batches.length; i++) {
+      const batch = batches[i];
+      const estimatedTokens = this.estimateTokens(batch);
+      console.log(
+        `Procesando lote ${i + 1}/${batches.length} (${batch.length} textos, ~${estimatedTokens} tokens)`,
+      );
+
+      try {
+        // Llamada recursiva pero con lote más pequeño
+        const batchResult = await this.generateBatchEmbeddings(batch, config);
+
+        allEmbeddings.push(...batchResult.embeddings);
+        totalTokensUsed += batchResult.totalTokensUsed;
+        successfulCount += batchResult.successfulCount;
+        failedCount += batchResult.failedCount;
+        errors.push(...batchResult.errors);
+
+        // Pequeña pausa entre lotes para evitar rate limiting
+        if (i < batches.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+        }
+      } catch (error) {
+        console.error(`❌ Error en lote ${i + 1}:`, error);
+        failedCount += batch.length;
+        errors.push(
+          `Lote ${i + 1}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    return {
+      embeddings: allEmbeddings,
+      totalEmbeddings: allEmbeddings.length,
+      dimensions: allEmbeddings[0]?.length || 0,
+      totalTokensUsed,
+      model: this.mergeConfig(config).model,
+      successfulCount,
+      failedCount,
+      errors,
+    };
   }
 }
