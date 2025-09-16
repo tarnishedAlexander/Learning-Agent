@@ -433,7 +433,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                         </Card>
                       ))}
 
-                      {filteredChunks.length > pageSize && (
+                      {filteredChunks.length > 0 && (
                         <Card size="small" style={{ textAlign: 'center' }}>
                           <Pagination current={currentPage} total={filteredChunks.length} pageSize={pageSize} onChange={setCurrentPage} onShowSizeChange={(_, size) => { setPageSize(size); setCurrentPage(1); }} showSizeChanger={!isMobile} showQuickJumper={!isMobile} showTotal={!isMobile ? (total, range) => `${range[0]}-${range[1]} de ${total} chunks` : undefined} pageSizeOptions={['5','10','20','50']} size={isMobile ? "small" : "default"} simple={!screens.sm} />
                         </Card>
