@@ -158,10 +158,19 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
       useFactory: (
         storageAdapter: S3StorageAdapter,
         documentRepository: PrismaDocumentRepositoryAdapter,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
       ) => {
-        return new DeleteDocumentUseCase(storageAdapter, documentRepository);
+        return new DeleteDocumentUseCase(
+          storageAdapter,
+          documentRepository,
+          chunkRepository,
+        );
       },
-      inject: [DOCUMENT_STORAGE_PORT, DOCUMENT_REPOSITORY_PORT],
+      inject: [
+        DOCUMENT_STORAGE_PORT,
+        DOCUMENT_REPOSITORY_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
+      ],
     },
     {
       provide: UploadDocumentUseCase,
@@ -273,12 +282,14 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         deletedDocumentRepository: PrismaDeletedDocumentRepositoryAdapter,
         textExtraction: PdfTextExtractionAdapter,
         documentStorage: S3StorageAdapter,
+        chunkRepository: PrismaDocumentChunkRepositoryAdapter,
       ) => {
         return new CheckDeletedDocumentUseCase(
           documentRepository,
           deletedDocumentRepository,
           textExtraction,
           documentStorage,
+          chunkRepository,
         );
       },
       inject: [
@@ -286,6 +297,7 @@ import { ContextualLoggerService } from './infrastructure/services/contextual-lo
         DELETED_DOCUMENT_REPOSITORY_PORT,
         TEXT_EXTRACTION_PORT,
         DOCUMENT_STORAGE_PORT,
+        DOCUMENT_CHUNK_REPOSITORY_PORT,
       ],
     },
 

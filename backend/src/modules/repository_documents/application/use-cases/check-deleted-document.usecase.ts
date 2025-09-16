@@ -4,6 +4,7 @@ import type { DocumentRepositoryPort } from '../../domain/ports/document-reposit
 import type { DeletedDocumentRepositoryPort } from '../../domain/ports/deleted-document-repository.port';
 import type { TextExtractionPort } from '../../domain/ports/text-extraction.port';
 import type { DocumentStoragePort } from '../../domain/ports/document-storage.port';
+import type { DocumentChunkRepositoryPort } from '../../domain/ports/document-chunk-repository.port';
 import {
   CheckDeletedDocumentRequest,
   DeletedDocumentCheckResult,
@@ -19,6 +20,7 @@ export class CheckDeletedDocumentUseCase {
     private readonly deletedDocumentRepository: DeletedDocumentRepositoryPort,
     private readonly textExtraction: TextExtractionPort,
     private readonly documentStorage: DocumentStoragePort,
+    private readonly chunkRepository: DocumentChunkRepositoryPort,
   ) {}
 
   async execute(
@@ -145,6 +147,11 @@ export class CheckDeletedDocumentUseCase {
         await this.deletedDocumentRepository.restoreDocument(
           deletedDocument.id,
         );
+
+      // paso 4: restaurar chunks eliminados
+      this.logger.log(`restaurando chunks eliminados del documento: ${deletedDocument.id}`);
+      await this.chunkRepository.restoreByDocumentId(deletedDocument.id);
+      this.logger.log(`chunks restaurados exitosamente`);
 
       if (!restoredDocument) {
         this.logger.error(

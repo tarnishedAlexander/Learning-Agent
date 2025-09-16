@@ -67,6 +67,16 @@ export interface DocumentChunkRepositoryPort {
   deleteByDocumentId(documentId: string): Promise<void>;
 
   /**
+   * Marca todos los chunks de un documento como eliminados (soft delete)
+   */
+  softDeleteByDocumentId(documentId: string): Promise<void>;
+
+  /**
+   * Restaura todos los chunks eliminados de un documento
+   */
+  restoreByDocumentId(documentId: string): Promise<void>;
+
+  /**
    * Elimina un chunk específico
    */
   deleteById(id: string): Promise<void>;

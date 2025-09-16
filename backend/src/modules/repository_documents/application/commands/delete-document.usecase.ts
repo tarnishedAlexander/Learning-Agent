@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { DocumentStoragePort } from '../../domain/ports/document-storage.port';
 import type { DocumentRepositoryPort } from '../../domain/ports/document-repository.port';
+import type { DocumentChunkRepositoryPort } from '../../domain/ports/document-chunk-repository.port';
 import { DocumentStatus } from '../../domain/entities/document.entity';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class DeleteDocumentUseCase {
   constructor(
     private readonly storageAdapter: DocumentStoragePort,
     private readonly documentRepository: DocumentRepositoryPort,
+    private readonly chunkRepository: DocumentChunkRepositoryPort,
   ) {}
 
   async execute(documentId: string): Promise<{
@@ -63,6 +65,11 @@ export class DeleteDocumentUseCase {
         documentId,
         DocumentStatus.DELETED,
       );
+
+      // Realizar soft delete de los chunks asociados
+      this.logger.log(`Marcando chunks como eliminados...`);
+      await this.chunkRepository.softDeleteByDocumentId(documentId);
+      this.logger.log(`Chunks marcados como eliminados`);
 
       this.logger.log(
         `Eliminación completada exitosamente: ${document.originalName}`,
