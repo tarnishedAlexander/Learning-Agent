@@ -23,7 +23,7 @@ import {
  * Controlador para endpoints del contrato con el módulo de estudiantes
  * Base URL: /api/v1/documentos
  */
-@Controller('api/v1/documentos')
+@Controller('api/v1/documents')
 @UseGuards(AuthGuard('jwt'))
 export class ContractDocumentsController {
   constructor(
@@ -32,22 +32,18 @@ export class ContractDocumentsController {
     private readonly logger: ContextualLoggerService,
   ) {}
 
-  /**
-   * GET /materias/{materiaId}/documentos
-   * Obtiene la lista de documentos disponibles para una materia.
-   */
-  @Get('materias/:materiaId/documentos')
+  @Get('subject/:subjectId/documents')
   async getDocumentsBySubject(
-    @Param('materiaId') materiaId: string,
+    @Param('subjectId') subjectId: string,
     @Query() query: GetDocumentsBySubjectQueryDto,
   ): Promise<ContractDocumentListResponseDto> {
     try {
       this.logger.logDocumentOperation('list', undefined, {
-        materiaId,
+        subjectId,
         query,
       });
 
-      if (!materiaId || !materiaId.trim()) {
+      if (!subjectId || !subjectId.trim()) {
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
@@ -59,7 +55,7 @@ export class ContractDocumentsController {
       }
 
       const result = await this.getDocumentsBySubjectUseCase.execute({
-        materiaId: materiaId.trim(),
+        subjectId: subjectId.trim(),
         tipo: query.tipo,
         page: query.page || 1,
         limit: query.limit || 10,
@@ -79,7 +75,7 @@ export class ContractDocumentsController {
       );
 
       this.logger.log('Documents retrieved successfully for subject', {
-        materiaId,
+        subjectId,
         totalDocuments: result.total,
         documentsReturned: documentos.length,
         page: result.page,
@@ -98,7 +94,7 @@ export class ContractDocumentsController {
         'Error retrieving documents by subject',
         error instanceof Error ? error : errorMessage,
         {
-          materiaId,
+          subjectId,
           errorType: 'DOCUMENTS_BY_SUBJECT_ERROR',
         },
       );
@@ -145,7 +141,7 @@ export class ContractDocumentsController {
    * GET /documentos/{docId}/contenido
    * Obtiene el contenido extraído de un documento específico.
    */
-  @Get(':docId/contenido')
+  @Get(':docId/content')
   async getDocumentContent(
     @Param('docId') docId: string,
   ): Promise<DocumentContentResponseDto> {
