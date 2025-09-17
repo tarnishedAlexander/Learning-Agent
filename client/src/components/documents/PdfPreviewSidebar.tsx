@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Typography, Spin, Alert, Grid, theme as antTheme } from 'antd';
 import { CloseOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useThemeStore } from '../../store/themeStore';
+import { palette } from '../../theme';
 import type { Document } from '../../interfaces/documentInterface';
 import { documentService } from '../../services/documents.service';
 
@@ -69,12 +70,12 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
         right: 0,
         width: sidebarWidth,
         height: '100vh',
-        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
-        boxShadow: isDark ? '-4px 0 20px rgba(91, 110, 240, 0.1)' : '-4px 0 20px rgba(0, 0, 0, 0.15)',
+        backgroundColor: token.colorBgContainer,
+        boxShadow: isDark ? `-4px 0 20px ${token.colorPrimary}1a` : `-4px 0 20px ${palette.P0}26`,
         zIndex: isSmallScreen ? 1050 : 1000,
         display: 'flex',
         flexDirection: 'column',
-        borderLeft: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
+        borderLeft: `1px solid ${token.colorBorder}`,
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
         opacity: visible ? 1 : 0,
         visibility: visible ? 'visible' : 'hidden',
@@ -85,8 +86,8 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
       <div
         style={{
           padding: isSmallScreen ? '12px 16px' : '16px 20px',
-          borderBottom: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
-          backgroundColor: isDark ? token.colorBgElevated : '#F8F9FA',
+          borderBottom: `1px solid ${token.colorBorder}`,
+          backgroundColor: token.colorBgElevated,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -100,7 +101,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
           flex: 1
         }}>
           <FileTextOutlined style={{ 
-            color: isDark ? token.colorPrimary : '#1A2A80',
+            color: isDark ? token.colorPrimary : palette.P0,
             fontSize: isSmallScreen ? '16px' : '18px',
             flexShrink: 0
           }} />
@@ -109,7 +110,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               level={5} 
               style={{ 
                 margin: 0, 
-                color: isDark ? token.colorPrimary : '#1A2A80',
+                color: isDark ? token.colorPrimary : palette.P0,
                 fontSize: isSmallScreen ? '14px' : '16px'
               }}
             >
@@ -137,7 +138,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
           icon={<CloseOutlined />}
           onClick={onClose}
           style={{
-            color: '#666666',
+            color: token.colorTextSecondary,
             fontSize: isSmallScreen ? '14px' : '16px',
             padding: isSmallScreen ? '2px' : '4px',
             flexShrink: 0
@@ -210,7 +211,7 @@ export const PdfPreviewSidebar: React.FC<PdfPreviewSidebarProps> = ({
               justifyContent: 'center',
               alignItems: 'center',
               height: '200px',
-              color: '#999999',
+              color: token.colorTextTertiary,
               textAlign: 'center',
               padding: isSmallScreen ? '20px' : '0'
             }}

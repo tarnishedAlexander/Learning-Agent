@@ -33,6 +33,7 @@ import {
   FilterOutlined
 } from '@ant-design/icons';
 import { useThemeStore } from '../../store/themeStore';
+import { palette } from '../../theme';
 import type { Document, DocumentExtractedData } from '../../interfaces/documentInterface';
 import { useDocuments } from '../../hooks/useDocuments';
 
@@ -462,8 +463,8 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
     <div
       style={{
         padding: '12px 16px',
-        borderBottom: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
-        backgroundColor: isDark ? token.colorBgElevated : '#F8F9FA',
+        borderBottom: `1px solid ${token.colorBorder}`,
+        backgroundColor: token.colorBgElevated,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -471,9 +472,9 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-        <FileTextOutlined style={{ color: isDark ? token.colorPrimary : '#1A2A80', fontSize: 18, flexShrink: 0 }} />
+        <FileTextOutlined style={{ color: isDark ? token.colorPrimary : palette.P0, fontSize: 18, flexShrink: 0 }} />
         <div style={{ minWidth: 0 }}>
-          <Title level={5} style={{ margin: 0, color: isDark ? token.colorPrimary : '#1A2A80' }}>
+          <Title level={5} style={{ margin: 0, color: isDark ? token.colorPrimary : palette.P0 }}>
             Datos del Documento
           </Title>
           {document && (
@@ -485,7 +486,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
       </div>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <Button type="text" icon={<CloseOutlined />} onClick={onClose} style={{ color: '#666666', fontSize: 16, padding: 6 }} />
+        <Button type="text" icon={<CloseOutlined />} onClick={onClose} style={{ color: token.colorTextSecondary, fontSize: 16, padding: 6 }} />
       </div>
     </div>
   );
@@ -546,15 +547,15 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                       <Title level={5} style={{ fontSize: 14, marginBottom: 8 }}>Distribución de Tamaños</Title>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <Text style={{ fontSize: 12, minWidth: 60 }}>Mínimo</Text>
-                        <Progress percent={extractedData.statistics.minChunkSize && extractedData.statistics.maxChunkSize ? Math.round((extractedData.statistics.minChunkSize / extractedData.statistics.maxChunkSize) * 100) : 0} size="small" strokeColor="#ff4d4f" style={{ flex: 1 }} format={() => `${extractedData.statistics.minChunkSize || 0}`} />
+                        <Progress percent={extractedData.statistics.minChunkSize && extractedData.statistics.maxChunkSize ? Math.round((extractedData.statistics.minChunkSize / extractedData.statistics.maxChunkSize) * 100) : 0} size="small" strokeColor={token.colorError} style={{ flex: 1 }} format={() => `${extractedData.statistics.minChunkSize || 0}`} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                         <Text style={{ fontSize: 12, minWidth: 60 }}>Promedio</Text>
-                        <Progress percent={extractedData.statistics.averageChunkSize && extractedData.statistics.maxChunkSize ? Math.round((extractedData.statistics.averageChunkSize / extractedData.statistics.maxChunkSize) * 100) : 0} size="small" strokeColor="#1890ff" style={{ flex: 1 }} format={() => `${Math.round(extractedData.statistics.averageChunkSize || 0)}`} />
+                        <Progress percent={extractedData.statistics.averageChunkSize && extractedData.statistics.maxChunkSize ? Math.round((extractedData.statistics.averageChunkSize / extractedData.statistics.maxChunkSize) * 100) : 0} size="small" strokeColor={token.colorInfo} style={{ flex: 1 }} format={() => `${Math.round(extractedData.statistics.averageChunkSize || 0)}`} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                         <Text style={{ fontSize: 12, minWidth: 60 }}>Máximo</Text>
-                        <Progress percent={100} size="small" strokeColor="#52c41a" style={{ flex: 1 }} format={() => `${extractedData.statistics.maxChunkSize || 0}`} />
+                        <Progress percent={100} size="small" strokeColor={token.colorSuccess} style={{ flex: 1 }} format={() => `${extractedData.statistics.maxChunkSize || 0}`} />
                       </div>
                     </div>
                   </Card>
@@ -615,7 +616,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                   ) : (
                     <>
                       {paginatedChunks.map((chunk) => (
-                        <Card key={chunk.id} size="small" style={{ backgroundColor: isDark ? token.colorBgElevated : '#fafafa' }} extra={<Tooltip title="Copiar chunk"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copyToClipboard(chunk.content, 'Chunk')} /></Tooltip>}>
+                        <Card key={chunk.id} size="small" style={{ backgroundColor: token.colorBgElevated }} extra={<Tooltip title="Copiar chunk"><Button type="text" size="small" icon={<CopyOutlined />} onClick={() => copyToClipboard(chunk.content, 'Chunk')} /></Tooltip>}>
                           <Space style={{ marginBottom: 8 }} wrap size="small">
                             <Tag color="blue" style={{ fontSize: isMobile ? 12 : 14 }}>{`#${chunk.chunkIndex + 1}`}</Tag>
                             <Tag color="cyan" style={{ fontSize: isMobile ? 12 : 14 }}>{chunk.type}</Tag>
@@ -624,7 +625,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                             {!isMobile && <Tag color="geekblue" style={{ fontSize: 14 }}>{new Date(chunk.createdAt).toLocaleDateString()}</Tag>}
                           </Space>
 
-                          <div style={{ backgroundColor: isDark ? token.colorBgContainer : 'white', padding: isMobile ? 12 : 16, borderRadius: 4, border: `1px solid ${isDark ? token.colorBorder : '#f0f0f0'}`, maxHeight: isMobile ? 150 : 200, overflowY: 'auto' }}>
+                          <div style={{ backgroundColor: token.colorBgContainer, padding: isMobile ? 12 : 16, borderRadius: 4, border: `1px solid ${token.colorBorder}`, maxHeight: isMobile ? 150 : 200, overflowY: 'auto' }}>
                             <Paragraph style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: isMobile ? 12 : 13, lineHeight: isMobile ? '1.4' : '1.5', wordBreak: 'break-word' }}>
                               {chunk.content}
                             </Paragraph>
@@ -768,13 +769,13 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
                               style={{
                                 paddingLeft: (item.level - 1) * 20,
                                 marginBottom: 8,
-                                borderBottom: '1px solid #f0f0f0',
+                                borderBottom: `1px solid ${token.colorBorder}`,
                                 paddingBottom: 8,
                                 cursor: 'pointer',
                                 borderRadius: 4,
                                 padding: '8px 12px',
-                                backgroundColor: isDark ? token.colorBgElevated : '#fafafa',
-                                border: `1px solid ${isDark ? token.colorBorder : '#f0f0f0'}`,
+                                backgroundColor: token.colorBgElevated,
+                                border: `1px solid ${token.colorBorder}`,
                               }}
                               onClick={() => item.description && copyToClipboard(item.description, `Contenido de ${item.type}`)}
                             >
@@ -855,9 +856,9 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
         )}
 
         {!extractedData && !isLoading && !error && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200, color: '#999999', padding: 20, textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200, color: token.colorTextTertiary, padding: 20, textAlign: 'center' }}>
             <Space direction="vertical">
-              <FileTextOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />
+              <FileTextOutlined style={{ fontSize: 48, color: token.colorTextDisabled }} />
               <Text style={{ fontSize: 16 }}>Selecciona un documento para ver sus datos</Text>
               <Text type="secondary" style={{ fontSize: 14 }}>Usa el botón "Datos" en la tabla de documentos</Text>
             </Space>
@@ -885,7 +886,7 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
           onPointerDown={onHandlePointerDown}
           style={{ display: 'flex', justifyContent: 'center', paddingTop: 8, paddingBottom: 6, touchAction: 'none', cursor: 'ns-resize', userSelect: 'none' }}
         >
-          <div style={{ width: 40, height: 6, borderRadius: 4, background: '#d9d9d9' }} />
+          <div style={{ width: 40, height: 6, borderRadius: 4, background: token.colorTextDisabled }} />
         </div>
 
         {Header}
@@ -903,12 +904,12 @@ export const DocumentDataSidebar: React.FC<DocumentDataSidebarProps> = ({ docume
         right: 0,
         width: '50%',
         height: '100vh',
-        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
+        backgroundColor: token.colorBgContainer,
         boxShadow: isDark ? '-4px 0 20px rgba(91, 110, 240, 0.1)' : '-4px 0 20px rgba(0, 0, 0, 0.15)',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
-        borderLeft: `1px solid ${isDark ? token.colorBorder : '#E8E8E8'}`,
+        borderLeft: `1px solid ${token.colorBorder}`,
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
         opacity: visible ? 1 : 0,
         visibility: visible ? 'visible' : 'hidden',
