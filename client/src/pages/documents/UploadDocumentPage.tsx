@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import { Card, message, Row, Col, Grid, theme as antTheme } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { useParams, useLocation } from "react-router-dom";
+import { palette } from "../../theme";
 import PageTemplate from "../../components/PageTemplate";
 import ChunkedUploadButton from "../../components/shared/ChunkedUploadButton";
 import { DocumentTable } from "../../components/documents/DocumentTable";
@@ -195,7 +196,7 @@ const UploadDocumentPage: React.FC = () => {
                     display: "flex", 
                     alignItems: "center",
                     justifyContent: "space-between",
-                    color: isDark ? token.colorText : "#1A2A80",
+                    color: isDark ? token.colorText : palette.P0,
                     width: "100%",
                     minWidth: 0,
                     gap: isSmallScreen ? "12px" : "16px",
@@ -225,11 +226,11 @@ const UploadDocumentPage: React.FC = () => {
                       <div style={{
                         marginLeft: "12px",
                         backgroundColor: documents.length > 0 
-                          ? (isDark ? token.colorPrimaryBg : "#E8F4FD") 
-                          : (isDark ? token.colorBgTextHover : "#F0F0F0"),
+                          ? (isDark ? token.colorPrimaryBg : palette.P3) 
+                          : (isDark ? token.colorBgTextHover : token.colorFillSecondary),
                         color: documents.length > 0 
-                          ? (isDark ? token.colorPrimary : "#3B38A0") 
-                          : (isDark ? token.colorTextSecondary : "#666"),
+                          ? (isDark ? token.colorPrimary : palette.P1) 
+                          : (isDark ? token.colorTextSecondary : token.colorTextTertiary),
                         padding: isSmallScreen ? "2px 8px" : "4px 10px",
                         borderRadius: isSmallScreen ? "10px" : "16px",
                         fontSize: isSmallScreen ? "10px" : "12px",
@@ -271,10 +272,10 @@ const UploadDocumentPage: React.FC = () => {
                 style={{
                   borderRadius: "12px",
                   boxShadow: isDark 
-                    ? "0 4px 16px rgba(91, 110, 240, 0.1)" 
-                    : "0 4px 16px rgba(26, 42, 128, 0.1)",
-                  border: `1px solid ${isDark ? token.colorBorder : "#e8eaed"}`,
-                  backgroundColor: isDark ? token.colorBgContainer : "#FFFFFF",
+                    ? `0 4px 16px ${token.colorPrimary}1a` 
+                    : `0 4px 16px ${palette.P0}1a`,
+                  border: `1px solid ${token.colorBorder}`,
+                  backgroundColor: token.colorBgContainer,
                   width: "100%",
                   minWidth: 0,
                   overflow: "hidden"

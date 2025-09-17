@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Button, Space, Tooltip, theme as antTheme, Grid } from 'antd';
 import { DownloadOutlined, EyeOutlined, FileTextOutlined, BookOutlined } from '@ant-design/icons';
 import { useThemeStore } from '../../store/themeStore';
+import { palette } from '../../theme';
 import DeleteButton from '../safetyModal';
 import type { Document } from '../../interfaces/documentInterface';
 
@@ -94,7 +95,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                 icon={<EyeOutlined />}
                 onClick={() => onPreview?.(record)}
                 style={{
-                  color: isDark ? token.colorPrimary : '#1A2A80',
+                  color: isDark ? token.colorPrimary : palette.P0,
                   fontWeight: '500'
                 }}
               >
@@ -110,7 +111,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                 icon={<BookOutlined />}
                 onClick={() => onViewData?.(record)}
                 style={{
-                  color: isDark ? token.colorSuccess : '#52C41A',
+                  color: isDark ? token.colorSuccess : token.colorSuccess,
                   fontWeight: '500'
                 }}
               >
@@ -125,7 +126,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
               icon={<DownloadOutlined />}
               onClick={() => onDownload?.(record)}
               style={{
-                color: isDark ? token.colorInfo : '#3B38A0',
+                color: isDark ? token.colorInfo : palette.P1,
                 fontWeight: '500'
               }}
             >
@@ -174,7 +175,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         style: { marginTop: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
       }}
       style={{
-        backgroundColor: isDark ? token.colorBgContainer : '#FFFFFF',
+        backgroundColor: token.colorBgContainer,
         borderRadius: '8px',
       }}
       className="academic-table"

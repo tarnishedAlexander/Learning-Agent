@@ -30,6 +30,7 @@ import {
   StopOutlined
 } from '@ant-design/icons';
 import { useThemeStore } from '../../store/themeStore';
+import { palette } from '../../theme';
 import { chunkedUploadService } from '../../services/chunkedUpload.service';
 import type { 
   ChunkedUploadProgress, 
@@ -164,7 +165,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
     successText = '¡Archivo procesado exitosamente!'
   } = processingConfig;
 
-  const FIXED_COLOR = token.colorBgElevated === '#141d47' ? '#5b6ef0' : '#1A2A80';
+  const FIXED_COLOR = isDark ? token.colorPrimary : palette.P0;
   React.useEffect(() => {
     setProcessingSteps(
       processingConfig.steps.map(step => ({
@@ -683,7 +684,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 beforeUpload={handleFileSelect}
                 showUploadList={false}
                 style={{
-                  border: `2px dashed ${isDark ? token.colorBorder : '#7A85C1'}`,
+                  border: `2px dashed ${isDark ? token.colorBorder : palette.P2}`,
                   borderRadius: '8px',
                   backgroundColor: isDark ? token.colorBgElevated : '#F8F9FB',
                   padding: isSmallScreen ? '20px 16px' : '40px 20px',
@@ -693,11 +694,11 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 <p className="ant-upload-drag-icon">
                   <CloudUploadOutlined style={{ 
                     fontSize: isSmallScreen ? '36px' : '48px', 
-                    color: isDark ? '#5b6ef0' : '#3B38A0' 
+                    color: isDark ? token.colorPrimary : palette.P1 
                   }} />
                 </p>
                 <p className="ant-upload-text" style={{ 
-                  color: isDark ? '#ffffff' : '#1A2A80', 
+                  color: isDark ? token.colorText : palette.P0, 
                   fontSize: isSmallScreen ? '14px' : '16px', 
                   fontWeight: '500',
                   margin: isSmallScreen ? '12px 0 6px 0' : '16px 0 8px 0'
@@ -705,7 +706,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                   {isSmallScreen ? 'Toca o arrastra aquí' : 'Haz clic o arrastra el archivo aquí'}
                 </p>
                 <p className="ant-upload-hint" style={{ 
-                  color: isDark ? '#bfc7ff' : '#7A85C1',
+                  color: isDark ? token.colorTextSecondary : palette.P2,
                   fontSize: isSmallScreen ? '12px' : '14px',
                   margin: '0',
                   padding: isSmallScreen ? '0 8px' : '0'
@@ -721,10 +722,11 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                   icon={<PlusOutlined />}
                   onClick={handleManualSelect}
                   style={{
-                    backgroundColor: 'var(--ant-color-primary)',
-                    borderColor: 'var(--ant-color-primary)',
+                    backgroundColor: token.colorPrimary,
+                    borderColor: token.colorPrimary,
                     borderRadius: '6px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    color: token.colorWhite || '#ffffff'
                   }}
                   size={isSmallScreen ? "middle" : "large"}
                 >
@@ -772,9 +774,10 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                 type="primary"
                 onClick={handleCloseModal}
                 style={{
-                  backgroundColor: isDark ? token.colorSuccess : 'var(--ant-color-success)',
-                  borderColor: isDark ? token.colorSuccess : 'var(--ant-color-success)',
-                  marginTop: '16px'
+                  backgroundColor: token.colorSuccess,
+                  borderColor: token.colorSuccess,
+                  marginTop: '16px',
+                  color: token.colorWhite || '#ffffff'
                 }}
                 size={isSmallScreen ? "middle" : "large"}
               >
@@ -789,7 +792,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
               borderRadius: '8px',
               border: `2px solid ${currentPhase === 'error' ? 
                 (isDark ? token.colorError : '#ff4d4f') : 
-                (isDark ? token.colorBorder : '#7A85C1')}`
+                (isDark ? token.colorBorder : palette.P2)}`
             }}>
               {currentPhase === 'error' ? (
                 <CloseCircleOutlined style={{ 
@@ -800,7 +803,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
               ) : (
                 <FileAddOutlined style={{ 
                   fontSize: isSmallScreen ? '36px' : '48px', 
-                  color: '#3B38A0', 
+                  color: palette.P1, 
                   marginBottom: isSmallScreen ? '12px' : '16px' 
                 }} />
               )}
@@ -815,12 +818,12 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
                     flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
                   }}>
                     <FileTextOutlined style={{ 
-                      color: '#1A2A80', 
+                      color: palette.P0, 
                       marginRight: '8px', 
                       fontSize: isSmallScreen ? '14px' : '16px' 
                     }} />
                     <Text strong style={{ 
-                      color: '#1A2A80',
+                      color: palette.P0,
                       fontSize: isSmallScreen ? '12px' : '14px',
                       wordBreak: 'break-word',
                       textAlign: 'center'
@@ -836,7 +839,7 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
 
               <Text style={{ 
                 color: currentPhase === 'error' ? 
-                  (isDark ? token.colorError : '#ff4d4f') : '#1A2A80', 
+                  token.colorError : palette.P0, 
                 fontSize: isSmallScreen ? '14px' : '16px', 
                 fontWeight: '500',
                 display: 'block',
@@ -849,8 +852,8 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
               {uploadProgress > 0 && currentPhase === 'uploading' && (
                 <Progress
                   percent={uploadProgress}
-                  strokeColor="#3B38A0"
-                  trailColor="#E6E6E6"
+                  strokeColor={palette.P1}
+                  trailColor={isDark ? token.colorFillSecondary : "#E6E6E6"}
                   style={{ 
                     maxWidth: isSmallScreen ? '250px' : '300px', 
                     margin: '0 auto 16px auto' 
@@ -862,8 +865,8 @@ const ChunkedUploadButton: React.FC<ChunkedUploadButtonProps> = ({
               {processingProgress > 0 && currentPhase === 'processing' && (
                 <Progress
                   percent={processingProgress}
-                  strokeColor="#3B38A0"
-                  trailColor="#E6E6E6"
+                  strokeColor={palette.P1}
+                  trailColor={isDark ? token.colorFillSecondary : "#E6E6E6"}
                   style={{ 
                     maxWidth: isSmallScreen ? '250px' : '300px', 
                     margin: '0 auto 16px auto' 
